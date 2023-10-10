@@ -17,12 +17,12 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
-            <version>4.7.1</version>
+            <version>4.13.1</version>
         </dependency>
         <dependency>
             <groupId>uvl</groupId>
-            <artifactId>UVLJavaParser</artifactId>
-            <version>1.0.0</version>
+            <artifactId>uvl-parser</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -38,6 +38,9 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>src/de/vill</sourceDirectory>
+        <testSourceDirectory>src/test</testSourceDirectory>
+    
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

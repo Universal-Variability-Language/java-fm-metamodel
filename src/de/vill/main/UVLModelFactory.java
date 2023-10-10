@@ -1,7 +1,8 @@
 package de.vill.main;
 
-import de.vill.UVLLexer;
-import de.vill.UVLParser;
+import uvl.UVLJavaLexer;
+import uvl.UVLJavaParser;
+
 import de.vill.conversion.ConvertAggregateFunction;
 import de.vill.conversion.ConvertFeatureCardinality;
 import de.vill.conversion.ConvertGroupCardinality;
@@ -138,19 +139,19 @@ public class UVLModelFactory {
 
     public Constraint parseConstraint(String constraintString) throws ParseError {
         constraintString = constraintString.trim();
-        UVLLexer uvlLexer = new UVLLexer(CharStreams.fromString(constraintString));
-        CommonTokenStream tokens = new CommonTokenStream(uvlLexer);
-        UVLParser uvlParser = new UVLParser(tokens);
-        uvlParser.removeErrorListener(ConsoleErrorListener.INSTANCE);
-        uvlLexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
+        UVLJavaLexer UVLJavaLexer = new UVLJavaLexer(CharStreams.fromString(constraintString));
+        CommonTokenStream tokens = new CommonTokenStream(UVLJavaLexer);
+        UVLJavaParser UVLJavaParser = new UVLJavaParser(tokens);
+        UVLJavaParser.removeErrorListener(ConsoleErrorListener.INSTANCE);
+        UVLJavaLexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 
-        uvlLexer.addErrorListener(new BaseErrorListener() {
+        UVLJavaLexer.addErrorListener(new BaseErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
                 errorList.add(new ParseError(line, charPositionInLine, "failed to parse at line " + line + ":" + charPositionInLine + " due to: " + msg, e));
             }
         });
-        uvlParser.addErrorListener(new BaseErrorListener() {
+        UVLJavaParser.addErrorListener(new BaseErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
                 errorList.add(new ParseError(line, charPositionInLine, "failed to parse at line " + line + ":" + charPositionInLine + " due to " + msg, e));
@@ -159,7 +160,7 @@ public class UVLModelFactory {
 
         UVLListener uvlListener = new UVLListener();
         ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(uvlListener, uvlParser.constraintLine());
+        walker.walk(uvlListener, UVLJavaParser.constraintLine());
         Constraint constraint = null;
 
         return uvlListener.getConstraint();
@@ -320,20 +321,20 @@ public class UVLModelFactory {
     private FeatureModel parseFeatureModelWithImports(String text, Function<String, String> fileLoader, Map<String, Import> visitedImports) {
         //remove leading and trailing spaces (to be more robust)
         text = text.trim();
-        UVLLexer uvlLexer = new UVLLexer(CharStreams.fromString(text));
-        CommonTokenStream tokens = new CommonTokenStream(uvlLexer);
-        UVLParser uvlParser = new UVLParser(tokens);
-        uvlParser.removeErrorListener(ConsoleErrorListener.INSTANCE);
-        uvlLexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
+        UVLJavaLexer UVLJavaLexer = new UVLJavaLexer(CharStreams.fromString(text));
+        CommonTokenStream tokens = new CommonTokenStream(UVLJavaLexer);
+        UVLJavaParser UVLJavaParser = new UVLJavaParser(tokens);
+        UVLJavaParser.removeErrorListener(ConsoleErrorListener.INSTANCE);
+        UVLJavaLexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 
-        uvlLexer.addErrorListener(new BaseErrorListener() {
+        UVLJavaLexer.addErrorListener(new BaseErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
                 errorList.add(new ParseError(line, charPositionInLine, "failed to parse at line " + line + ":" + charPositionInLine + " due to: " + msg, e));
                 //throw new ParseError(line, charPositionInLine,"failed to parse at line " + line + ":" + charPositionInLine + " due to: " + msg, e);
             }
         });
-        uvlParser.addErrorListener(new BaseErrorListener() {
+        UVLJavaParser.addErrorListener(new BaseErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
                 errorList.add(new ParseError(line, charPositionInLine, "failed to parse at line " + line + ":" + charPositionInLine + " due to " + msg, e));
@@ -344,7 +345,7 @@ public class UVLModelFactory {
 
         UVLListener uvlListener = new UVLListener();
         ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(uvlListener, uvlParser.featureModel());
+        walker.walk(uvlListener, UVLJavaParser.featureModel());
         FeatureModel featureModel = null;
 
         try {
