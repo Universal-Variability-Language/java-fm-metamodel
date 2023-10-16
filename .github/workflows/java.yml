@@ -11,22 +11,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install ANTLR4 and Maven
-      run: |
-        # Add installation steps for ANTLR4 here
-        sudo apt-get update
-        sudo apt-get install -y antlr4 maven
-
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v1
       env:
          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
          PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
     
-    - name: Generate and Compile Java Code
-      run: make java_parser
-
-    - name: Cache Maven packages
+     - name: Cache Maven packages
       uses: actions/cache@v2
       with:
         path: ~/.m2
