@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.universal-variability-language</groupId>
-    <artifactId>uvl-metamodel</artifactId>
+    <artifactId>fm-metamodel</artifactId>
     <version>1.0</version>
 
     <name>UVL Java Metamodel</name>
     <description>This project host a java feature model metamodel for UVL </description>
-    <url>https://github.com/Universal-Variability-Language/java-uvl-metamodel</url>
+    <url>https://github.com/Universal-Variability-Language/java-fm-metamodel</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -47,9 +47,9 @@
     </developers>
     
      <scm><!-- TODO-->
-        <connection>scm:git:git@github.com:Universal-Variability-Language/java-uvl-metamodel.git</connection>
-        <developerConnection>scm:git:git@github.com:Universal-Variability-Language/java-uvl-metamodel.git</developerConnection>
-        <url>https://github.com/Universal-Variability-Language/java-uvl-metamodel</url>
+        <connection>scm:git:git@github.com:Universal-Variability-Language/java-fm-metamodel.git</connection>
+        <developerConnection>scm:git:git@github.com:Universal-Variability-Language/java-fm-metamodel.git</developerConnection>
+        <url>https://github.com/Universal-Variability-Language/java-fm-metamodel</url>
     </scm>
 
     <distributionManagement>
