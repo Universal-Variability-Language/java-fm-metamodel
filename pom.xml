@@ -21,6 +21,12 @@
 
     <developers>
         <developer>
+            <name>Stefan Vill</name>
+            <email>stefan.vill@uni-ulm.de</email>
+            <organization>University of Ulm</organization>
+            <organizationUrl>ww.uni-ulm.de</organizationUrl>
+        </developer>
+        <developer>
             <name>José A. Galindo</name>
             <email>jagalindo@us.es</email>
             <organization>University of Seville</organization>
@@ -28,7 +34,7 @@
         </developer>
         <developer>
             <name>Chico Sundermann</name>
-            <email>jagalindo@us.es</email>
+            <email>chico.sundermann@uni-ulm.de</email>
             <organization>University of Ulm</organization>
             <organizationUrl>https://www.uni-ulm.de/</organizationUrl>
         </developer>
@@ -78,7 +84,11 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.8.2</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.8.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -88,7 +98,7 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>src/de/vill</sourceDirectory>
+        <sourceDirectory>src/</sourceDirectory>
         <testSourceDirectory>src/test</testSourceDirectory>
     
         <plugins>
@@ -165,7 +175,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.2.0</version>
                 <configuration>
-                    <sourcepath>${project.basedir}/src/de/vill</sourcepath>
+                    <sourcepath>${project.basedir}/src/</sourcepath>
                 </configuration>
                 <executions>
                     <execution>
