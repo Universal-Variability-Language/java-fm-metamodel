@@ -1,27 +1,20 @@
 package de.vill.model;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import de.vill.model.constraint.Constraint;
 import de.vill.util.Constants;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * This class represents an Attribute.
- * There is an separated class and not just Objects in the attribtues map to be able to reference a singe attribute
+ * There is an separated class and not just Objects in the attributes map to be able to reference a single attribute
  * for example in a constraint.
  *
  * @param <T> The type of the value
  */
 public class Attribute<T> {
-
-    public int getLine() {
-        return line;
-    }
-
-    public void setLine(int line) {
-        this.line = line;
-    }
 
     private int line;
     private final String name;
@@ -34,11 +27,16 @@ public class Attribute<T> {
      * @param value the value of the attribute
      */
     public Attribute(String name, T value) {
-        if (name == null || value == null) {
-            throw new IllegalArgumentException("Name and Value of an attribute must not be null!");
-        }
-        this.name = name;
-        this.value = value;
+        this.name = Objects.requireNonNull(name);
+        this.value = Objects.requireNonNull(value);
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
     }
 
     /**
@@ -64,7 +62,7 @@ public class Attribute<T> {
      * @return Name of the attribute (never null)
      */
     public String getType() {
-        if (value instanceof Long | value instanceof Integer | value instanceof Double | value instanceof Float) {
+        if (value instanceof Number) {
             return Constants.NUMBER;
         } else if (value instanceof Boolean) {
             return Constants.BOOLEAN;
@@ -81,53 +79,46 @@ public class Attribute<T> {
      * @return attribute as string
      */
     public String toString(boolean withSubmodels, String currentAlias) {
+    	//should never be the case but who knows...
+    	if (value == null) {
+    		return "";
+    	}
         StringBuilder result = new StringBuilder();
-        if (value == null) {
-            //should never be the case but who knows...
-            return "";
-        } else if (value instanceof Double) {
-            //double to string
-            result.append(Double.toString((Double) value));
-        } else if (value instanceof Long) {
-            //long to string
-            result.append(Long.toString((Long) value));
-        } else if (value instanceof Integer) {
-            //integer to string
-            result.append(Integer.toString((Integer) value));
-        } else if (value instanceof Boolean) {
-            //boolean to string
-            result.append(Boolean.toString((Boolean) value));
-        } else if (value instanceof Map) {
+        if (value instanceof Map) {
             //attributes map to string
             result.append("{");
-            ((Map<?, ?>) value).forEach((k, v) -> {
-                result.append(k);
-                result.append(' ');
-                if (v instanceof Attribute) {
-                    result.append(((Attribute) v).toString(withSubmodels, currentAlias));
-                } else {
-                    result.append(v);
-                }
-                result.append(',');
-                result.append(' ');
-            });
-            //remove comma after last entry
-            result.deleteCharAt(result.length() - 1);
-            result.deleteCharAt(result.length() - 1);
+            Map<?, ?> map = (Map<?, ?>) value;
+			if (!map.isEmpty()) {
+				map.forEach((k, v) -> {
+					result.append(k);
+	                result.append(' ');
+	                if (v instanceof Attribute) {
+	                    result.append(((Attribute<?>) v).toString(withSubmodels, currentAlias));
+	                } else {
+	                    result.append(String.valueOf(v));
+	                }
+	                result.append(',');
+	                result.append(' ');
+	            });
+	            //remove comma after last entry
+	            result.setLength(result.length() - 2);
+			}
             result.append("}");
         } else if (value instanceof List) {
             //vector (list) of attributes to string
             result.append("[");
-            for (Object item : (List) value) {
-                if (item instanceof Constraint) {
-                    result.append(((Constraint) item).toString(withSubmodels, currentAlias));
-                } else {
-                    result.append(item);
-                }
-                result.append(", ");
+            List<?> list = (List<?>) value;
+            if (!list.isEmpty()) {
+				for (Object item : list) {
+	                if (item instanceof Constraint) {
+	                    result.append(((Constraint) item).toString(withSubmodels, currentAlias));
+	                } else {
+	                    result.append(String.valueOf(item));
+	                }
+	                result.append(", ");
+	            }
+	            result.setLength(result.length() - 2);
             }
-            result.deleteCharAt(result.length() - 1);
-            result.deleteCharAt(result.length() - 1);
             result.append("]");
         } else if (value instanceof String) {
             result.append("'");
@@ -135,24 +126,27 @@ public class Attribute<T> {
             result.append("'");
         } else if (value instanceof Constraint) {
             result.append(((Constraint) value).toString(withSubmodels, currentAlias));
+        } else {
+            result.append(String.valueOf(value));
         }
         return result.toString();
     }
+    
+    @Override
+	public int hashCode() {
+		return Objects.hash(name, value);
+	}
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Attribute)) {
+    	if (this == obj) {
+    		return true;
+    	}
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-
-        if (!this.getName().equals(((Attribute) obj).getName())) {
-            return false;
-        }
-
-        if (!this.getType().equals(((Attribute) obj).getType())) {
-            return false;
-        }
-
-        return this.getValue().equals(((Attribute) obj).getValue());
+        Attribute<?> other = (Attribute<?>) obj;
+        return Objects.equals(name, other.name)
+        		&& Objects.equals(value, other.value);
     }
 }

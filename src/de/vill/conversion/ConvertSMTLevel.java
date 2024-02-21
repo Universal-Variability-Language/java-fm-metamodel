@@ -123,12 +123,12 @@ public class ConvertSMTLevel implements IConversionStrategy {
     }
 
     private void removeEquationFromAttributes(Feature feature) {
-        Attribute attributeConstraint = feature.getAttributes().get("constraint");
-        Attribute attributeConstraintList = feature.getAttributes().get("constraints");
+        Attribute<?> attributeConstraint = feature.getAttributes().get("constraint");
+        Attribute<?> attributeConstraintList = feature.getAttributes().get("constraints");
         if (attributeConstraint != null) {
             if (attributeConstraint.getValue() instanceof ExpressionConstraint) {
                 Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) attributeConstraint.getValue());
-                feature.getAttributes().put("constraint", new Attribute("constraint", equationReplacement));
+                feature.getAttributes().put("constraint", new Attribute<>("constraint", equationReplacement));
             }
         }
         if (attributeConstraintList != null && attributeConstraintList.getValue() instanceof List<?>) {
@@ -141,7 +141,7 @@ public class ConvertSMTLevel implements IConversionStrategy {
                     newConstraintList.add(constraint);
                 }
             }
-            feature.getAttributes().put("constraints", new Attribute("constraints", newConstraintList));
+            feature.getAttributes().put("constraints", new Attribute<>("constraints", newConstraintList));
         }
     }
 

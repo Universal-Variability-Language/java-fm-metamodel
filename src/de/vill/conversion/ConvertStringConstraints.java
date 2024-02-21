@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ConvertStringConstraints implements IConversionStrategy {
-    private final Map<String, Map<String, Attribute>> featuresToBeUpdated = new HashMap<>();
+    private final Map<String, Map<String, Attribute<?>>> featuresToBeUpdated = new HashMap<>();
     private FeatureModel rootFeatureModel;
 
     @Override
@@ -117,7 +117,7 @@ public class ConvertStringConstraints implements IConversionStrategy {
     }
 
     private void addAttribute(final AggregateFunctionExpression aggregateFunctionExpression) {
-        final Map<String, Attribute> currentAttributes =
+        final Map<String, Attribute<?>> currentAttributes =
             this.rootFeatureModel.getFeatureMap().get(aggregateFunctionExpression.getRootFeatureName()).getAttributes();
         currentAttributes.put(
             Constants.TYPE_LEVEL_LENGTH,

@@ -1,7 +1,6 @@
 package de.vill.model;
 
-import de.vill.config.Configuration;
-import de.vill.util.Util;
+import static de.vill.util.Util.addNecessaryQuotes;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,9 +8,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
-import static de.vill.util.Util.addNecessaryQuotes;
+import de.vill.config.Configuration;
+import de.vill.util.Util;
 
 /**
  * This class represents a feature of any kind (normal, numeric, abstract, ...).
@@ -27,7 +27,7 @@ public class Feature {
     private String lowerBound;
     private String upperBound;
     private final List<Group> children;
-    private final Map<String, Attribute> attributes;
+    private final Map<String, Attribute<?>> attributes;
     private FeatureType featureType;
     private boolean isSubmodelRoot = false;
 
@@ -280,8 +280,8 @@ public class Feature {
     }
 
     /**
-     * Set the namespace for the feature. When creating a decomposed featuremodel by
-     * yourself and not with the {@link de.vill.main.UVLModelFactory} becarefull to
+     * Set the namespace for the feature. When creating a decomposed feature model by
+     * yourself and not with the {@link de.vill.main.UVLModelFactory} be careful to
      * the the namespaces and set them correct. See {@link Feature#getNameSpace()}
      * for explanation what the namespace of a feature represents.
      *
@@ -344,7 +344,7 @@ public class Feature {
      * returns the {@link Import} that imports the corresponding feature model, if
      * not this method returns null.
      *
-     * @return The realted import if the feature is the root feature of an imported
+     * @return The related import if the feature is the root feature of an imported
      * feature model or null otherwise
      */
     public Import getRelatedImport() {
@@ -369,7 +369,7 @@ public class Feature {
      *
      * @return The attribute map.
      */
-    public Map<String, Attribute> getAttributes() {
+    public Map<String, Attribute<?>> getAttributes() {
         return attributes;
     }
 
@@ -395,7 +395,7 @@ public class Feature {
 
     /**
      * This method is just for simplicity. It is used when printing the first
-     * feature of a composed feauturemodel.
+     * feature of a composed feature model.
      *
      * @return feature in uvl representation with its subtree
      */
@@ -408,7 +408,7 @@ public class Feature {
      * This method is necessary because the uvl string representation differs
      * between the feature as imported feature another feature model or as the root
      * feature as the submodel. This method is only relevant when the decomposed
-     * model is printed as String, not for the composed model. Concret this method
+     * model is printed as String, not for the composed model. Concrete, this method
      * always prints its children and attributes (if there are any) even if it is an
      * imported feature.
      *
@@ -416,7 +416,7 @@ public class Feature {
      *                     This is necessary, because features can be reference from
      *                     e.g. constraints in other sub models, therefore the
      *                     namespace can vary.
-     * @return The feature and ist subtree as String
+     * @return The feature and its subtree as String
      */
     public String toStringAsRoot(String currentAlias) {
         StringBuilder result = new StringBuilder();
@@ -439,12 +439,12 @@ public class Feature {
     /**
      * Returns the feature and all its children as uvl valid string.
      *
-     * @param withSubmodels true if the featuremodel is printed as composed
-     *                      featuremodel with all its submodels as one model, false
+     * @param withSubmodels true if the feature model is printed as composed
+     *                      feature model with all its submodels as one model, false
      *                      if the model is printed with separated sub models
      * @param currentAlias  the namspace from the one referencing the feature to the
      *                      feature
-     * @return uvl representaiton of the feature
+     * @return uvl representation of the feature
      */
     public String toString(boolean withSubmodels, String currentAlias) {
         StringBuilder result = new StringBuilder();
@@ -463,7 +463,7 @@ public class Feature {
          * another submodel and we want to print each submodel separately if the feature
          * should be printed with is children eather call this method with withSubmodels
          * parameter true for a composed model or the toStringAsRoot method if the
-         * featuremodels should be printed separately
+         * feature models should be printed separately
          */
         if (!isSubmodelRoot() || withSubmodels) {
             result.append(attributesToString(withSubmodels, currentAlias));
@@ -533,12 +533,10 @@ public class Feature {
 
     private String cardinalityToString() {
         StringBuilder result = new StringBuilder();
-        if (!(upperBound == null & lowerBound == null)) {
+        if (!(upperBound == null && lowerBound == null)) {
             result.append(" cardinality [");
-            if (getLowerBound().equals(getUpperBound())) {
-                result.append(getLowerBound());
-            } else {
-                result.append(getLowerBound());
+            result.append(getLowerBound());
+            if (!getLowerBound().equals(getUpperBound())) {
                 result.append("..");
                 result.append(getUpperBound());
             }
@@ -553,13 +551,11 @@ public class Feature {
             result.append(" {");
             attributes.forEach((k, v) -> {
                 result.append(addNecessaryQuotes(k));
-
                 result.append(' ');
                 result.append(v.toString(withSubmodels, currentAlias));
                 result.append(", ");
             });
-            result.deleteCharAt(result.length() - 1);
-            result.deleteCharAt(result.length() - 1);
+            result.setLength(result.length() - 2);
             result.append("}");
         }
         return result.toString();
@@ -585,53 +581,25 @@ public class Feature {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Feature)) {
-            return false;
-        }
+	public int hashCode() {
+		return Objects.hash(attributes, featureName, featureType, isSubmodelRoot, lowerBound, nameSpace,
+				upperBound);
+	}
 
-        if (!(this.getFeatureName().equals(((Feature) obj).getFeatureName()))) {
-            return false;
-        }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		Feature other = (Feature) obj;
+		return featureType == other.featureType
+				&& isSubmodelRoot == other.isSubmodelRoot
+				&& Objects.equals(upperBound, other.upperBound)
+				&& Objects.equals(lowerBound, other.lowerBound)
+				&& Objects.equals(featureName, other.featureName)
+				&& Objects.equals(nameSpace, other.nameSpace)
+				&& Objects.equals(attributes, other.attributes);
+	}
 
-        if (this.getFeatureType() != null && !(this.getFeatureType().equals(((Feature) obj).getFeatureType()))) {
-            return false;
-        }
-
-        if (this.getUpperBound() != null && !(this.getUpperBound().equals(((Feature) obj).getUpperBound()))) {
-            return false;
-        }
-
-        if (this.getLowerBound() != null && !(this.getLowerBound().equals(((Feature) obj).getLowerBound()))) {
-            return false;
-        }
-
-        // check attributes
-        if (this.getAttributes().size() != ((Feature) obj).getAttributes().size()) {
-            return false;
-        }
-        Map<String, Attribute> objAttributes = ((Feature) obj).getAttributes();
-        for (String key: this.getAttributes().keySet()) {
-            if (!objAttributes.containsKey(key)) {
-                return false;
-            }
-
-            if (!this.getAttributes().get(key).equals(((Feature) obj).getAttributes().get(key))) {
-                return false;
-            }
-        }
-
-        if (this.getChildren().size() != ((Feature) obj).getChildren().size()) {
-            return false;
-        }
-
-        final List<Group> objGroups = ((Feature) obj).getChildren();
-        for (final Group currentGroup : this.getChildren()) {
-            if (!objGroups.contains(currentGroup)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 }

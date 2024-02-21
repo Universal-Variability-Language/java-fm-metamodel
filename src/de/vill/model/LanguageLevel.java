@@ -1,7 +1,7 @@
 package de.vill.model;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import de.vill.util.Constants;
@@ -26,8 +26,8 @@ public enum LanguageLevel {
     private final int value;
     private final String name;
 
-    private static final HashMap<Integer, List<LanguageLevel>> valueMap = new HashMap<>();
-    private static final HashMap<String, LanguageLevel> nameMap = new HashMap<>();
+    private static final LinkedHashMap<Integer, ArrayList<LanguageLevel>> valueMap = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, LanguageLevel> nameMap = new LinkedHashMap<>();
 
     LanguageLevel(final int value, final String name) {
         this.value = value;
@@ -37,11 +37,12 @@ public enum LanguageLevel {
     static {
         for (final LanguageLevel level : LanguageLevel.values()) {
             if (!valueMap.containsKey(level.value)) {
-                valueMap.put(level.value, new LinkedList<>());
+                valueMap.put(level.value, new ArrayList<>(2));
             }
             valueMap.get(level.value).add(level);
             nameMap.put(level.name, level);
         }
+        valueMap.values().forEach(ArrayList::trimToSize);
     }
 
     public static List<LanguageLevel> valueOf(final int languageLevel) {
@@ -53,7 +54,7 @@ public enum LanguageLevel {
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public static boolean isMajorLevel(final LanguageLevel languageLevel) {
@@ -61,6 +62,6 @@ public enum LanguageLevel {
     }
 
     public int getValue() {
-        return this.value;
+        return value;
     }
 }

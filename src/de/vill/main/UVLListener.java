@@ -41,6 +41,8 @@ import de.vill.model.expression.ParenthesisExpression;
 import de.vill.model.expression.StringExpression;
 import de.vill.model.expression.SubExpression;
 import de.vill.model.expression.SumAggregateFunctionExpression;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,7 +63,7 @@ public class UVLListener extends UVLJavaBaseListener {
 
     private Stack<Expression> expressionStack = new Stack<>();
 
-    private Stack<Map<String, Attribute>> attributeStack = new Stack<>();
+    private Stack<Map<String, Attribute<?>>> attributeStack = new Stack<>();
 
     private boolean featureCardinality = false;
 
@@ -318,28 +320,28 @@ public class UVLListener extends UVLJavaBaseListener {
         String attributeName = ctx.key().getText().replace("\"", "");
 
         if (ctx.value() == null) {
-            Attribute<Boolean> attribute = new Attribute(attributeName, true);
+            Attribute<Boolean> attribute = new Attribute<>(attributeName, true);
             attributeStack.peek().put(attributeName, attribute);
         } else if (ctx.value().BOOLEAN() != null) {
-            Attribute<Boolean> attribute = new Attribute(attributeName, Boolean.parseBoolean(ctx.value().getText().replace("'", "")));
+            Attribute<Boolean> attribute = new Attribute<>(attributeName, Boolean.parseBoolean(ctx.value().getText().replace("'", "")));
             attributeStack.peek().put(attributeName, attribute);
         } else if (ctx.value().INTEGER() != null) {
-            Attribute<Integer> attribute = new Attribute(attributeName, Long.parseLong(ctx.value().getText().replace("'", "")));
+            Attribute<Integer> attribute = new Attribute<>(attributeName, Integer.parseInt(ctx.value().getText().replace("'", "")));
             attributeStack.peek().put(attributeName, attribute);
         } else if (ctx.value().FLOAT() != null) {
-            Attribute<Double> attribute = new Attribute(attributeName, Double.parseDouble(ctx.value().getText().replace("'", "")));
+            Attribute<Double> attribute = new Attribute<>(attributeName, Double.parseDouble(ctx.value().getText().replace("'", "")));
             attributeStack.peek().put(attributeName, attribute);
         } else if (ctx.value().STRING() != null) {
-            Attribute<String> attribute = new Attribute(attributeName, ctx.value().getText().replace("'", ""));
+            Attribute<String> attribute = new Attribute<>(attributeName, ctx.value().getText().replace("'", ""));
             attributeStack.peek().put(attributeName, attribute);
         } else if (ctx.value().vector() != null) {
             String vectorString = ctx.value().getText();
             vectorString = vectorString.substring(1, vectorString.length() - 1);
-            Attribute<List<String>> attribute = new Attribute(attributeName, Arrays.asList(vectorString.split(",")));
+            Attribute<List<String>> attribute = new Attribute<>(attributeName, Arrays.asList(vectorString.split(",")));
             attributeStack.peek().put(attributeName, attribute);
         } else if (ctx.value().attributes() != null) {
-            Map<String, Attribute> attributes = attributeStack.pop();
-            Attribute<Map<String, Attribute>> attribute = new Attribute<>(attributeName, attributes);
+            Map<String, Attribute<?>> attributes = attributeStack.pop();
+            Attribute<Map<String, Attribute<?>>> attribute = new Attribute<>(attributeName, attributes);
             attributeStack.peek().put(attributeName, attribute);
         } else {
             errorList.add(new ParseError(ctx.value().getText() + " is no value of any supported attribute type!"));
@@ -349,18 +351,18 @@ public class UVLListener extends UVLJavaBaseListener {
 
     @Override
     public void exitSingleConstraintAttribute(UVLJavaParser.SingleConstraintAttributeContext ctx) {
-        Attribute<String> attribute = new Attribute("constraint", constraintStack.pop());
-        attributeStack.peek().put("constraint", attribute);
+    	attributeStack.peek().put("constraint",
+    			new Attribute<>("constraint", constraintStack.pop()));
     }
 
     @Override
     public void exitListConstraintAttribute(UVLJavaParser.ListConstraintAttributeContext ctx) {
-        List<Constraint> constraintList = new LinkedList<>();
+        List<Constraint> constraintList = new ArrayList<>(constraintStack.size());
         while (!constraintStack.empty()) {
             constraintList.add(constraintStack.pop());
         }
-        Attribute<String> attribute = new Attribute("constraints", constraintList);
-        attributeStack.peek().put("constraints", attribute);
+        attributeStack.peek().put("constraints",
+        		new Attribute<>("constraints", constraintList));
     }
 
 
