@@ -29,7 +29,7 @@ public class Example {
             traverseConstraint(ownConstraint.get(0));
         }
 
-        //get all constraints of feature model and submodels and attribtues
+        //get all constraints of feature model and submodels and attributes
         List<Constraint> allConstraint = featureModel.getConstraints();
 
         //get attribute from feature
@@ -37,7 +37,7 @@ public class Example {
         String attributeName = "attributeName";
         Feature feature = featureModel.getFeatureMap().get(featureName);
         if (feature != null) {
-            Attribute attribute = feature.getAttributes().get(attributeName);
+            Attribute<?> attribute = feature.getAttributes().get(attributeName);
             if (attribute != null) {
                 Object value = attribute.getValue();
                 System.out.println("Attribute " + attributeName + " of feature " + featureName + " is: " + value.toString());

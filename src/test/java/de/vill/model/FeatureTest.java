@@ -3,7 +3,6 @@ package de.vill.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.vill.model.Group;
 import de.vill.model.Group.GroupType;
 
 import java.util.LinkedList;
