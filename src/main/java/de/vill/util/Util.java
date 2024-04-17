@@ -2,6 +2,10 @@ package de.vill.util;
 
 import de.vill.config.Configuration;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public class Util {
     public static String indentEachLine(String text) {
         StringBuilder result = new StringBuilder();
@@ -31,5 +35,13 @@ public class Util {
             result.setLength(result.length() - 1);
         }
         return result.toString();
+    }
+
+    public static String readFileContent(Path file) {
+        try {
+            return new String(Files.readAllBytes(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -26,6 +26,10 @@ public class ParsingTests {
             + File.separator;
     private static final String COMPLEX_MODEL_PREFIX = TEST_MODEL_PREFIX + File.separator + "complex" + File.separator;
 
+    private static final String COMPOSITION_MODEL_PREFIX = TEST_MODEL_PREFIX + "composition" + File.separator;
+
+    private static final String NESTED_MODEL_PREFIX = COMPOSITION_MODEL_PREFIX + "nested" + File.separator;
+
     // Boolean level models
     private static final String SIMPLE_BOOLEAN = CONCEPTS_MODEL_PREFIX + "boolean.uvl";
     private static final String NAMESPACE = CONCEPTS_MODEL_PREFIX + "namespace.uvl";
@@ -52,6 +56,14 @@ public class ParsingTests {
     private static final String ILLEGAL_NAME = FAULTY_MODEL_PREFIX + "illegalname.uvl";
     private static final String MISSING_REFRENCE = FAULTY_MODEL_PREFIX + "missingreference.uvl";
     private static final String WRONG_INDENT = FAULTY_MODEL_PREFIX + "wrongindent.uvl";
+
+    // Composition uvl models
+
+    private static final String COMPOSITION_ROOT = COMPOSITION_MODEL_PREFIX +  "composition_root.uvl";
+
+    private static final String NESTED_COMPOSITION_ROOT = COMPOSITION_MODEL_PREFIX + "nested_main.uvl";
+
+    private static final String NESTED_SUB_COMPOSITION_ROOT = NESTED_MODEL_PREFIX  + "nested_sub.uvl";
 
     @Test
     void testBooleanModel() throws Exception {
@@ -120,6 +132,13 @@ public class ParsingTests {
 
     }
 
+    @Test
+    void checkCompositionModels() throws  Exception {
+        testModelParsing(COMPOSITION_ROOT);
+        testModelParsing(NESTED_COMPOSITION_ROOT);
+        testModelParsing(NESTED_SUB_COMPOSITION_ROOT);
+    }
+
     private void testModelParsing(String path) {
         testModelParsing(path, true);
     }
@@ -130,8 +149,7 @@ public class ParsingTests {
         FeatureModel result = null;
         boolean error = false;
         try {
-            content = new String(Files.readAllBytes(Paths.get(path)));
-            result = uvlModelFactory.parse(content);
+            result = uvlModelFactory.parse(Paths.get(path));
         } catch (Exception e) {
             error = true;
         }

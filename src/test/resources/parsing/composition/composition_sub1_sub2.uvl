@@ -1,13 +1,8 @@
-include
-	SAT-level
-
-namespace composition_sub1_sub1
-
 features
-	Intel
+	AMD
 		mandatory
-			feature1 {power 10}
-			feature2 {power 15}
+			feature1
+			feature2
 				alternative
 					feature3
 					feature4

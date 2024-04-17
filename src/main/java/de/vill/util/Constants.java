@@ -8,7 +8,7 @@ public class Constants {
     public static final String TRUE = "true";
     public static final String UNDEF = "undef";
 
-    // Default attribtues
+    // Default attributes
     public static final String TYPE_LEVEL_VALUE = "type_level_value";
     public static final String TYPE_LEVEL_LENGTH = "type_level_value_length";
 

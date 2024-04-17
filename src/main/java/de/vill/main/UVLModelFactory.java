@@ -1,5 +1,6 @@
 package de.vill.main;
 
+import de.vill.util.Util;
 import uvl.UVLJavaLexer;
 import uvl.UVLJavaParser;
 
@@ -93,7 +94,20 @@ public class UVLModelFactory {
     }
 
     /**
-     * This method parses the givel text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
+     * This method parses an UVL model given a path to the UVL model. For imported submodels (if applicable) the directory of the UVL model is used
+     * @param uvlModelPath path to uvl model
+     * @return
+     * @throws ParseError
+     */
+    public FeatureModel parse(Path uvlModelPath) throws ParseError {
+        String content = Util.readFileContent(uvlModelPath);
+        String projectRootForImports = uvlModelPath.getParent().toString();
+
+        return parse(content, projectRootForImports);
+    }
+
+    /**
+     * This method parses the given text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
      *
      * @param text A String that describes a feature model in UVL notation.
      * @param path Path to the directory where all submodels are stored.
@@ -107,7 +121,7 @@ public class UVLModelFactory {
     }
 
     /**
-     * This method parses the givel text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
+     * This method parses the given text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
      * It assumes that all the necessary submodels are in the current working directory.
      *
      * @param text A String that describes a feature model in UVL notation.

@@ -1,9 +1,3 @@
-include
-	SAT-level
-	SMT-level
-
-namespace composition_sub1
-
 imports
 	composition_sub1_sub1 as fmIntel
 	composition_sub1_sub2
@@ -21,7 +15,6 @@ features
 					Bit32 {bit 32}
 
 constraints
-	Bit64 => fmIntel.Intel
 	fmIntel.feature1 & fmIntel.feature2 <=> (Bit64) | !composition_sub1_sub2.feature2
 	Bit64.bit + Bit32.bit > 32
 	fmIntel.feature1.power - fmIntel.feature2.power == 25
