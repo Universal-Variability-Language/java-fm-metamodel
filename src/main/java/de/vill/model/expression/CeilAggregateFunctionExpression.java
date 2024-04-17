@@ -2,7 +2,6 @@ package de.vill.model.expression;
 
 import de.vill.model.Feature;
 import de.vill.util.Constants;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

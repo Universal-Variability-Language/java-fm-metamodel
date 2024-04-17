@@ -3,7 +3,6 @@ package de.vill.conversion;
 import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.FeatureModel;
-import de.vill.model.FeatureType;
 import de.vill.model.Group;
 import de.vill.model.LanguageLevel;
 import de.vill.model.constraint.Constraint;

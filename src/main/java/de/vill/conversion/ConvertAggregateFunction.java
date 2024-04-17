@@ -149,8 +149,8 @@ public class ConvertAggregateFunction implements IConversionStrategy {
     }
 
     private void removeAggregateFunctionFromAttributes(Feature feature) {
-        Attribute attributeConstraint = feature.getAttributes().get("constraint");
-        Attribute attributeConstraintList = feature.getAttributes().get("constraints");
+        Attribute<?> attributeConstraint = feature.getAttributes().get("constraint");
+        Attribute<?> attributeConstraintList = feature.getAttributes().get("constraints");
         if (attributeConstraint != null) {
             if (attributeConstraint.getValue() instanceof Constraint) {
                 searchAggregateFunctionInConstraint((Constraint) attributeConstraint.getValue());

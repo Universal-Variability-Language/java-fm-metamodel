@@ -1,13 +1,13 @@
 package de.vill.model;
 
-import de.vill.config.Configuration;
-import de.vill.util.Util;
-
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Optional;
+import java.util.Objects;
+
+import de.vill.config.Configuration;
+import de.vill.util.Util;
 
 /**
  * This class represents all kinds of groups (or, alternative, mandatory,
@@ -37,10 +37,8 @@ public class Group {
     public Group(GroupType groupType) {
         this.GROUPTYPE = groupType;
         features = new LinkedList<Feature>() {
-            /**
-             *
-             */
-            private static final long serialVersionUID = 3856024708694486586L;
+
+        	private static final long serialVersionUID = 3856024708694486586L;
 
             @Override
             public boolean add(Feature e) {
@@ -225,13 +223,13 @@ public class Group {
     /**
      * Returns the group and all its children as uvl valid string.
      *
-     * @param withSubmodels true if the featuremodel is printed as composed
-     *                      featuremodel with all its submodels as one model, false
+     * @param withSubmodels true if the feature model is printed as composed
+     *                      feature model with all its submodels as one model, false
      *                      if the model is printed with separated sub models
      * @param currentAlias  the namspace from the one referencing the group (or the
      *                      features in the group) to the group (or the features in
      *                      the group)
-     * @return uvl representaiton of the group
+     * @return uvl representation of the group
      */
     public String toString(boolean withSubmodels, String currentAlias) {
         StringBuilder result = new StringBuilder();
@@ -309,35 +307,22 @@ public class Group {
         this.parent = parent;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Group)) {
-            return false;
-        }
+	@Override
+	public int hashCode() {
+		return Objects.hash(GROUPTYPE, lowerBound, parent, upperBound);
+	}
 
-        if (this.GROUPTYPE != ((Group) obj).GROUPTYPE) {
-            return false;
-        }
-
-        if (this.getUpperBound() != null && !(this.getUpperBound().equals(((Group) obj).getUpperBound()))) {
-            return false;
-        }
-
-        if (this.getLowerBound() != null && !(this.getLowerBound().equals(((Group) obj).getLowerBound()))) {
-            return false;
-        }
-
-        if (this.getFeatures().size() != ((Group) obj).getFeatures().size()) {
-            return false;
-        }
-
-        final List<Feature> objFeatures = ((Group) obj).getFeatures();
-        for (final Feature currentFeature : this.getFeatures()) {
-            if (!objFeatures.contains(currentFeature)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		Group other = (Group) obj;
+		return GROUPTYPE == other.GROUPTYPE
+				&& Objects.equals(lowerBound, other.lowerBound)
+				&& Objects.equals(upperBound, other.upperBound)
+				&& Objects.equals(parent, other.parent)
+				&& Objects.equals(parent.getChildren(), other.parent.getChildren());
+	}
 }

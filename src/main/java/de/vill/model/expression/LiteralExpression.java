@@ -48,7 +48,7 @@ public class LiteralExpression extends Expression {
         return this.featureName;
     }
 
-    public Attribute getAttribute() {
+    public Attribute<?> getAttribute() {
         if (this.feature == null) {
             return null;
         }

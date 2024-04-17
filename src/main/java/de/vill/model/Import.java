@@ -1,24 +1,17 @@
 package de.vill.model;
 
+import java.util.Objects;
+
 /**
- * This class represents an import of a featuremodel in another featuremodel and
+ * This class represents an import of a feature model in another feature model and
  * is used when uvl feature models are decomposed.
  */
 public class Import {
-    private final String namespace;
+
+	private final String namespace;
     private final String alias;
     private FeatureModel featureModel;
-
     private boolean isReferenced = false;
-
-    public int getLineNumber() {
-        return lineNumber;
-    }
-
-    public void setLineNumber(int lineNumber) {
-        this.lineNumber = lineNumber;
-    }
-
     private int lineNumber;
 
     /**
@@ -29,11 +22,16 @@ public class Import {
      * @param alias     The alias of the import (may be null)
      */
     public Import(String namespace, String alias) {
-        if (namespace == null) {
-            throw new IllegalArgumentException("namespace of an imported featuremodel must not be null!");
-        }
-        this.namespace = namespace;
-        this.alias = alias;
+    	this.namespace = Objects.requireNonNull(namespace);
+    	this.alias = alias;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -97,4 +95,22 @@ public class Import {
     public void setReferenced(boolean referenced) {
         isReferenced = referenced;
     }
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(alias, featureModel, isReferenced, lineNumber, namespace);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		Import other = (Import) obj;
+		return isReferenced == other.isReferenced && lineNumber == other.lineNumber
+				&& Objects.equals(alias, other.alias)
+				&& Objects.equals(namespace, other.namespace)
+				&& Objects.equals(featureModel, other.featureModel);
+	}
 }

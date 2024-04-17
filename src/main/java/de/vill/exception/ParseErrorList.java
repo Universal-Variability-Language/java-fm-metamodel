@@ -4,14 +4,17 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ParseErrorList extends ParseError {
-    public List<ParseError> getErrorList() {
-        return errorList;
-    }
+	
+    private static final long serialVersionUID = 1L;
 
     private List<ParseError> errorList = new LinkedList<>();
 
     public ParseErrorList(String errorMessage) {
         super(errorMessage);
+    }
+
+    public List<ParseError> getErrorList() {
+    	return errorList;
     }
 
     @Override

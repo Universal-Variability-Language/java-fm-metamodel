@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ConvertNumericConstraints implements IConversionStrategy {
-    private final Map<String, Map<String, Attribute>> featuresToBeUpdated = new HashMap<>();
+    private final Map<String, Map<String, Attribute<?>>> featuresToBeUpdated = new HashMap<>();
     private FeatureModel rootFeatureModel;
 
     @Override
@@ -137,7 +137,7 @@ public class ConvertNumericConstraints implements IConversionStrategy {
     }
 
     private void addAttribute(final AggregateFunctionExpression aggregateFunctionExpression, final String key, final Object value) {
-        final Map<String, Attribute> currentAttributes =
+        final Map<String, Attribute<?>> currentAttributes =
             this.rootFeatureModel.getFeatureMap().get(aggregateFunctionExpression.getRootFeatureName()).getAttributes();
         currentAttributes.put(
             key,

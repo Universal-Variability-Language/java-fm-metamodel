@@ -1,5 +1,16 @@
 package de.vill.model;
 
+import static de.vill.util.Util.addNecessaryQuotes;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 import de.vill.config.Configuration;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.constraint.LiteralConstraint;
@@ -7,19 +18,14 @@ import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.LiteralExpression;
 import de.vill.util.Util;
 
-import java.util.*;
-
-import static de.vill.util.Util.addNecessaryQuotes;
-
 /**
- * This class represents a feature model and all its sub featuremodels if the
+ * This class represents a feature model and all its sub feature models if the
  * model is composed.
  */
 public class FeatureModel {
-    private final Set<LanguageLevel> usedLanguageLevels = new HashSet<LanguageLevel>() {
-        {
-            add(LanguageLevel.BOOLEAN_LEVEL);
-        }
+    private final Set<LanguageLevel> usedLanguageLevels = new HashSet<>();
+    {
+    	usedLanguageLevels.add(LanguageLevel.BOOLEAN_LEVEL);
     };
     private String namespace;
     private final List<Import> imports = new LinkedList<>();
@@ -88,18 +94,15 @@ public class FeatureModel {
      * @return the namespace of the feature model
      */
     public String getNamespace() {
-        if (namespace == null) {
-            if(rootFeature != null) {
-                return rootFeature.getFeatureName();
-            }
-        }
-        return namespace;
+        return namespace == null && rootFeature != null
+            ? rootFeature.getFeatureName()
+            : namespace;
     }
 
     /**
-     * Setter for the namespace of the featuremodel.
+     * Setter for the namespace of the feature model.
      *
-     * @param namespace Namespace of the featuremodel.
+     * @param namespace Namespace of the feature model.
      */
     public void setNamespace(String namespace) {
         this.namespace = namespace;
@@ -136,7 +139,7 @@ public class FeatureModel {
     }
 
     /**
-     * This map contains all features of this featuremodel and recursivly all
+     * This map contains all features of this featuremodel and recursively all
      * features of its imported submodels. This means in a decomposed feature model
      * only the feature model object of the root feature model contains all features
      * over all sub feature models in this map. The key is the reference with
@@ -156,7 +159,7 @@ public class FeatureModel {
     /**
      * A list with all the constraints of this featuremodel. This does not contain
      * the constraints of the imported sub feature models or constraints in feature
-     * attribtues.
+     * attributes.
      *
      * @return A list of the constraints of this featuremodel.
      */
@@ -166,10 +169,10 @@ public class FeatureModel {
 
     /**
      * A list with all the constraints of that are part of feature attributes of
-     * features in this featuremodel. This does not contain the constraints of the
+     * features in this feature model. This does not contain the constraints of the
      * imported features of sub feature models.
      *
-     * @return A list of the constraints of featureattributes in this featuremodel.
+     * @return A list of the constraints of feature attributes in this feature model.
      */
     public List<Constraint> getFeatureConstraints() {
         return getFeatureConstraints(getRootFeature());
@@ -177,8 +180,8 @@ public class FeatureModel {
 
     private List<Constraint> getFeatureConstraints(Feature feature) {
         List<Constraint> featureConstraints = new LinkedList<>();
-        Attribute<Constraint> featureConstraint = feature.getAttributes().get("constraint");
-        Attribute<List<Constraint>> featureConstraintList = feature.getAttributes().get("constraints");
+        Attribute<Constraint> featureConstraint = (Attribute<Constraint>) feature.getAttributes().get("constraint");
+        Attribute<List<Constraint>> featureConstraintList = (Attribute<List<Constraint>>) feature.getAttributes().get("constraints");
         if (featureConstraint != null) {
             featureConstraints.add(featureConstraint.getValue());
         }
@@ -196,21 +199,22 @@ public class FeatureModel {
     }
 
     /**
-     * A list will all constraints of this featuremodel and recursively of all its
-     * imported sub feature models (that are used). This inclues constraints in
+     * A list will all constraints of this feature model and recursively of all its
+     * imported sub feature models (that are used). This includes constraints in
      * feature attributes. This list is not stored but gets calculated with every
      * call. This means changing a constraint will have an effect to the feature
      * model, but adding deleting constraints will have no effect. This must be done
-     * in the correspoding ownConstraint lists of the feature models. This means
+     * in the corresponding ownConstraint lists of the feature models. This means
      * when calling this method on the root feature model it returns with all
      * constraints of the decomposed feature model.
      *
      * @return a list will all constraints of this feature model.
      */
     public List<Constraint> getConstraints() {
-        List<Constraint> constraints = new LinkedList<Constraint>();
+    	List<Constraint> featureConstraints = getFeatureConstraints();
+        List<Constraint> constraints = new ArrayList<>(ownConstraints.size() + featureConstraints.size());
         constraints.addAll(ownConstraints);
-        constraints.addAll(getFeatureConstraints());
+		constraints.addAll(featureConstraints);
         for (Import importLine : imports) {
             if (importLine.isReferenced()) {
                 constraints.addAll(importLine.getFeatureModel().getConstraints());
@@ -233,7 +237,7 @@ public class FeatureModel {
      * determines if the used levels are printed in the toSring method
      *
      * @param explicitLanguageLevels true if all levels must be explicitly imported,
-     *                               fales if not
+     *                               false if not
      */
     public void setExplicitLanguageLevels(boolean explicitLanguageLevels) {
         this.explicitLanguageLevels = explicitLanguageLevels;
@@ -250,7 +254,7 @@ public class FeatureModel {
     }
 
     /**
-     * Returns a single uvl feature model composed out of all submodels. To acoid
+     * Returns a single uvl feature model composed out of all submodels. To avoid
      * naming conflicts all feature names are changed and a unique id is added. If
      * you do not work with decomposed models do not this method for printing, use
      * the other print methods instead!
@@ -274,17 +278,14 @@ public class FeatureModel {
     }
 
     private Map<String, String> decomposedModelToString(String currentAlias) {
-        Map<String, String> models = new HashMap<String, String>();
+        Map<String, String> models = new HashMap<>();
         models.put(getNamespace(), toString(false, currentAlias));
         for (Import importLine : imports) {
             // only print sub feature models if the import is actually used
             if (importLine.isReferenced()) {
-                String newCurrentAlias;
-                if ("".equals(currentAlias)) {
-                    newCurrentAlias = importLine.getAlias();
-                } else {
-                    newCurrentAlias = currentAlias + "." + importLine.getAlias();
-                }
+                String newCurrentAlias = ("".equals(currentAlias)
+                    ? importLine.getAlias()
+                    : currentAlias + "." + importLine.getAlias());
                 models.putAll(importLine.getFeatureModel().decomposedModelToString(newCurrentAlias));
             }
         }
@@ -299,19 +300,15 @@ public class FeatureModel {
             result.append(Configuration.getNewlineSymbol());
             result.append(Configuration.getNewlineSymbol());
         }
-        if (explicitLanguageLevels && usedLanguageLevels.size() != 0) {
+        if (explicitLanguageLevels && !usedLanguageLevels.isEmpty()) {
             result.append("include");
             result.append(Configuration.getNewlineSymbol());
-            Set<LanguageLevel> levelsToPrint;
-            if (withSubmodels) {
-                levelsToPrint = getUsedLanguageLevelsRecursively();
-            } else {
-                levelsToPrint = getUsedLanguageLevels();
-            }
+            Set<LanguageLevel> levelsToPrint = withSubmodels
+                ? getUsedLanguageLevelsRecursively()
+                : getUsedLanguageLevels();
             for (LanguageLevel languageLevel : getUsedLanguageLevels()) {
                 result.append(Configuration.getTabulatorSymbol());
-                if (LanguageLevel.isMajorLevel(languageLevel)) {
-                } else {
+                if (!LanguageLevel.isMajorLevel(languageLevel)) {
                     result.append(LanguageLevel.valueOf(languageLevel.getValue() - 1).get(0).getName());
                     result.append(".");
                 }
@@ -320,7 +317,7 @@ public class FeatureModel {
             }
             result.append(Configuration.getNewlineSymbol());
         }
-        if (imports.size() > 0 && !withSubmodels) {
+        if (!imports.isEmpty() && !withSubmodels) {
             result.append("imports");
             result.append(Configuration.getNewlineSymbol());
             for (Import importLine : imports) {
@@ -337,11 +334,9 @@ public class FeatureModel {
         if (rootFeature != null) {
             result.append("features");
             result.append(Configuration.getNewlineSymbol());
-            if (withSubmodels) {
-                result.append(Util.indentEachLine(getRootFeature().toString(withSubmodels, currentAlias)));
-            } else {
-                result.append(Util.indentEachLine(getRootFeature().toStringAsRoot(currentAlias)));
-            }
+            result.append(Util.indentEachLine(withSubmodels
+                ? getRootFeature().toString(withSubmodels, currentAlias)
+                : getRootFeature().toStringAsRoot(currentAlias)));
             result.append(Configuration.getNewlineSymbol());
         }
 
@@ -358,7 +353,7 @@ public class FeatureModel {
         } else {
             constraintList = getOwnConstraints();
         }
-        if (constraintList.size() > 0) {
+        if (!constraintList.isEmpty()) {
             result.append("constraints");
             result.append(Configuration.getNewlineSymbol());
             for (Constraint constraint : constraintList) {
