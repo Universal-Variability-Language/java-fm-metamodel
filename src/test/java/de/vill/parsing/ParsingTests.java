@@ -65,6 +65,9 @@ public class ParsingTests {
 
     private static final String NESTED_SUB_COMPOSITION_ROOT = NESTED_MODEL_PREFIX  + "nested_sub.uvl";
 
+    // Name convention models
+    private static final String WILD_ALLOWED = TEST_MODEL_PREFIX + "wild-names.uvl";
+
     @Test
     void testBooleanModel() throws Exception {
         testModelParsing(SIMPLE_BOOLEAN);
@@ -137,6 +140,11 @@ public class ParsingTests {
         testModelParsing(COMPOSITION_ROOT);
         testModelParsing(NESTED_COMPOSITION_ROOT);
         testModelParsing(NESTED_SUB_COMPOSITION_ROOT);
+    }
+
+    @Test
+    void checkNameConventions() throws Exception {
+        testModelParsing(WILD_ALLOWED);
     }
 
     private void testModelParsing(String path) {
