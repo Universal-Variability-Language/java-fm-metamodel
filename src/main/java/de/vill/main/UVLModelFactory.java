@@ -89,7 +89,7 @@ public class UVLModelFactory {
      * @throws ParseError If there is an error during parsing or the construction of the feature model
      */
     public FeatureModel parse(String text, Map<String, String> fileLoader) throws ParseError {
-        Function<String, String> fileloaderFunction = x -> fileLoader.get(x);
+        Function<String, String> fileloaderFunction = fileLoader::get;
         return parse(text, fileloaderFunction);
     }
 

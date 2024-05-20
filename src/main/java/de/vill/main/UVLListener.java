@@ -1,17 +1,11 @@
 package de.vill.main;
 
+import de.vill.model.*;
 import uvl.UVLJavaParser;
 import uvl.UVLJavaBaseListener;
 
 import de.vill.exception.ParseError;
 import de.vill.exception.ParseErrorList;
-import de.vill.model.Attribute;
-import de.vill.model.Feature;
-import de.vill.model.FeatureModel;
-import de.vill.model.FeatureType;
-import de.vill.model.Group;
-import de.vill.model.Import;
-import de.vill.model.LanguageLevel;
 import de.vill.model.constraint.AndConstraint;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.constraint.EqualEquationConstraint;
@@ -72,6 +66,11 @@ public class UVLListener extends UVLJavaBaseListener {
     @Override
     public void enterIncludes(UVLJavaParser.IncludesContext ctx) {
         featureModel.setExplicitLanguageLevels(true);
+    }
+
+    @Override
+    public void enterFeatureModel(UVLJavaParser.FeatureModelContext ctx) {
+        super.enterFeatureModel(ctx);
     }
 
     @Override
@@ -294,9 +293,7 @@ public class UVLListener extends UVLJavaBaseListener {
         }
 
         Feature feature = featureStack.peek();
-        feature.setLowerBound(lowerBound);
-        feature.setUpperBound(upperBound);
-
+        feature.setCardinality(new Cardinality(Integer.parseInt(lowerBound), Integer.parseInt(upperBound)));
         featureModel.getUsedLanguageLevels().add(LanguageLevel.ARITHMETIC_LEVEL);
         featureModel.getUsedLanguageLevels().add(LanguageLevel.FEATURE_CARDINALITY);
     }
