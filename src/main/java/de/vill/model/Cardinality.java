@@ -5,8 +5,8 @@ package de.vill.model;
  */
 public class Cardinality {
 
-    int lower;
-    int upper;
+    public int lower;
+    public int upper;
 
     public Cardinality(int lower, int upper) {
         this.lower = lower;
@@ -14,7 +14,18 @@ public class Cardinality {
         assert lower <= upper;
     }
 
-    public static Cardinality getStandardCardinality() {
+    /**
+     * Can be used to model cardinality [n..*], here upper bound is set to integer max
+     * @param lower
+     */
+    public Cardinality(int lower) {
+        this(lower, Integer.MAX_VALUE);
+    }
+    /**
+     * Get a [1..1] cardinality which is the default behavior for features
+     * @return
+     */
+    public static Cardinality getStandardFeatureCardinality() {
         return new Cardinality(1, 1);
     }
 

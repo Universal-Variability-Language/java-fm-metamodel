@@ -52,7 +52,7 @@ public class Example {
         featureName = "featureName";
         feature = featureModel.getFeatureMap().get(featureName);
         if (feature != null) {
-            feature.getAttributes().put("abstract", new Attribute<>("abstract", true));
+            feature.getAttributes().put("abstract", new Attribute<>("abstract", true, feature));
         } else {
             System.err.println("Feature " + featureName + " not found!");
         }

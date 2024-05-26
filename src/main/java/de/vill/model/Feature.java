@@ -10,8 +10,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 
-import com.sun.org.apache.xpath.internal.operations.Variable;
 import de.vill.config.Configuration;
+import de.vill.model.building.VariableReference;
 import de.vill.util.Util;
 
 /**

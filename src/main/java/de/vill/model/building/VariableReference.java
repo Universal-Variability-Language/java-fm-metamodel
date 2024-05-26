@@ -1,4 +1,4 @@
-package de.vill.model;
+package de.vill.model.building;
 
 /**
  * Classes that can be referenced in UVL constraints

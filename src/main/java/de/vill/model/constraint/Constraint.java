@@ -1,6 +1,6 @@
 package de.vill.model.constraint;
 
-import de.vill.model.VariableReference;
+import de.vill.model.building.VariableReference;
 
 import java.util.List;
 

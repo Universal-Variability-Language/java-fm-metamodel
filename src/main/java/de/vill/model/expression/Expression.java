@@ -1,7 +1,7 @@
 package de.vill.model.expression;
 
 import de.vill.model.Feature;
-import de.vill.model.VariableReference;
+import de.vill.model.building.VariableReference;
 
 import java.util.List;
 import java.util.Set;
@@ -42,5 +42,5 @@ public abstract class Expression {
     @Override
     public abstract boolean equals(Object obj);
 
-    public abstract List<VariableReference> getVariableReferences();
+    public abstract List<VariableReference> getReferences();
 }

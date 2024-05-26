@@ -7,14 +7,12 @@ import uvl.UVLJavaParser;
 import de.vill.conversion.ConvertAggregateFunction;
 import de.vill.conversion.ConvertFeatureCardinality;
 import de.vill.conversion.ConvertGroupCardinality;
-import de.vill.conversion.ConvertNumericConstraints;
 import de.vill.conversion.ConvertSMTLevel;
 import de.vill.conversion.ConvertStringConstraints;
 import de.vill.conversion.ConvertTypeLevel;
 import de.vill.conversion.DropAggregateFunction;
 import de.vill.conversion.DropFeatureCardinality;
 import de.vill.conversion.DropGroupCardinality;
-import de.vill.conversion.DropNumericConstraints;
 import de.vill.conversion.DropStringConstraints;
 import de.vill.conversion.DropSMTLevel;
 import de.vill.conversion.DropTypeLevel;
@@ -28,10 +26,7 @@ import de.vill.model.Import;
 import de.vill.model.LanguageLevel;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.constraint.ExpressionConstraint;
-import de.vill.model.constraint.LiteralConstraint;
-import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
-import de.vill.model.expression.LiteralExpression;
 import de.vill.util.Constants;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -69,7 +64,6 @@ public class UVLModelFactory {
         this.conversionStrategiesDrop.put(LanguageLevel.ARITHMETIC_LEVEL, DropSMTLevel.class);
         this.conversionStrategiesDrop.put(LanguageLevel.TYPE_LEVEL, DropTypeLevel.class);
         this.conversionStrategiesDrop.put(LanguageLevel.STRING_CONSTRAINTS, DropStringConstraints.class);
-        this.conversionStrategiesDrop.put(LanguageLevel.NUMERIC_CONSTRAINTS, DropNumericConstraints.class);
         this.conversionStrategiesConvert = new HashMap<>();
         this.conversionStrategiesConvert.put(LanguageLevel.GROUP_CARDINALITY, ConvertGroupCardinality.class);
         this.conversionStrategiesConvert.put(LanguageLevel.FEATURE_CARDINALITY, ConvertFeatureCardinality.class);
@@ -77,7 +71,6 @@ public class UVLModelFactory {
         this.conversionStrategiesConvert.put(LanguageLevel.ARITHMETIC_LEVEL, ConvertSMTLevel.class);
         this.conversionStrategiesConvert.put(LanguageLevel.TYPE_LEVEL, ConvertTypeLevel.class);
         this.conversionStrategiesConvert.put(LanguageLevel.STRING_CONSTRAINTS, ConvertStringConstraints.class);
-        this.conversionStrategiesConvert.put(LanguageLevel.NUMERIC_CONSTRAINTS, ConvertNumericConstraints.class);
     }
 
     /**
@@ -144,9 +137,6 @@ public class UVLModelFactory {
     public FeatureModel parse(String text, Function<String, String> fileLoader) throws ParseError {
         FeatureModel featureModel = parseFeatureModelWithImports(text, fileLoader, new HashMap<>());
         composeFeatureModelFromImports(featureModel);
-        referenceFeaturesInConstraints(featureModel);
-        referenceAttributesInConstraints(featureModel);
-        referenceRootFeaturesInAggregateFunctions(featureModel);
         validateTypeLevelConstraints(featureModel);
         return featureModel;
     }
@@ -453,77 +443,6 @@ public class UVLModelFactory {
         return subModelList;
     }
 
-    private void referenceFeaturesInConstraints(FeatureModel featureModel) {
-        List<FeatureModel> subModelList = createSubModelList(featureModel);
-        List<LiteralConstraint> literalConstraints = featureModel.getLiteralConstraints();
-        for (LiteralConstraint constraint : literalConstraints) {
-            Feature referencedFeature = featureModel.getFeatureMap().get(constraint.getLiteral().replace("\'", ""));
-            if (referencedFeature == null) {
-                throw new ParseError("Feature " + constraint + " is referenced in a constraint in " + featureModel.getNamespace() + " but does not exist as feature in the tree!", constraint.getLineNumber());
-            } else {
-                constraint.setFeature(referencedFeature);
-            }
-        }
-        for (FeatureModel subModel : subModelList) {
-            literalConstraints = subModel.getLiteralConstraints();
-            for (LiteralConstraint constraint : literalConstraints) {
-                Feature referencedFeature = subModel.getFeatureMap().get(constraint.getLiteral().replace("\'", ""));
-                if (referencedFeature == null) {
-                    throw new ParseError("Feature " + constraint + " is referenced in a constraint in " + subModel.getNamespace() + " but does not exist as feature in the tree!", constraint.getLineNumber());
-                } else {
-                    constraint.setFeature(referencedFeature);
-                }
-            }
-        }
-    }
-
-    private void referenceAttributesInConstraints(final FeatureModel featureModel) {
-        final List<FeatureModel> subModelList = createSubModelList(featureModel);
-        List<LiteralExpression> literalExpressions = featureModel.getLiteralExpressions();
-        for (final LiteralExpression expression : literalExpressions) {
-            final Feature referencedFeature = featureModel.getFeatureMap().get(expression.getFeatureName());
-            if (referencedFeature == null || (expression.getAttributeName() != null && referencedFeature.getAttributes().get(expression.getAttributeName()) == null)) {
-                throw new ParseError("Attribute " + expression.getFeatureName() + "." + expression.getAttributeName() + " is referenced in a constraint in " + featureModel.getNamespace() + " but does not exist as feature in the tree!", expression.getLineNumber());
-            } else {
-                expression.setFeature(referencedFeature);
-            }
-        }
-        for (final FeatureModel subModel : subModelList) {
-            literalExpressions = subModel.getLiteralExpressions();
-            for (final LiteralExpression expression : literalExpressions) {
-                final Feature referencedFeature = subModel.getFeatureMap().get(expression.getFeatureName());
-                if (referencedFeature == null || referencedFeature.getAttributes().get(expression.getAttributeName()) == null) {
-                    throw new ParseError("Attribute " + expression.getFeatureName() + "." + expression.getAttributeName() + " is referenced in a constraint in " + subModel.getNamespace() + " but does not exist as feature in the tree!", expression.getLineNumber());
-                } else {
-                    expression.setFeature(referencedFeature);
-                }
-            }
-        }
-    }
-
-    private void referenceRootFeaturesInAggregateFunctions(FeatureModel featureModel) {
-        final List<FeatureModel> subModelList = createSubModelList(featureModel);
-        List<AggregateFunctionExpression> aggregateFunctionExpressions = featureModel.getAggregateFunctionsWithRootFeature();
-        for (final AggregateFunctionExpression expression : aggregateFunctionExpressions) {
-            final Feature referencedFeature = featureModel.getFeatureMap().get(expression.getRootFeatureName().replace("\"", ""));
-            if (referencedFeature == null) {
-                throw new ParseError("Feature " + expression.getRootFeatureName() + " is used in aggregate function " + expression.toString() + " but does not exist as feature in the tree!", expression.getLineNumber());
-            } else {
-                expression.setRootFeature(referencedFeature);
-            }
-        }
-        for (FeatureModel subModel : subModelList) {
-            aggregateFunctionExpressions = subModel.getAggregateFunctionsWithRootFeature();
-            for (final AggregateFunctionExpression expression : aggregateFunctionExpressions) {
-                final Feature referencedFeature = subModel.getFeatureMap().get(expression.getRootFeatureName().replace("\"", ""));
-                if (referencedFeature == null) {
-                    throw new ParseError("Feature " + expression.getRootFeatureName() + " is used in aggregate function " + expression.toString() + " but does not exist as feature in the tree!", expression.getLineNumber());
-                } else {
-                    expression.setRootFeature(referencedFeature);
-                }
-            }
-        }
-    }
 
     private void validateTypeLevelConstraints(final FeatureModel featureModel) {
         final List<Constraint> constraints = featureModel.getOwnConstraints();

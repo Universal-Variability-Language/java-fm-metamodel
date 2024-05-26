@@ -25,8 +25,7 @@ public class Group {
     /// lower and upper bound must be set!)
     public GroupType GROUPTYPE;
     private final List<Feature> features;
-    private String lowerBound;
-    private String upperBound;
+    private Cardinality cardinality;
     private Feature parent;
 
     /**
@@ -169,44 +168,12 @@ public class Group {
         };
     }
 
-    /**
-     * This method only returns a value if the group is a cardinality group. If not,
-     * this method returns null.
-     *
-     * @return null or the lower bound of the group cardinality as string
-     */
-    public String getLowerBound() {
-        return lowerBound;
+    public void setCardinality(Cardinality cardinality) {
+        this.cardinality = cardinality;
     }
 
-    /**
-     * Set the lower bound (only if the group is a cardinality group).
-     *
-     * @param lowerBound the lower bound of the group
-     */
-    public void setLowerBound(String lowerBound) {
-        this.lowerBound = lowerBound;
-    }
-
-    /**
-     * This method only returns a value if the group is a cardinality group. If not,
-     * this method returns null. If there is no upper bound in the cardinality, this
-     * method returns the lower bound. The returned value might also be the *
-     * symbol, if the upper bound is unlimited.
-     *
-     * @return the upper bound as string
-     */
-    public String getUpperBound() {
-        return upperBound;
-    }
-
-    /**
-     * Set the upper bound of the group (only if the group is a cardinality group).
-     *
-     * @param upperBound the upper bound of the group (may be * symbol)
-     */
-    public void setUpperBound(String upperBound) {
-        this.upperBound = upperBound;
+    public Cardinality getCardinality() {
+        return this.cardinality;
     }
 
     /**
@@ -262,24 +229,13 @@ public class Group {
     }
 
     private String getCardinalityAsSting() {
-        StringBuilder result = new StringBuilder();
-        result.append("[");
-        if (getLowerBound().equals(getUpperBound())) {
-            result.append(getLowerBound());
-        } else {
-            result.append(getLowerBound());
-            result.append("..");
-            result.append(getUpperBound());
-        }
-        result.append("]");
-        return result.toString();
+        return cardinality.toString();
     }
 
     @Override
     public Group clone() {
         Group group = new Group(GROUPTYPE);
-        group.setUpperBound(getUpperBound());
-        group.setLowerBound(getLowerBound());
+        group.setCardinality(cardinality);
         for (Feature feature : getFeatures()) {
             group.getFeatures().add(feature.clone());
         }
@@ -309,7 +265,7 @@ public class Group {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(GROUPTYPE, lowerBound, parent, upperBound);
+		return Objects.hash(GROUPTYPE, cardinality, parent);
 	}
 
 	@Override
@@ -320,8 +276,7 @@ public class Group {
 			return false;
 		Group other = (Group) obj;
 		return GROUPTYPE == other.GROUPTYPE
-				&& Objects.equals(lowerBound, other.lowerBound)
-				&& Objects.equals(upperBound, other.upperBound)
+				&& Objects.equals(cardinality, other.cardinality)
 				&& Objects.equals(parent, other.parent)
 				&& Objects.equals(parent.getChildren(), other.parent.getChildren());
 	}

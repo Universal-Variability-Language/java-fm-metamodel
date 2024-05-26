@@ -26,10 +26,7 @@ public class DropFeatureCardinality implements IConversionStrategy {
     }
 
     private void removeFeatureCardinalityRecursively(Feature feature) {
-        if (!(feature.getUpperBound() == null && feature.getLowerBound() == null)) {
-            feature.setUpperBound(null);
-            feature.setLowerBound(null);
-        }
+        feature.setCardinality(null);
         for (Group group : feature.getChildren()) {
             for (Feature childFeature : group.getFeatures()) {
                 //stop when feature is submodelroot to only consider this featuremodel and no submodels

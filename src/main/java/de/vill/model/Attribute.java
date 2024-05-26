@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import de.vill.model.building.VariableReference;
 import de.vill.model.constraint.Constraint;
 import de.vill.util.Constants;
 
@@ -14,11 +15,12 @@ import de.vill.util.Constants;
  *
  * @param <T> The type of the value
  */
-public class Attribute<T> {
+public class Attribute<T> implements VariableReference {
 
     private int line;
     private final String name;
     private final T value;
+    private final Feature feature;
 
     /**
      * The constructor of the attribute class takes an attribute name (does not contain the feature name) and a value of type T
@@ -26,9 +28,10 @@ public class Attribute<T> {
      * @param name  the name of the attribute (must be different from all other attributes of the feature)
      * @param value the value of the attribute
      */
-    public Attribute(String name, T value) {
+    public Attribute(String name, T value, Feature correspondingFeature) {
         this.name = Objects.requireNonNull(name);
         this.value = Objects.requireNonNull(value);
+        this.feature = correspondingFeature;
     }
 
     public int getLine() {
@@ -72,6 +75,12 @@ public class Attribute<T> {
             return Constants.UNDEF;
         }
     }
+
+    /**
+     * Returns the feature this attribute is attached to
+     * @return Feature
+     */
+    public Feature getFeature() {return feature;}
 
     /**
      * Returns a uvl representation of the attribute as string (different for the possible types of the value)
@@ -148,5 +157,10 @@ public class Attribute<T> {
         Attribute<?> other = (Attribute<?>) obj;
         return Objects.equals(name, other.name)
         		&& Objects.equals(value, other.value);
+    }
+
+    @Override
+    public String getIdentifier() {
+        return name;
     }
 }

@@ -1,5 +1,7 @@
 package de.vill.model.constraint;
 
+import de.vill.model.building.VariableReference;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -55,5 +57,10 @@ public class NotConstraint extends Constraint {
         }
         NotConstraint other = (NotConstraint) obj;
         return Objects.equals(content, other.content);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        return content.getReferences();
     }
 }

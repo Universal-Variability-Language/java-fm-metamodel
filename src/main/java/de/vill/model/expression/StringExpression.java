@@ -1,11 +1,10 @@
 package de.vill.model.expression;
 
 import de.vill.model.Feature;
+import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+
+import java.util.*;
 
 public class StringExpression extends Expression {
     public String getString() {
@@ -73,6 +72,11 @@ public class StringExpression extends Expression {
         }
         final StringExpression other = (StringExpression) obj;
         return Objects.equals(this.value, other.value);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        return new ArrayList<>();
     }
 
     @Override

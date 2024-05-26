@@ -1,11 +1,10 @@
 package de.vill.model.expression;
 
 import de.vill.model.Feature;
+import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+
+import java.util.*;
 
 public class NumberExpression extends Expression {
     public double getNumber() {
@@ -76,6 +75,11 @@ public class NumberExpression extends Expression {
         }
         NumberExpression other = (NumberExpression) obj;
         return Double.doubleToLongBits(number) == Double.doubleToLongBits(other.number);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        return new ArrayList<>();
     }
 
     @Override

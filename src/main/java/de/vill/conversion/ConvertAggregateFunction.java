@@ -62,12 +62,12 @@ public class ConvertAggregateFunction implements IConversionStrategy {
         } else {
             rootFeature = aggregateFunctionExpression.getRootFeature();
         }
-        List<Feature> attributes = collectAttributes(rootFeature, aggregateFunctionExpression.getAttributeName());
+        List<Feature> attributes = collectAttributes(rootFeature, aggregateFunctionExpression.getAttribute().getIdentifier());
         Expression newExpression = null;
         if (aggregateFunctionExpression instanceof SumAggregateFunctionExpression) {
-            newExpression = getSum(attributes, aggregateFunctionExpression.getAttributeName());
+            newExpression = getSum(attributes, aggregateFunctionExpression.getAttribute().getIdentifier());
         } else if (aggregateFunctionExpression instanceof AvgAggregateFunctionExpression) {
-            newExpression = getAvg(attributes, aggregateFunctionExpression.getAttributeName());
+            newExpression = getAvg(attributes, aggregateFunctionExpression.getAttribute().getIdentifier());
         }
         parentExpression.replaceExpressionSubPart(aggregateFunctionExpression, newExpression);
     }
@@ -80,26 +80,26 @@ public class ConvertAggregateFunction implements IConversionStrategy {
         } else {
             rootFeature = aggregateFunctionExpression.getRootFeature();
         }
-        List<Feature> attributes = collectAttributes(rootFeature, aggregateFunctionExpression.getAttributeName());
+        List<Feature> attributes = collectAttributes(rootFeature, aggregateFunctionExpression.getAttribute().getIdentifier());
         Expression newExpression = null;
         if (aggregateFunctionExpression instanceof SumAggregateFunctionExpression) {
-            newExpression = getSum(attributes, aggregateFunctionExpression.getAttributeName());
+            newExpression = getSum(attributes, aggregateFunctionExpression.getAttribute().getIdentifier());
         } else if (aggregateFunctionExpression instanceof AvgAggregateFunctionExpression) {
-            newExpression = getAvg(attributes, aggregateFunctionExpression.getAttributeName());
+            newExpression = getAvg(attributes, aggregateFunctionExpression.getAttribute().getIdentifier());
         }
         parentExpression.replaceExpressionSubPart(aggregateFunctionExpression, newExpression);
     }
 
     private Expression getSum(List<Feature> relevantFeatures, String attributeName) {
-        if (relevantFeatures.size() == 0) {
+        if (relevantFeatures.isEmpty()) {
             return new NumberExpression(0);
         } else if (relevantFeatures.size() == 1) {
-            LiteralExpression literalExpression = new LiteralExpression(relevantFeatures.get(0), attributeName);
+            LiteralExpression literalExpression = new LiteralExpression(relevantFeatures.get(0).getAttributes().get(attributeName));
             relevantFeatures.remove(0);
 
             return literalExpression;
         } else {
-            LiteralExpression literalExpression = new LiteralExpression(relevantFeatures.get(0), attributeName);
+            LiteralExpression literalExpression = new LiteralExpression(relevantFeatures.get(0).getAttributes().get(attributeName));
             relevantFeatures.remove(0);
 
             return new AddExpression(literalExpression, getSum(relevantFeatures, attributeName));
@@ -107,17 +107,15 @@ public class ConvertAggregateFunction implements IConversionStrategy {
     }
 
     private Expression getAvg(List<Feature> relevantFeatures, String attributeName) {
-        if (relevantFeatures.size() == 0) {
+        if (relevantFeatures.isEmpty()) {
             return new NumberExpression(0);
         } else {
             for (Feature feature : relevantFeatures) {
-                feature.getAttributes().put("avg_counter__", new Attribute<Long>("avg_counter__", 1L));
+                feature.getAttributes().put("avg_counter__", new Attribute<Long>("avg_counter__", 1L, feature));
             }
             Expression n = getSum(new LinkedList<>(relevantFeatures), "avg_counter__");
             Expression sum = getSum(relevantFeatures, attributeName);
-            Expression avg = new ParenthesisExpression(new DivExpression(new ParenthesisExpression(sum), new ParenthesisExpression(n)));
-
-            return avg;
+            return new ParenthesisExpression(new DivExpression(new ParenthesisExpression(sum), new ParenthesisExpression(n)));
         }
     }
 
