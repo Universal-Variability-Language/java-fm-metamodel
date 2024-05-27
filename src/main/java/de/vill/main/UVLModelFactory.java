@@ -37,6 +37,7 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,19 +75,6 @@ public class UVLModelFactory {
     }
 
     /**
-     * This method parses the givel text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
-     *
-     * @param text       A String that describes a feature model in UVL notation.
-     * @param fileLoader A Map, that maps every imported feature model from its namespace to a path, where the acutal model is
-     * @return A {@link FeatureModel} based on the uvl text
-     * @throws ParseError If there is an error during parsing or the construction of the feature model
-     */
-    public FeatureModel parse(String text, Map<String, String> fileLoader) throws ParseError {
-        Function<String, String> fileloaderFunction = fileLoader::get;
-        return parse(text, fileloaderFunction);
-    }
-
-    /**
      * This method parses an UVL model given a path to the UVL model. For imported submodels (if applicable) the directory of the UVL model is used
      * @param uvlModelPath path to uvl model
      * @return
@@ -103,14 +91,15 @@ public class UVLModelFactory {
      * This method parses the given text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
      *
      * @param text A String that describes a feature model in UVL notation.
-     * @param path Path to the directory where all submodels are stored.
+     * @param rootPath Path to the directory where all submodels are stored.
      * @return A {@link FeatureModel} based on the uvl text
      * @throws ParseError If there is an error during parsing or the construction of the feature model
      */
-    public FeatureModel parse(String text, String path) throws ParseError {
-
-        Function<String, String> fileloaderFunction = x -> path + System.getProperty("file.separator") + x.replace(".", System.getProperty("file.separator")) + ".uvl";
-        return parse(text, fileloaderFunction);
+    public FeatureModel parse(String text, String rootPath) throws ParseError {
+        FeatureModel featureModel = parseFeatureModelWithImports(text, rootPath, new HashMap<>());
+        composeFeatureModelFromImports(featureModel);
+        validateTypeLevelConstraints(featureModel);
+        return featureModel;
     }
 
     /**
@@ -122,23 +111,7 @@ public class UVLModelFactory {
      * @throws ParseError If there is an error during parsing or the construction of the feature model
      */
     public FeatureModel parse(String text) throws ParseError {
-        Function<String, String> fileloaderFunction = x -> System.getProperty("user.dir") + System.getProperty("file.separator") + x.replace(".", System.getProperty("file.separator")) + ".uvl";
-        return parse(text, fileloaderFunction);
-    }
-
-    /**
-     * This method parses the givel text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
-     *
-     * @param text       A String that describes a feature model in UVL notation.
-     * @param fileLoader A {@link Function}, that maps every imported feature model from its namespace to a path, where the acutal model is
-     * @return A {@link FeatureModel} based on the uvl text
-     * @throws ParseError If there is an error during parsing or the construction of the feature model
-     */
-    public FeatureModel parse(String text, Function<String, String> fileLoader) throws ParseError {
-        FeatureModel featureModel = parseFeatureModelWithImports(text, fileLoader, new HashMap<>());
-        composeFeatureModelFromImports(featureModel);
-        validateTypeLevelConstraints(featureModel);
-        return featureModel;
+        return parse(text, System.getProperty("user.dir"));
     }
 
     public Constraint parseConstraint(String constraintString) throws ParseError {
@@ -322,7 +295,11 @@ public class UVLModelFactory {
         return completeOrderedLevelsToRemove;
     }
 
-    private FeatureModel parseFeatureModelWithImports(String text, Function<String, String> fileLoader, Map<String, Import> visitedImports) {
+    private String getPath(String rootPath, Import referencedImport) {
+        return rootPath + FileSystems.getDefault().getSeparator() + referencedImport.getNamespace().replace(".", FileSystems.getDefault().getSeparator()) + ".uvl";
+    }
+
+    private FeatureModel parseFeatureModelWithImports(String text, String rootPath, Map<String, Import> visitedImports) {
         //remove leading and trailing spaces (to be more robust)
         text = text.trim();
         UVLJavaLexer UVLJavaLexer = new UVLJavaLexer(CharStreams.fromString(text));
@@ -373,10 +350,10 @@ public class UVLModelFactory {
                     throw new ParseError("Cyclic import detected! " + "The import of " + importLine.getNamespace() + " in " + featureModel.getNamespace() + " creates a cycle", importLine.getLineNumber());
                 } else {
                     try {
-                        String path = fileLoader.apply(importLine.getNamespace());
+                        String path = getPath(rootPath, importLine);
                         Path filePath = Paths.get(path);
                         String content = new String(Files.readAllBytes(filePath));
-                        FeatureModel subModel = parseFeatureModelWithImports(content, fileLoader, visitedImports);
+                        FeatureModel subModel = parseFeatureModelWithImports(content, filePath.getParent().toString(), visitedImports);
                         importLine.setFeatureModel(subModel);
                         subModel.getRootFeature().setRelatedImport(importLine);
                         visitedImports.put(importLine.getNamespace(), importLine);

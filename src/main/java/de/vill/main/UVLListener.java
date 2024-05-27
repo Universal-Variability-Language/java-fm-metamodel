@@ -54,6 +54,8 @@ public class UVLListener extends UVLJavaBaseListener {
     private Stack<Feature> featureStack = new Stack<>();
     private Stack<Group> groupStack = new Stack<>();
 
+    private final Map<String, Feature> importedFeatures = new HashMap<>();
+
     private Stack<Constraint> constraintStack = new Stack<>();
 
     private Stack<Expression> expressionStack = new Stack<>();
@@ -501,7 +503,7 @@ public class UVLListener extends UVLJavaBaseListener {
         String reference = ctx.reference().getText().replace("\"", "");
         VariableReference variable = ParsingUtilities.resolveReference(reference, fmBuilder.getFeatureModel());
         LiteralExpression expression = new LiteralExpression(variable);
-        if (variable instanceof Attribute<?>) {
+        if (variable instanceof Attribute<?> || variable instanceof ImportedAttributePlaceholder) {
             fmBuilder.addLanguageLevel(LanguageLevel.ARITHMETIC_LEVEL);
         }
         expressionStack.push(expression);

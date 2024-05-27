@@ -10,7 +10,7 @@ public class LiteralConstraint extends Constraint {
     private final VariableReference reference;
 
     public LiteralConstraint(final VariableReference reference) {
-        this.reference = reference;
+        this.reference = Objects.requireNonNull(reference);
     }
 
     public VariableReference getReference() {

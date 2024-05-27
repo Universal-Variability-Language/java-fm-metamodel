@@ -70,6 +70,14 @@ public final class ParsingUtilities {
 
     public static VariableReference resolveReference(String reference, FeatureModel fmInConstruction) {
         ReferenceBundle bundle = getReferenceSplit(reference, fmInConstruction);
+
+        if (bundle.relatedImport != null) {
+            if (bundle.attributeName != null) {
+                return new ImportedAttributePlaceholder(bundle.featureName, bundle.attributeName, bundle.relatedImport);
+            } else {
+                return new ImportedFeaturePlaceholder(bundle.featureName, bundle.relatedImport);
+            }
+        }
         Feature relevantFeature = fmInConstruction.getFeatureMap().get(bundle.featureName);
         if (bundle.attributeName != null) {
             if (relevantFeature.getAttributes().containsKey(bundle.attributeName)) {
