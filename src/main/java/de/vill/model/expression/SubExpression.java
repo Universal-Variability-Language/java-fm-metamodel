@@ -15,6 +15,14 @@ public class SubExpression extends Expression {
         this.right = right;
     }
 
+    public Expression getLeft() {
+        return left;
+    }
+
+    public Expression getRight() {
+        return right;
+    }
+
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return left.toString(withSubmodels, currentAlias) +

@@ -218,8 +218,6 @@ public class UVLListener extends UVLJavaBaseListener {
         }
         featureStack.push(feature);
         Group parentGroup = groupStack.peek();
-        parentGroup.getFeatures().add(feature);
-        feature.setParentGroup(parentGroup);
         fmBuilder.addFeature(feature, parentGroup);
     }
 

@@ -46,6 +46,16 @@ public class FeatureModelBuilder {
         return true;
     }
 
+    public Feature addRootFeature(String featureName, FeatureType featureType, Cardinality cardinality) {
+        Feature rootFeature = new Feature(featureName);
+        rootFeature.setFeatureType(featureType);
+        rootFeature.setCardinality(cardinality);
+
+        fmInConstruction.getFeatureMap().put(featureName, rootFeature);
+        fmInConstruction.setRootFeature(rootFeature);
+        return rootFeature;
+    }
+
     public Feature addFeature(String featureName, Group group) {
         return addFeature(featureName, group, null);
     }
@@ -75,8 +85,14 @@ public class FeatureModelBuilder {
         feature.setParentGroup(group);
     }
 
-    public void addAttribute(String featureName) {
+    public Group addGroup(Feature parentFeature, Group.GroupType groupType) {
+        Group toAdd = new Group(groupType);
+        parentFeature.addChildren(toAdd);
+        return toAdd;
+    }
 
+    public void addAttribute(Feature feature, Attribute<?> attribute) {
+        feature.getAttributes().put(attribute.getName(), attribute);
     }
 
     /**
@@ -102,11 +118,11 @@ public class FeatureModelBuilder {
     }
 
     public void addConstraint(Constraint constraint) {
-        fmInConstruction.getConstraints().add(0,constraint);
+        fmInConstruction.getOwnConstraints().add(0,constraint);
     }
 
     public void addConstraintAtPosition(Constraint constraint, int position) {
-        fmInConstruction.getConstraints().add(position,constraint);
+        fmInConstruction.getOwnConstraints().add(position,constraint);
     }
 
     public boolean doesFeatureModelSatisfyLanguageLevels(Set<LanguageLevel> languageLevelsToSatisfy) {

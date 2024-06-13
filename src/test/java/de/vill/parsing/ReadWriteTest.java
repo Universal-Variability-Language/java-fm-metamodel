@@ -29,6 +29,9 @@ public class ReadWriteTest {
         content = new String(Files.readAllBytes(Paths.get(TEMP_PATH)));
         FeatureModel reFeatureModel = uvlModelFactory.parse(content);
         assert(reFeatureModel != null);
+        assert(reFeatureModel.getFeatureMap().size() == featureModel.getFeatureMap().size());
+        assert(reFeatureModel.getOwnConstraints().size() == featureModel.getOwnConstraints().size());
+
         Files.delete(Paths.get(TEMP_PATH));
     }
 }

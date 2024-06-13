@@ -497,6 +497,7 @@ public class Feature implements VariableReference {
     }
 
     private String cardinalityToString() {
+        if (cardinality == null) return "";
         return String.format(" cardinality %s", cardinality.toString());
     }
 

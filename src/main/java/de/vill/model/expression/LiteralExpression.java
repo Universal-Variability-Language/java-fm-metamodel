@@ -5,6 +5,8 @@ import de.vill.model.Feature;
 import de.vill.model.FeatureType;
 import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
+import de.vill.util.Util;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -33,7 +35,7 @@ public class LiteralExpression extends Expression {
 
     @Override
     public String toString(final boolean withSubmodels, final String currentAlias) {
-        return content.getIdentifier(); // TODO: is ignoring the flag ok?
+        return Util.addNecessaryQuotes(content.getIdentifier()); // TODO: is ignoring the flag ok?
     }
 
     @Override

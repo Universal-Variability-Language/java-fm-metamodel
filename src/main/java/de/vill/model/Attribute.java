@@ -161,6 +161,6 @@ public class Attribute<T> implements VariableReference {
 
     @Override
     public String getIdentifier() {
-        return name;
+        return feature.getIdentifier() + "." + name;
     }
 }

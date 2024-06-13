@@ -15,6 +15,10 @@ public class ParenthesisExpression extends Expression {
         this.content = content;
     }
 
+    public Expression getContent() {
+        return content;
+    }
+
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return "(" +

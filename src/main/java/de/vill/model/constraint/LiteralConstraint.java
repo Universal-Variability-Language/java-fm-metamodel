@@ -1,6 +1,7 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.util.Util;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +20,7 @@ public class LiteralConstraint extends Constraint {
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        return reference.getIdentifier();
+        return Util.addNecessaryQuotes(reference.getIdentifier());
     }
 
     @Override
