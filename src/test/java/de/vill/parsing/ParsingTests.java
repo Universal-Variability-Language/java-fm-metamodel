@@ -134,9 +134,9 @@ public class ParsingTests {
 
     @Test
     void checkCompositionModels() throws  Exception {
-        //testModelParsing(COMPOSITION_ROOT);
-        //testModelParsing(NESTED_COMPOSITION_ROOT);
-        //testModelParsing(NESTED_SUB_COMPOSITION_ROOT);
+        testModelParsing(COMPOSITION_ROOT);
+        testModelParsing(NESTED_COMPOSITION_ROOT);
+        testModelParsing(NESTED_SUB_COMPOSITION_ROOT);
     }
 
     private void testModelParsing(String path) {

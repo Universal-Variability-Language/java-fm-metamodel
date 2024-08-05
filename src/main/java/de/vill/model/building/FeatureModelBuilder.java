@@ -23,8 +23,6 @@ public class FeatureModelBuilder {
         fmInConstruction = old;
     }
 
-    public void setLanguageLevel(LanguageLevel level) {
-    }
 
     public void addImport(Import importToAdd) {
         fmInConstruction.getImports().add(importToAdd);

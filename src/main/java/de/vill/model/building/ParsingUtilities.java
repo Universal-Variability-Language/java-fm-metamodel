@@ -2,6 +2,8 @@ package de.vill.model.building;
 
 import de.vill.model.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public final class ParsingUtilities {
@@ -10,6 +12,13 @@ public final class ParsingUtilities {
 
     public static Import parseImport(String namespace, String alias) {
         return new Import(namespace.replace("\"", ""), alias != null ? alias.replace("\"", "") : null);
+    }
+
+    public static List<Import> findNestedImports(Import currentRoot) {
+        List<Import> imports = new ArrayList<>();
+
+
+        return imports;
     }
 
     /**
@@ -64,19 +73,15 @@ public final class ParsingUtilities {
     public static VariableReference resolveFeatureDeclarationIdentifier(String identifier, FeatureModel fmInConstruction) {
         ReferenceBundle bundle = getReferenceSplit(identifier, fmInConstruction);
         Feature feature = new Feature(bundle.featureName);
-        feature.setRelatedImport(bundle.relatedImport);
+        feature.setRelatedImport(bundle.mainImport);
         return feature;
     }
 
     public static VariableReference resolveReference(String reference, FeatureModel fmInConstruction) {
         ReferenceBundle bundle = getReferenceSplit(reference, fmInConstruction);
 
-        if (bundle.relatedImport != null) {
-            if (bundle.attributeName != null) {
-                return new ImportedAttributePlaceholder(bundle.featureName, bundle.attributeName, bundle.relatedImport);
-            } else {
-                return new ImportedFeaturePlaceholder(bundle.featureName, bundle.relatedImport);
-            }
+        if (bundle.mainImport != null) {
+            return new ImportedVariablePlaceholder(bundle.mainImport, bundle.unidentifiedImportParts);
         }
         Feature relevantFeature = fmInConstruction.getFeatureMap().get(bundle.featureName);
         if (bundle.attributeName != null) {
@@ -96,16 +101,19 @@ public final class ParsingUtilities {
             String prefix = subModelImport.getAlias() + ".";
             if (reference.startsWith(prefix)) {
                 suffix = reference.substring(prefix.length());
-                bundle.relatedImport = subModelImport;
+                bundle.mainImport = subModelImport;
             }
         }
-        if (suffix.contains(".")) {
-            bundle.featureName = suffix.substring(0, suffix.indexOf('.'));
-            bundle.attributeName = suffix.substring(suffix.indexOf('.') + 1);
+        if (bundle.mainImport != null) {
+            bundle.unidentifiedImportParts = Arrays.asList(suffix.split("\\."));
         } else {
-            bundle.featureName = suffix;
+            if (suffix.contains(".")) {
+                bundle.featureName = suffix.substring(0, suffix.indexOf('.'));
+                bundle.attributeName = suffix.substring(suffix.indexOf('.') + 1);
+            } else {
+                bundle.featureName = suffix;
+            }
         }
-
         return bundle;
     }
 

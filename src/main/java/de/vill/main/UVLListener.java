@@ -308,16 +308,8 @@ public class UVLListener extends UVLJavaBaseListener {
 
     @Override
     public void exitLiteralConstraint(UVLJavaParser.LiteralConstraintContext ctx) {
-        String featureReference = ctx.reference().getText().replace("\"", "");
-
-        Feature feature;
-        if (featureReference.contains(".")) {
-            int lastDotIndex = featureReference.lastIndexOf(".");
-            feature = fmBuilder.getFeatureModel().getFeatureMap().get(featureReference.substring(lastDotIndex + 1));
-        } else {
-            feature = fmBuilder.getFeatureModel().getFeatureMap().get(featureReference);
-        }
-        LiteralConstraint constraint = new LiteralConstraint(feature);
+        VariableReference reference = ParsingUtilities.resolveReference(ctx.reference().getText(), fmBuilder.getFeatureModel());
+        LiteralConstraint constraint = new LiteralConstraint(reference);
 
 
         fmBuilder.getFeatureModel().getLiteralConstraints().add(constraint);
@@ -501,7 +493,7 @@ public class UVLListener extends UVLJavaBaseListener {
         String reference = ctx.reference().getText().replace("\"", "");
         VariableReference variable = ParsingUtilities.resolveReference(reference, fmBuilder.getFeatureModel());
         LiteralExpression expression = new LiteralExpression(variable);
-        if (variable instanceof Attribute<?> || variable instanceof ImportedAttributePlaceholder) {
+        if (variable instanceof Attribute<?>) {
             fmBuilder.addLanguageLevel(LanguageLevel.ARITHMETIC_LEVEL);
         }
         expressionStack.push(expression);
