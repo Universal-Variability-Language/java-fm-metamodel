@@ -49,7 +49,7 @@ import java.util.Stack;
 import org.antlr.v4.runtime.Token;
 
 public class UVLListener extends UVLJavaBaseListener {
-    FeatureModelBuilder fmBuilder = new FeatureModelBuilder();
+    public FeatureModelBuilder fmBuilder = new FeatureModelBuilder();
     private Set<LanguageLevel> importedLanguageLevels = new HashSet<>(Arrays.asList(LanguageLevel.BOOLEAN_LEVEL));
     private Stack<Feature> featureStack = new Stack<>();
     private Stack<Group> groupStack = new Stack<>();
@@ -389,6 +389,7 @@ public class UVLListener extends UVLJavaBaseListener {
         Token t = ctx.getStart();
         int line = t.getLine();
         constraint.setLineNumber(line);
+        fmBuilder.addLanguageLevel(LanguageLevel.ARITHMETIC_LEVEL);
     }
 
     @Override
@@ -400,6 +401,7 @@ public class UVLListener extends UVLJavaBaseListener {
         Token t = ctx.getStart();
         int line = t.getLine();
         constraint.setLineNumber(line);
+        fmBuilder.addLanguageLevel(LanguageLevel.ARITHMETIC_LEVEL);
     }
 
     @Override
@@ -411,6 +413,7 @@ public class UVLListener extends UVLJavaBaseListener {
         Token t = ctx.getStart();
         int line = t.getLine();
         constraint.setLineNumber(line);
+        fmBuilder.addLanguageLevel(LanguageLevel.ARITHMETIC_LEVEL);
     }
 
     @Override
@@ -422,6 +425,7 @@ public class UVLListener extends UVLJavaBaseListener {
         Token t = ctx.getStart();
         int line = t.getLine();
         constraint.setLineNumber(line);
+        fmBuilder.addLanguageLevel(LanguageLevel.ARITHMETIC_LEVEL);
     }
 
     @Override
@@ -433,6 +437,7 @@ public class UVLListener extends UVLJavaBaseListener {
         Token t = ctx.getStart();
         int line = t.getLine();
         constraint.setLineNumber(line);
+        fmBuilder.addLanguageLevel(LanguageLevel.ARITHMETIC_LEVEL);
     }
 
     @Override
@@ -444,6 +449,7 @@ public class UVLListener extends UVLJavaBaseListener {
         Token t = ctx.getStart();
         int line = t.getLine();
         constraint.setLineNumber(line);
+        fmBuilder.addLanguageLevel(LanguageLevel.ARITHMETIC_LEVEL);
     }
 
     @Override
