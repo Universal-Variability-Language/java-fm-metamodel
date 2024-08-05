@@ -6,7 +6,7 @@ import de.vill.util.Constants;
 
 import java.util.*;
 
-public class SubExpression extends Expression {
+public class SubExpression extends BinaryExpression {
     private Expression left;
     private Expression right;
 

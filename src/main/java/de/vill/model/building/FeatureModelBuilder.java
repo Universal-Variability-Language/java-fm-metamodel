@@ -78,7 +78,7 @@ public class FeatureModelBuilder {
     }
 
     public void addFeature(Feature feature, Group group) {
-        fmInConstruction.getFeatureMap().put(feature.getFeatureName(), feature);
+        fmInConstruction.getFeatureMap().put(feature.getIdentifier(), feature);
         group.getFeatures().add(feature);
         feature.setParentGroup(group);
     }

@@ -28,6 +28,8 @@ public class LiteralExpression extends Expression {
         return this.content;
     }
 
+    public void setContent(VariableReference content) {this.content = content;}
+
     @Override
     public String toString() {
         return this.toString(true, "");

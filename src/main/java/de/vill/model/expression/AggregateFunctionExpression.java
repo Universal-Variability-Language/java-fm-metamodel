@@ -69,7 +69,7 @@ public class AggregateFunctionExpression extends Expression {
 
         if (rootFeature != null) {
             if (withSubmodels) {
-                result.append(addNecessaryQuotes(rootFeature.getFullReference()));
+                result.append(addNecessaryQuotes(rootFeature.getIdentifier()));
             } else {
                 result.append(addNecessaryQuotes(rootFeature.getFeatureName()));
             }

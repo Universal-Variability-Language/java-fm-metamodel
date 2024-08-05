@@ -10,7 +10,7 @@ import java.util.*;
 
 public class LengthAggregateFunctionExpression extends Expression {
 
-    private final VariableReference reference;
+    private VariableReference reference;
 
     public LengthAggregateFunctionExpression(final VariableReference reference) {
         this.reference = reference;
@@ -31,6 +31,8 @@ public class LengthAggregateFunctionExpression extends Expression {
     }
 
     public VariableReference getReference() {return reference;}
+
+    public void setReference(VariableReference reference) {this.reference = reference;}
 
     @Override
     public String getReturnType() {

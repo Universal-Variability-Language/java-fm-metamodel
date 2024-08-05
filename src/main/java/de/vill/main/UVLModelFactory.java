@@ -1,5 +1,9 @@
 package de.vill.main;
 
+import de.vill.model.*;
+import de.vill.model.building.VariableReference;
+import de.vill.model.constraint.*;
+import de.vill.model.expression.*;
 import de.vill.util.Util;
 import uvl.UVLJavaLexer;
 import uvl.UVLJavaParser;
@@ -19,14 +23,6 @@ import de.vill.conversion.DropTypeLevel;
 import de.vill.conversion.IConversionStrategy;
 import de.vill.exception.ParseError;
 import de.vill.exception.ParseErrorList;
-import de.vill.model.Feature;
-import de.vill.model.FeatureModel;
-import de.vill.model.Group;
-import de.vill.model.Import;
-import de.vill.model.LanguageLevel;
-import de.vill.model.constraint.Constraint;
-import de.vill.model.constraint.ExpressionConstraint;
-import de.vill.model.expression.Expression;
 import de.vill.util.Constants;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -41,13 +37,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public class UVLModelFactory {
@@ -368,7 +358,7 @@ public class UVLModelFactory {
                             }
                         }
 
-                        //check if submodel is acutally used
+                        //check if submodel is actually used
                         if (featureModel.getFeatureMap().containsKey(subModel.getRootFeature().getReferenceFromSpecificSubmodel(""))) {
                             importLine.setReferenced(true);
                         }
@@ -391,8 +381,108 @@ public class UVLModelFactory {
                 }
             }
         }
-
+        for (Constraint constraint : featureModel.getOwnConstraints()) {
+            resolveImportPlaceholders(constraint, featureModel);
+        }
         return featureModel;
+    }
+
+    private void resolveImportPlaceholders(Constraint constraint, FeatureModel featureModel) {
+        if (constraint instanceof AndConstraint || constraint instanceof OrConstraint || constraint instanceof NotConstraint || constraint instanceof ImplicationConstraint || constraint instanceof ParenthesisConstraint || constraint instanceof EquivalenceConstraint) {
+            for (Constraint subPart : constraint.getConstraintSubParts()) {
+                resolveImportPlaceholders(subPart, featureModel);
+            }
+        }  else if (constraint instanceof ExpressionConstraint) {
+            ExpressionConstraint expressionConstraint = (ExpressionConstraint) constraint;
+            resolveImportPlaceholders(expressionConstraint.getLeft(), featureModel);
+            resolveImportPlaceholders(expressionConstraint.getRight(), featureModel);
+        } else if (constraint instanceof LiteralConstraint) {
+            LiteralConstraint literalConstraint = (LiteralConstraint) constraint;
+            if (literalConstraint.getReference() instanceof ImportedVariablePlaceholder) {
+                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalConstraint.getReference();
+                literalConstraint.setReference(resolvePlaceholder(placeholder, featureModel));
+            }
+        }
+    }
+
+    private void resolveImportPlaceholders(Expression expression, FeatureModel featureModel) {
+        if (expression instanceof BinaryExpression) {
+            BinaryExpression binaryExpression = (BinaryExpression) expression;
+            resolveImportPlaceholders(binaryExpression.getLeft(), featureModel);
+            resolveImportPlaceholders(binaryExpression.getRight(), featureModel);
+        } else if (expression instanceof ParenthesisExpression) {
+            ParenthesisExpression parenthesisExpression = (ParenthesisExpression) expression;
+            resolveImportPlaceholders(parenthesisExpression.getContent(), featureModel);
+        } else if (expression instanceof LengthAggregateFunctionExpression) {
+            LengthAggregateFunctionExpression lengthAggregateFunctionExpression = (LengthAggregateFunctionExpression) expression;
+            if (lengthAggregateFunctionExpression.getReference() instanceof ImportedVariablePlaceholder) {
+                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) lengthAggregateFunctionExpression.getReference();
+                lengthAggregateFunctionExpression.setReference(resolvePlaceholder(placeholder, featureModel));
+            }
+        } else if (expression instanceof LiteralExpression) {
+            LiteralExpression literalExpression = (LiteralExpression) expression;
+            if (literalExpression.getContent() instanceof ImportedVariablePlaceholder) {
+                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalExpression.getContent();
+                literalExpression.setContent(resolvePlaceholder(placeholder, featureModel));
+            }
+        }
+    }
+
+    /**
+     * Very whacky code currently
+     * @param placeholder
+     * @param featureModel
+     * @return
+     */
+    private VariableReference resolvePlaceholder(ImportedVariablePlaceholder placeholder, FeatureModel featureModel) {
+        boolean isCurrentPartAnImport;
+        int currentIndex = 0;
+        Import lastImport = placeholder.mainImport;
+        List<String> relativeNamespaces = new ArrayList<>();
+        do {
+            if (currentIndex == placeholder.unidentifiedImportParts.size() - 1) { // Last part should never be an import
+                break;
+            }
+            if (lastImport.getFeatureModel().getImports().isEmpty()) { // If current part has no further import we can stop looking
+                break;
+            } else {
+                isCurrentPartAnImport = false;
+                for (Import currentLevelImport : lastImport.getFeatureModel().getImports()) {
+                    if (currentLevelImport.getAlias().equals(placeholder.unidentifiedImportParts.get(currentIndex))) { // next part is one of the available imports
+                        isCurrentPartAnImport = true;
+                        lastImport = currentLevelImport;
+                        relativeNamespaces.add(currentLevelImport.getAlias());
+                    }
+                }
+            }
+            currentIndex++;
+        } while(isCurrentPartAnImport);
+
+        if (currentIndex == placeholder.unidentifiedImportParts.size() - 1) { // Feature
+            Feature feat = lastImport.getFeatureModel().getFeatureMap().get(placeholder.unidentifiedImportParts.get(currentIndex));
+            if (!relativeNamespaces.isEmpty()) {
+                lastImport.setRelativeImportPath(String.join(".", relativeNamespaces));
+            }
+            feat.setRelatedImport(lastImport);
+            return feat;
+        } else if (currentIndex == placeholder.unidentifiedImportParts.size() - 2) { // Attribute
+            Feature feat = lastImport.getFeatureModel().getFeatureMap().get(placeholder.unidentifiedImportParts.get(currentIndex));
+            if (!relativeNamespaces.isEmpty()) {
+                lastImport.setRelativeImportPath(String.join(".", relativeNamespaces));
+            }
+            feat.setRelatedImport(lastImport);
+            return feat.getAttributes().get(placeholder.unidentifiedImportParts.get(currentIndex + 1));
+        } else { // Should never happen for a valid reference
+            return null;
+        }
+    }
+
+    private boolean isPlaceholderFeature(String fullReference, FeatureModel featureModel) {
+        return featureModel.getFeatureMap().containsKey(fullReference);
+    }
+
+    private boolean isPlaceholderAttribute(String fullReference, FeatureModel featureModel) {
+        return featureModel.getFeatureMap().containsKey(fullReference.substring(0, fullReference.lastIndexOf(".")));
     }
 
     private void composeFeatureModelFromImports(FeatureModel featureModel) {

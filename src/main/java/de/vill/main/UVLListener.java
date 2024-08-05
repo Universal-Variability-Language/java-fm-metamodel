@@ -311,7 +311,6 @@ public class UVLListener extends UVLJavaBaseListener {
         VariableReference reference = ParsingUtilities.resolveReference(ctx.reference().getText(), fmBuilder.getFeatureModel());
         LiteralConstraint constraint = new LiteralConstraint(reference);
 
-
         fmBuilder.getFeatureModel().getLiteralConstraints().add(constraint);
         constraintStack.push(constraint);
         Token t = ctx.getStart();

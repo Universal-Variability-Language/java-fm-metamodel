@@ -127,8 +127,8 @@ public class ParsingTests {
     @Test
     void checkFaultyModels() throws Exception {
         testModelParsing(ILLEGAL_NAME, false);
-        //testModelParsing(MISSING_REFRENCE, false);
-        //testModelParsing(WRONG_INDENT, false);
+        testModelParsing(MISSING_REFRENCE, false);
+        testModelParsing(WRONG_INDENT, false);
 
     }
 

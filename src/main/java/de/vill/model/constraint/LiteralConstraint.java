@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class LiteralConstraint extends Constraint {
 
-    private final VariableReference reference;
+    private VariableReference reference;
 
     public LiteralConstraint(final VariableReference reference) {
         this.reference = Objects.requireNonNull(reference);
@@ -17,6 +17,8 @@ public class LiteralConstraint extends Constraint {
     public VariableReference getReference() {
         return reference;
     }
+
+    public void setReference(final VariableReference reference) {this.reference = reference;}
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {

@@ -6,7 +6,7 @@ import de.vill.util.Constants;
 
 import java.util.*;
 
-public class DivExpression extends Expression {
+public class DivExpression extends BinaryExpression {
     private Expression left;
     private Expression right;
 
@@ -15,10 +15,12 @@ public class DivExpression extends Expression {
         this.right = right;
     }
 
+    @Override
     public Expression getLeft() {
         return left;
     }
 
+    @Override
     public Expression getRight() {
         return right;
     }

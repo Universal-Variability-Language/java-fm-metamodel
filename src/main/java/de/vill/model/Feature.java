@@ -417,7 +417,7 @@ public class Feature implements VariableReference {
             result.append(featureType.getName()).append(" ");
         }
         if (withSubmodels) {
-            result.append(addNecessaryQuotes(getFullReference()));
+            result.append(addNecessaryQuotes(getIdentifier()));
         } else {
             result.append(addNecessaryQuotes(getReferenceFromSpecificSubmodel(currentAlias)));
         }
