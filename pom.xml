@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.universal-variability-language</groupId>
     <artifactId>fm-metamodel</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
 
     <name>UVL Java Metamodel</name>
     <description>This project host a java feature model metamodel for UVL </description>
@@ -50,7 +48,8 @@
         <connection>scm:git:git@github.com:Universal-Variability-Language/java-fm-metamodel.git</connection>
         <developerConnection>scm:git:git@github.com:Universal-Variability-Language/java-fm-metamodel.git</developerConnection>
         <url>https://github.com/Universal-Variability-Language/java-fm-metamodel</url>
-    </scm>
+      <tag>1.1</tag>
+  </scm>
 
     <distributionManagement>
         <snapshotRepository>
