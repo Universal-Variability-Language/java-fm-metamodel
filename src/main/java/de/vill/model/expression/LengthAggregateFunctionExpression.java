@@ -5,6 +5,7 @@ import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
+import de.vill.util.Util;
 
 import java.util.*;
 
@@ -18,7 +19,7 @@ public class LengthAggregateFunctionExpression extends Expression {
 
     @Override
     public String toString(final boolean withSubmodels, final String currentAlias) {
-        return String.format("len(%s)", reference.getIdentifier());
+        return String.format("len(%s)", Util.addNecessaryQuotes(reference.getIdentifier()));
     }
 
     @Override
