@@ -21,7 +21,13 @@ public class NotConstraint extends Constraint {
     public String toString(boolean withSubmodels, String currentAlias) {
         StringBuilder result = new StringBuilder();
         result.append("!");
-        result.append(content.toString(withSubmodels, currentAlias));
+        if (content instanceof VariableReference || content instanceof ParenthesisConstraint) {
+            result.append(content.toString(withSubmodels, currentAlias));
+        } else {
+            result.append("(");
+            result.append(content.toString(withSubmodels, currentAlias));
+            result.append(")");
+        }
         return result.toString();
     }
 
