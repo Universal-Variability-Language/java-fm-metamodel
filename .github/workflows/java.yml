@@ -1,4 +1,4 @@
-name: Build and Deploy Java Parser
+name: Test Java Parser
 
 on:
   push
