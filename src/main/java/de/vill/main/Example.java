@@ -3,12 +3,15 @@ package de.vill.main;
 import de.vill.config.Configuration;
 import de.vill.model.*;
 import de.vill.model.constraint.Constraint;
+import de.vill.model.pbc.PBCConstraint;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static de.vill.util.Util.*;
 
 public class Example {
     public static void main(String[] args) throws IOException {
@@ -26,7 +29,9 @@ public class Example {
         HashMap<Integer, Constraint> subMap = new HashMap<>();
         int n = 1;
         c.extractTseitinSubConstraints(subMap, n);
-        System.out.println(subMap.toString());
+        var map = transformSubFormulas(subMap);
+        List<PBCConstraint> pbcList = transformImplicationMap(map);
+        System.out.println(pbcList.toString());
 
 
     }

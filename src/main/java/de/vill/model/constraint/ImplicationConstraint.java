@@ -99,15 +99,15 @@ public class ImplicationConstraint extends Constraint {
         if(a1 == 0) {
             l1 = left;
         }else{
-            n++;
+            n = a1 + 1;
         }
         if(a2 == 0) {
             l2 = right;
         }else{
-            n++;
+            n = a2 + 1;
         }
 
-        ImplicationConstraint newConstraint = new ImplicationConstraint(l1, l2);
+        Constraint newConstraint = new ImplicationConstraint(l1, l2);
         substitutionMapping.put(n, newConstraint);
         return n;
     };

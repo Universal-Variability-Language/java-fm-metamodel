@@ -100,15 +100,15 @@ public class EquivalenceConstraint extends Constraint {
         if(a1 == 0) {
             l1 = left;
         }else{
-            n++;
+            n = a1 + 1;
         }
         if(a2 == 0) {
             l2 = right;
         }else{
-            n++;
+            n = a2 + 1;
         }
 
-        EquivalenceConstraint newConstraint = new EquivalenceConstraint(l1, l2);
+        Constraint newConstraint = new EquivalenceConstraint(l1, l2);
         substitutionMapping.put(n, newConstraint);
         return n;
     };

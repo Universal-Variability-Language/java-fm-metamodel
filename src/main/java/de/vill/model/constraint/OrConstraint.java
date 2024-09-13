@@ -113,7 +113,7 @@ public class OrConstraint extends Constraint {
             n = a2 + 1;
         }
 
-        OrConstraint newConstraint = new OrConstraint(l1, l2);
+        Constraint newConstraint = new OrConstraint(l1, l2);
         substitutionMapping.put(n, newConstraint);
         return n;
     };

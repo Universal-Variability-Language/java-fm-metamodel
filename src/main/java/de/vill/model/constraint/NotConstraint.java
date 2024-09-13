@@ -72,6 +72,25 @@ public class NotConstraint extends Constraint {
     }
 
     public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
-        return content.extractTseitinSubConstraints(substitutionMapping, n);
+        if (content instanceof LiteralConstraint){
+            return 0;
+        }
+        int a1 = content.extractTseitinSubConstraints(substitutionMapping, n);
+        int finalA = a1;
+        Constraint l1 = new LiteralConstraint(new VariableReference() {
+            @Override
+            public String getIdentifier() {
+                return "x_" + finalA;
+            }
+        });
+        if(a1 == 0) {
+            l1 = content;
+        }else{
+            n = a1 + 1;
+        }
+
+        Constraint newConstraint = new NotConstraint(l1);
+        substitutionMapping.put(n, newConstraint);
+        return n;
     };
 }
