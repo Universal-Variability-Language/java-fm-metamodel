@@ -3,6 +3,7 @@ package de.vill.model.building;
 import de.vill.exception.ParseError;
 import de.vill.model.*;
 import de.vill.model.constraint.Constraint;
+import de.vill.model.constraint.LiteralConstraint;
 
 import java.util.List;
 import java.util.Map;
@@ -133,6 +134,24 @@ public class FeatureModelBuilder {
 
     public Set<LanguageLevel> getLanguageLevels() {
         return fmInConstruction.getUsedLanguageLevels();
+    }
+
+    public LiteralConstraint createFeatureLiteral(String name) {
+        if (fmInConstruction.getFeatureMap().containsKey(name)) {
+            return new LiteralConstraint(fmInConstruction.getFeatureMap().get(name));
+        } else {
+            System.err.println("Tried to reference " + name + " but feature with that name does not exist");
+            return null;
+        }
+    }
+
+    public GlobalAttribute createGlobalAttribute(String name) {
+        GlobalAttribute toCreate = new GlobalAttribute(name, fmInConstruction);
+        if (toCreate.getType() == null) {
+            System.err.println("Tried to reference " + name + " but attribute with that name does not exist");
+            return null;
+        }
+        return toCreate;
     }
 
 }
