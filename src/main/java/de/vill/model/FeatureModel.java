@@ -254,6 +254,13 @@ public class FeatureModel {
         return toString(false, "");
     }
 
+    public String toOPBString(){
+        String result = "";
+        result += getRootFeature().getFeatureName().replace(" ", "_") + " >= 1;\n";
+        result += getRootFeature().toOPBString();
+        return result;
+    }
+
     /**
      * Returns a single uvl feature model composed out of all submodels. To avoid
      * naming conflicts all feature names are changed and a unique id is added. If

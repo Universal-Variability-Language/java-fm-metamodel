@@ -369,6 +369,71 @@ public class Feature implements VariableReference {
         return toString(true, "");
     }
 
+    public String toOPBString() {
+        String result = "";
+        List<Group> childGroups = getChildren();
+        for (Group group : childGroups){
+            switch (group.GROUPTYPE) {
+                case OPTIONAL:
+                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    for (Feature child : group.getFeatures()){
+                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                    }
+                    result += " >= 0;\n";
+                    break;
+                case MANDATORY:
+                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    for (Feature child : group.getFeatures()){
+                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                    }
+                    result += " = 0;\n";
+                    break;
+                case OR:
+                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    for (Feature child : group.getFeatures()){
+                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                    }
+                    result += " <= " + (group.getFeatures().size() - 1) + ";\n";
+                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    for (Feature child : group.getFeatures()){
+                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                    }
+                    result += " >= 0;\n";
+                    break;
+                case ALTERNATIVE:
+                    result += getFeatureName();
+                    for (Feature child : group.getFeatures()){
+                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                    }
+                    result += " = 0;\n";
+                    break;
+                case GROUP_CARDINALITY:
+                    //TODO: Lastminute, check tomorrow if correct
+                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    for (Feature child : group.getFeatures()){
+                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                    }
+                    result += " >= 0;\n";
+                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    for (Feature child : group.getFeatures()){
+                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                    }
+                    result += " >= " + (group.getFeatures().size() - group.getCardinality().upper) + ";\n";
+                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    for (Feature child : group.getFeatures()){
+                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                    }
+                    result += " <= " + (group.getFeatures().size() - group.getCardinality().lower) + ";\n";
+            }
+            for (Feature child : group.getFeatures()){
+                if(child.getChildren().size() > 0) {
+                    result += child.toOPBString();
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * This method is necessary because the uvl string representation differs
      * between the feature as imported feature another feature model or as the root
