@@ -1,6 +1,7 @@
 package de.vill.util;
 
 import de.vill.config.Configuration;
+import de.vill.model.constraint.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,5 +44,37 @@ public class Util {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static boolean isJustAnd(Constraint constraint){
+        if(constraint instanceof ParenthesisConstraint){
+            return isJustAnd(((ParenthesisConstraint) constraint).getContent());
+        }
+        if(constraint instanceof LiteralConstraint){
+            return true;
+        }
+        if(constraint instanceof NotConstraint){
+            return isJustAnd(((NotConstraint) constraint).getContent());
+        }
+        if(constraint instanceof AndConstraint && isJustAnd(((AndConstraint) constraint).getLeft()) && isJustAnd(((AndConstraint) constraint).getRight())){
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isJustOr(Constraint constraint){
+        if(constraint instanceof ParenthesisConstraint){
+            return isJustOr(((ParenthesisConstraint) constraint).getContent());
+        }
+        if(constraint instanceof LiteralConstraint){
+            return true;
+        }
+        if(constraint instanceof NotConstraint){
+            return isJustOr(((NotConstraint) constraint).getContent());
+        }
+        if(constraint instanceof OrConstraint && isJustOr(((OrConstraint) constraint).getLeft()) && isJustOr(((OrConstraint) constraint).getRight())){
+            return true;
+        }
+        return false;
     }
 }

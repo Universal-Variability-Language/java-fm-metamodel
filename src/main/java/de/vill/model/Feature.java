@@ -408,7 +408,6 @@ public class Feature implements VariableReference {
                     result += " = 0;\n";
                     break;
                 case GROUP_CARDINALITY:
-                    //TODO: Lastminute, check tomorrow if correct
                     result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
                     for (Feature child : group.getFeatures()){
                         result += " -1 * " + child.getFeatureName().replace(" ", "_");
@@ -431,6 +430,7 @@ public class Feature implements VariableReference {
                 }
             }
         }
+
         return result;
     }
 

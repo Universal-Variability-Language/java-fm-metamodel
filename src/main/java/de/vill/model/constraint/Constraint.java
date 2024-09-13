@@ -3,6 +3,7 @@ package de.vill.model.constraint;
 import de.vill.model.building.VariableReference;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class Constraint {
     public int getLineNumber() {
@@ -40,4 +41,8 @@ public abstract class Constraint {
     public abstract boolean equals(Object obj);
 
     public abstract List<VariableReference> getReferences();
+
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
+        return 0;
+    };
 }

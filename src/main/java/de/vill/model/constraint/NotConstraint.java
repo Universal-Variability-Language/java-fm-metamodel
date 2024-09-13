@@ -4,6 +4,7 @@ import de.vill.model.building.VariableReference;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class NotConstraint extends Constraint {
@@ -69,4 +70,8 @@ public class NotConstraint extends Constraint {
     public List<VariableReference> getReferences() {
         return content.getReferences();
     }
+
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
+        return content.extractTseitinSubConstraints(substitutionMapping, n);
+    };
 }

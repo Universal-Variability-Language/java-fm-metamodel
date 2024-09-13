@@ -8,13 +8,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Example {
     public static void main(String[] args) throws IOException {
+
         FeatureModel featureModel = loadUVLFeatureModelFromFile("test.uvl");
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
 
@@ -22,7 +20,15 @@ public class Example {
         //levels.add(LanguageLevel.BOOLEAN_LEVEL);
         //uvlModelFactory.convertExceptAcceptedLanguageLevel(featureModel, levels);
         //System.out.println(featureModel.composedModelToString());
-        System.out.println(featureModel.toOPBString());
+        //System.out.println(featureModel.toOPBString());
+
+        var c = featureModel.getConstraints().get(0);
+        HashMap<Integer, Constraint> subMap = new HashMap<>();
+        int n = 1;
+        c.extractTseitinSubConstraints(subMap, n);
+        System.out.println(subMap.toString());
+
+
     }
 
     /**

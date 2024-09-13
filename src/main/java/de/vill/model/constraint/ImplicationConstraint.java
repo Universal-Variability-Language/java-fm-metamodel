@@ -2,10 +2,9 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import static de.vill.util.Util.isJustAnd;
 
 public class ImplicationConstraint extends Constraint {
     private Constraint left;
@@ -79,4 +78,37 @@ public class ImplicationConstraint extends Constraint {
         references.addAll(right.getReferences());
         return references;
     }
+
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
+        int a1 = left.extractTseitinSubConstraints(substitutionMapping, n);
+        int a2 = right.extractTseitinSubConstraints(substitutionMapping, a1+1);
+        int finalA = a1;
+        Constraint l1 = new LiteralConstraint(new VariableReference() {
+            @Override
+            public String getIdentifier() {
+                return "x_" + finalA;
+            }
+        });
+        int finalA1 = a2;
+        Constraint l2 = new LiteralConstraint(new VariableReference() {
+            @Override
+            public String getIdentifier() {
+                return "x_" + finalA1;
+            }
+        });
+        if(a1 == 0) {
+            l1 = left;
+        }else{
+            n++;
+        }
+        if(a2 == 0) {
+            l2 = right;
+        }else{
+            n++;
+        }
+
+        ImplicationConstraint newConstraint = new ImplicationConstraint(l1, l2);
+        substitutionMapping.put(n, newConstraint);
+        return n;
+    };
 }

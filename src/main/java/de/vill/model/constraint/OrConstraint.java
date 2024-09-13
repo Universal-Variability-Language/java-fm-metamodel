@@ -2,10 +2,10 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import static de.vill.util.Util.isJustAnd;
+import static de.vill.util.Util.isJustOr;
 
 public class OrConstraint extends Constraint {
 
@@ -78,4 +78,43 @@ public class OrConstraint extends Constraint {
         references.addAll(right.getReferences());
         return references;
     }
+
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
+        int a1 = 0;
+        if(!isJustOr(left)){
+            a1 = left.extractTseitinSubConstraints(substitutionMapping, n);
+        }
+        int a2 = 0;
+        if(!isJustOr(right)){
+            a2 = right.extractTseitinSubConstraints(substitutionMapping, n);
+        }
+        int finalA = a1;
+        Constraint l1 = new LiteralConstraint(new VariableReference() {
+            @Override
+            public String getIdentifier() {
+                return "x_" + finalA;
+            }
+        });
+        int finalA1 = a2;
+        Constraint l2 = new LiteralConstraint(new VariableReference() {
+            @Override
+            public String getIdentifier() {
+                return "x_" + finalA1;
+            }
+        });
+        if(a1 == 0) {
+            l1 = left;
+        }else{
+            n = a1 + 1;
+        }
+        if(a2 == 0) {
+            l2 = right;
+        }else{
+            n = a2 + 1;
+        }
+
+        OrConstraint newConstraint = new OrConstraint(l1, l2);
+        substitutionMapping.put(n, newConstraint);
+        return n;
+    };
 }
