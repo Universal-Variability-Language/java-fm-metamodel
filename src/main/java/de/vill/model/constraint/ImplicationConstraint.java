@@ -79,21 +79,21 @@ public class ImplicationConstraint extends Constraint {
         return references;
     }
 
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
-        int a1 = left.extractTseitinSubConstraints(substitutionMapping, n);
-        int a2 = right.extractTseitinSubConstraints(substitutionMapping, a1+1);
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
+        int a1 = left.extractTseitinSubConstraints(substitutionMapping, n, counter);
+        int a2 = right.extractTseitinSubConstraints(substitutionMapping, a1+1, counter);
         int finalA = a1;
         Constraint l1 = new LiteralConstraint(new VariableReference() {
             @Override
             public String getIdentifier() {
-                return "x_" + finalA;
+                return "x_" + counter + "_" + finalA;
             }
         });
         int finalA1 = a2;
         Constraint l2 = new LiteralConstraint(new VariableReference() {
             @Override
             public String getIdentifier() {
-                return "x_" + finalA1;
+                return "x_" + counter + "_" + finalA1;
             }
         });
         if(a1 == 0) {

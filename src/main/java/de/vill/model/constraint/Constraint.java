@@ -42,7 +42,7 @@ public abstract class Constraint {
 
     public abstract List<VariableReference> getReferences();
 
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
         return 0;
     };
 }

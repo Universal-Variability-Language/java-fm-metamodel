@@ -78,27 +78,27 @@ public class AndConstraint extends Constraint {
         return references;
     }
 
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
         int a1 = 0;
         if(!isJustAnd(left) ){
-            a1 = left.extractTseitinSubConstraints(substitutionMapping, n);
+            a1 = left.extractTseitinSubConstraints(substitutionMapping, n, counter);
         }
         int a2 = 0;
         if(!isJustAnd(right)){
-            a2 = right.extractTseitinSubConstraints(substitutionMapping, n);
+            a2 = right.extractTseitinSubConstraints(substitutionMapping, n, counter);
         }
         int finalA = a1;
         Constraint l1 = new LiteralConstraint(new VariableReference() {
             @Override
             public String getIdentifier() {
-                return "x_" + finalA;
+                return "x_" + counter + "_" + finalA;
             }
         });
         int finalA1 = a2;
         Constraint l2 = new LiteralConstraint(new VariableReference() {
             @Override
             public String getIdentifier() {
-                return "x_" + finalA1;
+                return "x_" + counter + "_" + finalA1;
             }
         });
         if(a1 == 0) {

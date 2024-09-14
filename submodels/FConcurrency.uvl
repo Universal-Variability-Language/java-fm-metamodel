@@ -1,0 +1,11 @@
+namespace FConcurrency
+
+features
+	FConcurrency {abstract true}
+		or
+			featureLatch
+			featureFSync
+			featureTransaction
+			dummyFeatureLocking
+			featureCheckLeaks
+

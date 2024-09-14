@@ -3,8 +3,10 @@ package de.vill.main;
 import de.vill.config.Configuration;
 import de.vill.model.*;
 import de.vill.model.constraint.Constraint;
+import de.vill.model.pbc.Literal;
 import de.vill.model.pbc.PBCConstraint;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,13 +20,17 @@ public class Example {
 
         FeatureModel featureModel = loadUVLFeatureModelFromFile("test.uvl");
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
+        System.out.println(featureModel.toOPBString());
+
+
 
         //Set<LanguageLevel> levels = new HashSet<>();
         //levels.add(LanguageLevel.BOOLEAN_LEVEL);
         //uvlModelFactory.convertExceptAcceptedLanguageLevel(featureModel, levels);
         //System.out.println(featureModel.composedModelToString());
-        //System.out.println(featureModel.toOPBString());
 
+
+        /*
         var c = featureModel.getConstraints().get(0);
         HashMap<Integer, Constraint> subMap = new HashMap<>();
         int n = 1;
@@ -33,6 +39,42 @@ public class Example {
         List<PBCConstraint> pbcList = transformImplicationMap(map);
         System.out.println(pbcList.toString());
 
+         */
+//dimacsToOPB("/home/stefan/stefan-vill-master/tmp_eval/tmp5.dimacs");
+
+    }
+
+    private static void dimacsToOPB(String path) throws IOException {
+        String[] lines = new String(Files.readAllBytes(Paths.get(path))).split("\n");
+        List<PBCConstraint> constraintList = new LinkedList<>();
+
+        for(String line : lines){
+            if(!line.startsWith("c") && !line.startsWith("p")){
+                PBCConstraint pbcConstraint = new PBCConstraint();
+                pbcConstraint.literalList = new LinkedList<>();
+                pbcConstraint.k = 1;
+                for(String l : line.split(" ")){
+                    int v = Integer.parseInt(l);
+                    if(v > 0){
+                        Literal literal = new Literal();
+                        literal.name = "x_" + v;
+                        literal.factor = 1;
+                        pbcConstraint.literalList.add(literal);
+                    }else if(v < 0){
+                        Literal literal = new Literal();
+                        literal.name = "x_" + (-1 * v);
+                        literal.factor = -1;
+                        pbcConstraint.literalList.add(literal);
+                        pbcConstraint.k = pbcConstraint.k -1;
+                    }
+                }
+                constraintList.add(pbcConstraint);
+            }
+        }
+
+        for(PBCConstraint pbcConstraint : constraintList){
+            System.out.println(pbcConstraint.toString() + ";");
+        }
 
     }
 

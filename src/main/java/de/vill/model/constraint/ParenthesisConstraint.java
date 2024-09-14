@@ -64,7 +64,7 @@ public class ParenthesisConstraint extends Constraint {
         return content.getReferences();
     }
 
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n) {
-        return content.extractTseitinSubConstraints(substitutionMapping, n);
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
+        return content.extractTseitinSubConstraints(substitutionMapping, n, counter);
     };
 }

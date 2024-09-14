@@ -1,0 +1,10 @@
+features
+    x
+        optional
+            a
+            b
+            c
+            d
+            e
+constraints
+    a | b | c | d => e

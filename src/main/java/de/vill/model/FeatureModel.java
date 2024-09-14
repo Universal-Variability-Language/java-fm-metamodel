@@ -1,7 +1,5 @@
 package de.vill.model;
 
-import static de.vill.util.Util.addNecessaryQuotes;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +15,10 @@ import de.vill.model.constraint.LiteralConstraint;
 import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
+import de.vill.model.pbc.PBCConstraint;
 import de.vill.util.Util;
+
+import static de.vill.util.Util.*;
 
 /**
  * This class represents a feature model and all its sub feature models if the
@@ -258,6 +259,18 @@ public class FeatureModel {
         String result = "";
         result += getRootFeature().getFeatureName().replace(" ", "_") + " >= 1;\n";
         result += getRootFeature().toOPBString();
+        int counter = 0;
+        for(Constraint constraint : getConstraints()){
+            HashMap<Integer, Constraint> subMap = new HashMap<>();
+            int n = 1;
+            constraint.extractTseitinSubConstraints(subMap, n, counter);
+            var map = transformSubFormulas(subMap);
+            List<PBCConstraint> pbcList = transformImplicationMap(map, counter);
+            for(PBCConstraint pbcConstraint : pbcList){
+                result += pbcConstraint.toString() + ";\n";
+            }
+            counter++;
+        }
         return result;
     }
 
