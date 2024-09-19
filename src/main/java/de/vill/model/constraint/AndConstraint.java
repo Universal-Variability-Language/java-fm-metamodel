@@ -82,10 +82,12 @@ public class AndConstraint extends Constraint {
         int a1 = 0;
         if(!isJustAnd(left) ){
             a1 = left.extractTseitinSubConstraints(substitutionMapping, n, counter);
+            n += a1;
         }
         int a2 = 0;
         if(!isJustAnd(right)){
-            a2 = right.extractTseitinSubConstraints(substitutionMapping, n, counter);
+            a2 = right.extractTseitinSubConstraints(substitutionMapping, n + 1, counter);
+            n+= a2;
         }
         int finalA = a1;
         Constraint l1 = new LiteralConstraint(new VariableReference() {
@@ -103,13 +105,12 @@ public class AndConstraint extends Constraint {
         });
         if(a1 == 0) {
             l1 = left;
-        }else{
-            n = a1 + 1;
         }
         if(a2 == 0) {
             l2 = right;
-        }else{
-            n = a2 + 1;
+        }
+        if (a1 + a2 != 0){
+            n++;
         }
 
         Constraint newConstraint = new AndConstraint(l1, l2);

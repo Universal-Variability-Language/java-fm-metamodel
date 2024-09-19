@@ -81,7 +81,9 @@ public class EquivalenceConstraint extends Constraint {
 
     public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
         int a1 = left.extractTseitinSubConstraints(substitutionMapping, n, counter);
-        int a2 = right.extractTseitinSubConstraints(substitutionMapping, a1+1, counter);
+        n = n+a1;
+        int a2 = right.extractTseitinSubConstraints(substitutionMapping, n+1, counter);
+        n = n + a2;
 
         int finalA = a1;
         Constraint l1 = new LiteralConstraint(new VariableReference() {
@@ -99,13 +101,12 @@ public class EquivalenceConstraint extends Constraint {
         });
         if(a1 == 0) {
             l1 = left;
-        }else{
-            n = a1 + 1;
         }
         if(a2 == 0) {
             l2 = right;
-        }else{
-            n = a2 + 1;
+        }
+        if (a1 + a2 != 0){
+            n++;
         }
 
         Constraint newConstraint = new EquivalenceConstraint(l1, l2);
