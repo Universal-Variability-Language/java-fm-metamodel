@@ -314,8 +314,8 @@ public class Util {
             PBCConstraint pbcConstraint2 = new PBCConstraint();
             pbcConstraint2.k = 1;
             pbcConstraint2.literalList = new LinkedList<>();
-            pbcConstraint2.literalList.add(l1);
-            pbcConstraint2.literalList.add(l2);
+            pbcConstraint2.literalList.add(l1_1);
+            pbcConstraint2.literalList.add(l2_1);
             List<PBCConstraint> constraintList = new LinkedList<>();
             constraintList.add(pbcConstraint1);
             constraintList.add(pbcConstraint2);
