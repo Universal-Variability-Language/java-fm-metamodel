@@ -112,4 +112,15 @@ public class ImplicationConstraint extends Constraint {
         substitutionMapping.put(n, newConstraint);
         return n;
     };
+
+    @Override
+    public StringBuilder toSMT2string() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(=>\n");
+        builder.append(left.toSMT2string());
+        builder.append("\n");
+        builder.append(right.toSMT2string());
+        builder.append(")");
+        return builder;
+    }
 }

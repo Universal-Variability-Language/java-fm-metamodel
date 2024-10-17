@@ -116,5 +116,18 @@ public class AndConstraint extends Constraint {
         Constraint newConstraint = new AndConstraint(l1, l2);
         substitutionMapping.put(n, newConstraint);
         return n;
-    };
+    }
+
+    @Override
+    public StringBuilder toSMT2string() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(and\n");
+        builder.append(left.toSMT2string());
+        builder.append("\n");
+        builder.append(right.toSMT2string());
+        builder.append(")");
+        return builder;
+    }
+
+    ;
 }

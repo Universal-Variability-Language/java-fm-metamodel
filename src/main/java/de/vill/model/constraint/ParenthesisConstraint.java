@@ -67,4 +67,11 @@ public class ParenthesisConstraint extends Constraint {
     public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
         return content.extractTseitinSubConstraints(substitutionMapping, n, counter);
     };
+
+    @Override
+    public StringBuilder toSMT2string() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(content.toSMT2string());
+        return builder;
+    }
 }

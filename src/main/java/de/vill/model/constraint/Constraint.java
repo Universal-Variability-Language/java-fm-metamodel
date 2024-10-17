@@ -45,4 +45,6 @@ public abstract class Constraint {
     public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
         return 0;
     };
+
+    public abstract StringBuilder toSMT2string();
 }

@@ -61,4 +61,11 @@ public class LiteralConstraint extends Constraint {
     public List<VariableReference> getReferences() {
         return List.of(reference);
     }
+
+    @Override
+    public StringBuilder toSMT2string() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(reference.getIdentifier());
+        return builder;
+    }
 }

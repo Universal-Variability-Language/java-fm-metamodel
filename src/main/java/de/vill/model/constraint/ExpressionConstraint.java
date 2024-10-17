@@ -111,4 +111,9 @@ public abstract class ExpressionConstraint extends Constraint {
         references.addAll(right.getReferences());
         return references;
     }
+
+    @Override
+    public StringBuilder toSMT2string() {
+        return null;
+    }
 }

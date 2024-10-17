@@ -93,4 +93,14 @@ public class NotConstraint extends Constraint {
         substitutionMapping.put(n, newConstraint);
         return n;
     };
+
+    @Override
+    public StringBuilder toSMT2string() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(not\n");
+        builder.append(content.toSMT2string());
+        builder.append("\n");
+        builder.append(")");
+        return builder;
+    }
 }

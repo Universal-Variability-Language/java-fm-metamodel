@@ -274,6 +274,29 @@ public class FeatureModel {
         return result;
     }
 
+    public StringBuilder toSMT2string() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(set-logic QF_UF)\n");
+        for (String name : this.getFeatureMap().keySet()) {
+            builder.append("(declare-const ");
+            builder.append(name);
+            builder.append(" Bool)\n");
+        }
+        builder.append("(assert \n");
+        builder.append(rootFeature.getFeatureName());
+        builder.append(")\n");
+        for (Group group : rootFeature.getChildren()){
+            builder.append(group.toSMT2string());
+        }
+        for (Constraint constraint : this.getConstraints()) {
+            builder.append("(assert \n");
+            builder.append(constraint.toSMT2string());
+            builder.append(")\n");
+        }
+        builder.append("(apply tseitin-cnf)");
+        return builder;
+    }
+
     /**
      * Returns a single uvl feature model composed out of all submodels. To avoid
      * naming conflicts all feature names are changed and a unique id is added. If
