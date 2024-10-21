@@ -267,7 +267,7 @@ public class UVLListener extends UVLJavaBaseListener {
             Attribute<Boolean> attribute = new Attribute<>(attributeName, Boolean.parseBoolean(ctx.value().getText().replace("'", "")), feature);
             attributeStack.peek().put(attributeName, attribute);
         } else if (ctx.value().INTEGER() != null) {
-            Attribute<Integer> attribute = new Attribute<>(attributeName, Integer.parseInt(ctx.value().getText().replace("'", "")), feature);
+            Attribute<Long> attribute = new Attribute<>(attributeName, Long.parseLong(ctx.value().getText().replace("'", "")), feature);
             attributeStack.peek().put(attributeName, attribute);
         } else if (ctx.value().FLOAT() != null) {
             Attribute<Double> attribute = new Attribute<>(attributeName, Double.parseDouble(ctx.value().getText().replace("'", "")), feature);

@@ -3,6 +3,8 @@ package de.vill.conversion;
 import com.google.common.collect.Sets;
 import de.vill.model.*;
 import de.vill.model.constraint.*;
+import de.vill.model.expression.AggregateFunctionExpression;
+import de.vill.model.expression.BinaryExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
 
@@ -68,9 +70,14 @@ public class ConvertSMTLevel implements IConversionStrategy {
 
     private Set<Feature> getFeaturesInExpression(Expression expression) {
         Set<Feature> featuresInEquation = new HashSet<>();
-        if (expression instanceof LiteralExpression && ((LiteralExpression) expression).getContent() instanceof Feature) {
-            featuresInEquation.add((Feature) ((LiteralExpression) expression).getContent());
-        } else {
+        if (expression instanceof LiteralExpression) {
+            LiteralExpression literalExpression = (LiteralExpression) expression;
+            if (literalExpression.getContent() instanceof Feature) {
+                featuresInEquation.add((Feature) ((LiteralExpression) expression).getContent());
+            } else if (literalExpression.getContent() instanceof Attribute<?>) {
+                featuresInEquation.add(((Attribute<?>) literalExpression.getContent()).getFeature());
+            }
+        }  else {
             for (Expression subExpression : expression.getExpressionSubParts()) {
                 featuresInEquation.addAll(getFeaturesInExpression(subExpression));
             }
