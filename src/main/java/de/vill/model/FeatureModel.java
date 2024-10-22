@@ -260,7 +260,11 @@ public class FeatureModel {
         result += getRootFeature().getFeatureName().replace(" ", "_") + " >= 1;\n";
         result += getRootFeature().toOPBString();
         int counter = 0;
-        for(Constraint constraint : getConstraints()){
+
+        List<Constraint> constraints = getConstraints();
+        constraints.addAll(getFeatureConstraints());
+
+        for(Constraint constraint : constraints){
             HashMap<Integer, Constraint> subMap = new HashMap<>();
             int n = 1;
             constraint.extractTseitinSubConstraints(subMap, n, counter);
