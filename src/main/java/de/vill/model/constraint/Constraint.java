@@ -1,7 +1,9 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.Literal;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,4 +49,13 @@ public abstract class Constraint {
     };
 
     public abstract StringBuilder toSMT2string();
+
+    public List<ExpressionConstraint> collectExpressions(){
+        List<ExpressionConstraint> expressions = new LinkedList<>();
+        for (Constraint subConstraint : getConstraintSubParts()) {
+            expressions.addAll(subConstraint.collectExpressions());
+        }
+        return expressions;
+    }
 }
+

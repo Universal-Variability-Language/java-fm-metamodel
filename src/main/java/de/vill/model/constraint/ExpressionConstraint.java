@@ -5,6 +5,7 @@ import de.vill.model.building.VariableReference;
 import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
+import de.vill.model.pbc.Literal;
 
 import java.util.*;
 
@@ -115,5 +116,27 @@ public abstract class ExpressionConstraint extends Constraint {
     @Override
     public StringBuilder toSMT2string() {
         return null;
+    }
+
+    @Override
+    public List<ExpressionConstraint> collectExpressions(){
+        List<ExpressionConstraint> expressions = new LinkedList<>();
+        expressions.add(this);
+        return expressions;
+    }
+
+    @Override
+    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
+        final int finalN = n;
+        Constraint l1 = new LiteralConstraint(new VariableReference() {
+            @Override
+            public String getIdentifier() {
+                return "x_" + counter + "_" + finalN;
+            }
+        });
+        n++;
+
+        substitutionMapping.put(n, this);
+        return n;
     }
 }

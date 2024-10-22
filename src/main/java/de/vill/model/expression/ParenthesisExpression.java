@@ -2,6 +2,8 @@ package de.vill.model.expression;
 
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.Literal;
+import de.vill.model.pbc.PBCConstraint;
 
 import java.util.Collections;
 import java.util.List;
@@ -71,6 +73,11 @@ public class ParenthesisExpression extends Expression {
     @Override
     public List<VariableReference> getReferences() {
         return List.of();
+    }
+
+    @Override
+    public List<Literal> getAsSum(List<PBCConstraint> additionalConstraints) {
+        return getContent().getAsSum(additionalConstraints);
     }
 
     @Override

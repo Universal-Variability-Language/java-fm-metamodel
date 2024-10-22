@@ -11,6 +11,7 @@ import java.util.Set;
 
 import de.vill.config.Configuration;
 import de.vill.model.constraint.Constraint;
+import de.vill.model.constraint.ExpressionConstraint;
 import de.vill.model.constraint.LiteralConstraint;
 import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
@@ -264,16 +265,22 @@ public class FeatureModel {
         List<Constraint> constraints = getConstraints();
         constraints.addAll(getFeatureConstraints());
 
+        List<PBCConstraint> additionalConstraints = new LinkedList<>();
+
         for(Constraint constraint : constraints){
             HashMap<Integer, Constraint> subMap = new HashMap<>();
             int n = 1;
             constraint.extractTseitinSubConstraints(subMap, n, counter);
-            var map = transformSubFormulas(subMap);
+            var map = transformSubFormulas(subMap, additionalConstraints);
             List<PBCConstraint> pbcList = transformImplicationMap(map, counter);
             for(PBCConstraint pbcConstraint : pbcList){
                 result += pbcConstraint.toString() + ";\n";
             }
             counter++;
+        }
+
+        for (PBCConstraint pbcConstraint : additionalConstraints){
+            result += pbcConstraint.toString() + ";\n";
         }
         return result;
     }

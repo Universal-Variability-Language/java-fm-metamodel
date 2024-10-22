@@ -16,7 +16,7 @@ import static de.vill.util.Util.transformSubFormulas;
 
 public class Eval {
 
-    public static final String WORKING_DIR = "/home/stefan/eval/";
+    public static final String WORKING_DIR = "/home/stefan/stefan-vill-master/tmp_eval/";
 
     public static void main(String[] args) throws IOException {
         uvlToOPB("test");
@@ -66,6 +66,7 @@ public class Eval {
         FeatureModel featureModel = loadUVLFeatureModelFromFile(WORKING_DIR + uvlPath);
         Set<LanguageLevel> levels = new HashSet<>();
         levels.add(LanguageLevel.BOOLEAN_LEVEL);
+        levels.add(LanguageLevel.TYPE_LEVEL);
         uvlModelFactory.convertExceptAcceptedLanguageLevel(featureModel, levels);
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(WORKING_DIR + "test.smt2"))) {

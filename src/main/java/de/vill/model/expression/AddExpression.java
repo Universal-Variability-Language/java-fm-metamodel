@@ -2,6 +2,8 @@ package de.vill.model.expression;
 
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.Literal;
+import de.vill.model.pbc.PBCConstraint;
 import de.vill.util.Constants;
 
 import java.util.*;
@@ -82,5 +84,14 @@ public class AddExpression extends BinaryExpression {
         references.addAll(left.getReferences());
         references.addAll(right.getReferences());
         return references;
+    }
+
+    @Override
+    public List<Literal> getAsSum(List<PBCConstraint> additionalConstraints) {
+        List<Literal> result = new LinkedList<>();
+        result.addAll(left.getAsSum(additionalConstraints));
+        List<Literal> rightSum = right.getAsSum(additionalConstraints);
+        result.addAll(rightSum);
+        return result;
     }
 }

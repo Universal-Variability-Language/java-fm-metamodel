@@ -1,7 +1,9 @@
 package de.vill.util;
 
 import de.vill.config.Configuration;
+import de.vill.model.Attribute;
 import de.vill.model.constraint.*;
+import de.vill.model.expression.*;
 import de.vill.model.pbc.Literal;
 import de.vill.model.pbc.PBCConstraint;
 
@@ -12,6 +14,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.ToDoubleBiFunction;
+import java.util.stream.Collectors;
 
 public class Util {
     public static String indentEachLine(String text) {
@@ -144,15 +148,15 @@ public class Util {
         return resultList;
     }
 
-    public static HashMap<Integer, List<PBCConstraint>> transformSubFormulas(HashMap<Integer, Constraint> subformulas){
+    public static HashMap<Integer, List<PBCConstraint>> transformSubFormulas(HashMap<Integer, Constraint> subformulas, List<PBCConstraint> additionalConstraints){
         HashMap<Integer, List<PBCConstraint>> resultMap = new HashMap<>();
         for (Map.Entry<Integer, Constraint> entry : subformulas.entrySet()) {
-            resultMap.put(entry.getKey(), transformSubFormula(entry.getValue()));
+            resultMap.put(entry.getKey(), transformSubFormula(entry.getValue(), additionalConstraints));
         }
         return resultMap;
     }
 
-    public static List<PBCConstraint> transformSubFormula(Constraint constraint){
+    public static List<PBCConstraint> transformSubFormula(Constraint constraint, List<PBCConstraint> additionalConstraints){
         List<PBCConstraint> resultList = new LinkedList<>();
         if(constraint instanceof NotConstraint){
             resultList.add(transformNegLiteral((NotConstraint) constraint));
@@ -168,6 +172,10 @@ public class Util {
             var orConstraint = transformOr((OrConstraint) constraint);
             orConstraint.k = orConstraint.k + 1;
             resultList.add(orConstraint);
+        }
+        else if (constraint instanceof ExpressionConstraint) {
+            ExpressionConstraint expressionConstraint = (ExpressionConstraint) constraint;
+            resultList.add(transformExpression(expressionConstraint, additionalConstraints));
         }
         return resultList;
     }
@@ -401,5 +409,31 @@ public class Util {
             return pbcConstraint;
         }
     }
-    
+
+    public static PBCConstraint transformExpression(ExpressionConstraint constraint, List<PBCConstraint> additionalConstraints) {
+        //TODO constraint.removeDiv
+        var leftSum = constraint.getLeft().getAsSum(additionalConstraints);
+        var rightSum = constraint.getRight().getAsSum(additionalConstraints);
+        rightSum.addAll(leftSum.stream().filter(x -> x.name == null).collect(Collectors.toList()));
+        leftSum = leftSum.stream().filter(x -> x.name != null).collect(Collectors.toList());
+        leftSum.addAll(rightSum.stream().filter(x -> x.name != null).collect(Collectors.toList()));
+        rightSum = rightSum.stream().filter(x -> x.name == null).collect(Collectors.toList());
+
+        HashMap<String, Integer> literalMap = new HashMap<>();
+        for (Literal l : leftSum) {
+            if (literalMap.containsKey(l.name)) {
+                literalMap.put(l.name, literalMap.get(l.name) + l.factor);
+            }else{
+                literalMap.put(l.name, l.factor);
+            }
+        }
+        PBCConstraint pbcConstraint = new PBCConstraint();
+        pbcConstraint.k = rightSum.stream().map(x -> x.factor).reduce(0, Integer::sum);
+        pbcConstraint.literalList = new LinkedList<>();
+        for (Map.Entry<String,Integer> e : literalMap.entrySet()) {
+            pbcConstraint.literalList.add(new Literal(e.getValue(), e.getKey()));
+        }
+
+        return pbcConstraint;
+    }
 }

@@ -2,6 +2,8 @@ package de.vill.model.expression;
 
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.Literal;
+import de.vill.model.pbc.PBCConstraint;
 import de.vill.util.Constants;
 
 import java.util.*;
@@ -80,6 +82,13 @@ public class NumberExpression extends Expression {
     @Override
     public List<VariableReference> getReferences() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<Literal> getAsSum(List<PBCConstraint> additionalConstraints) {
+        List<Literal> result = new LinkedList<>();
+        result.add(new Literal((int) number, null));
+        return result;
     }
 
     @Override

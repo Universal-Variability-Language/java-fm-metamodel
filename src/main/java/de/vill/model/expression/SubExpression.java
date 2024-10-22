@@ -2,6 +2,8 @@ package de.vill.model.expression;
 
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.Literal;
+import de.vill.model.pbc.PBCConstraint;
 import de.vill.util.Constants;
 
 import java.util.*;
@@ -73,6 +75,16 @@ public class SubExpression extends BinaryExpression {
     public List<VariableReference> getReferences() {
         List<VariableReference> result = new ArrayList<>(left.getReferences());
         result.addAll(right.getReferences());
+        return result;
+    }
+
+    public List<Literal> getAsSum(List<PBCConstraint> additionalConstraints) {
+        var result = left.getAsSum(additionalConstraints);
+        var rightResult = right.getAsSum(additionalConstraints);
+        for (Literal l : rightResult){
+            l.factor *= -1;
+        }
+        result.addAll(rightResult);
         return result;
     }
 

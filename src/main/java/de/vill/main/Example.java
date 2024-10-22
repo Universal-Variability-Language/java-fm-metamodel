@@ -20,14 +20,20 @@ public class Example {
 
         FeatureModel featureModel = loadUVLFeatureModelFromFile("test.uvl");
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        System.out.println(featureModel.toOPBString());
+        //System.out.println(featureModel.toOPBString());
 
 
 
-        //Set<LanguageLevel> levels = new HashSet<>();
-        //levels.add(LanguageLevel.BOOLEAN_LEVEL);
-        //uvlModelFactory.convertExceptAcceptedLanguageLevel(featureModel, levels);
-        //System.out.println(featureModel.composedModelToString());
+        Set<LanguageLevel> levels = new HashSet<>();
+        levels.add(LanguageLevel.BOOLEAN_LEVEL);
+        levels.add( LanguageLevel.TYPE_LEVEL);
+        uvlModelFactory.convertExceptAcceptedLanguageLevel(featureModel, levels);
+        System.out.println(featureModel.composedModelToString());
+
+
+
+
+
 
 
         /*

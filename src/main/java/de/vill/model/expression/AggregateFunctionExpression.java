@@ -6,6 +6,8 @@ import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.GlobalAttribute;
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.Literal;
+import de.vill.model.pbc.PBCConstraint;
 import de.vill.util.Constants;
 import java.util.Arrays;
 import java.util.List;
@@ -113,5 +115,10 @@ public class AggregateFunctionExpression extends Expression {
     @Override
     public List<VariableReference> getReferences() {
         return List.of(attribute);
+    }
+
+    @Override
+    public List<Literal> getAsSum(List<PBCConstraint> additionalConstraints) {
+        throw new UnsupportedOperationException("All AggregateFunctions must be removed before method is called.");
     }
 }
