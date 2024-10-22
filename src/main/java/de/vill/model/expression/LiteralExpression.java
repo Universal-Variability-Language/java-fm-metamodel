@@ -79,14 +79,18 @@ public class LiteralExpression extends Expression {
             return 0d;
         } else {
             Attribute<?> attribute = (Attribute<?>) content;
-            final Object attributeValue = attribute.getValue();
-            if (attributeValue instanceof Integer) {
-                return ((Integer) attributeValue).doubleValue();
+            if (selectedFeatures.contains(attribute.getFeature())) {
+                final Object attributeValue = attribute.getValue();
+                if (attributeValue instanceof Integer) {
+                    return ((Integer) attributeValue).doubleValue();
+                }
+                if (attributeValue instanceof Long) {
+                    return ((Long) attributeValue).doubleValue();
+                }
+                return (double) attributeValue;
+            }else {
+                return 0;
             }
-            if (attributeValue instanceof Long) {
-                return ((Long) attributeValue).doubleValue();
-            }
-            return (double) attributeValue;
         }
 
     }
