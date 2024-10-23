@@ -1,19 +1,15 @@
 package de.vill.main;
 
-import de.vill.config.Configuration;
 import de.vill.model.*;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBCConstraint;
+import de.vill.model.pbc.PBConstraint;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-
-import static de.vill.util.Util.*;
 
 public class Example {
     public static void main(String[] args) throws IOException {
@@ -52,34 +48,34 @@ public class Example {
 
     private static void dimacsToOPB(String path) throws IOException {
         String[] lines = new String(Files.readAllBytes(Paths.get(path))).split("\n");
-        List<PBCConstraint> constraintList = new LinkedList<>();
+        List<PBConstraint> constraintList = new LinkedList<>();
 
         for(String line : lines){
             if(!line.startsWith("c") && !line.startsWith("p")){
-                PBCConstraint pbcConstraint = new PBCConstraint();
-                pbcConstraint.literalList = new LinkedList<>();
-                pbcConstraint.k = 1;
+                PBConstraint PBConstraint = new PBConstraint();
+                PBConstraint.literalList = new LinkedList<>();
+                PBConstraint.k = 1;
                 for(String l : line.split(" ")){
                     int v = Integer.parseInt(l);
                     if(v > 0){
                         Literal literal = new Literal();
                         literal.name = "x_" + v;
                         literal.factor = 1;
-                        pbcConstraint.literalList.add(literal);
+                        PBConstraint.literalList.add(literal);
                     }else if(v < 0){
                         Literal literal = new Literal();
                         literal.name = "x_" + (-1 * v);
                         literal.factor = -1;
-                        pbcConstraint.literalList.add(literal);
-                        pbcConstraint.k = pbcConstraint.k -1;
+                        PBConstraint.literalList.add(literal);
+                        PBConstraint.k = PBConstraint.k -1;
                     }
                 }
-                constraintList.add(pbcConstraint);
+                constraintList.add(PBConstraint);
             }
         }
 
-        for(PBCConstraint pbcConstraint : constraintList){
-            System.out.println(pbcConstraint.toString() + ";");
+        for(PBConstraint PBConstraint : constraintList){
+            System.out.println(PBConstraint.toString() + ";");
         }
 
     }
