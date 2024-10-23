@@ -108,7 +108,7 @@ public class Util {
                 }
 
                 //-x v constraint
-                int f = constraint.k;
+                double f = constraint.k;
                 for(Literal lit : constraint.literalList){
                     f += Math.abs(lit.factor);
                 }
@@ -441,7 +441,7 @@ public class Util {
         rightSum = rightSum.stream().filter(x -> x.name == null).collect(Collectors.toList());
 
         //sum app factors with same variable
-        HashMap<String, Integer> literalMap = new HashMap<>();
+        HashMap<String, Double> literalMap = new HashMap<>();
         for (Literal l : leftSum) {
             if (literalMap.containsKey(l.name)) {
                 literalMap.put(l.name, literalMap.get(l.name) + l.factor);
@@ -465,9 +465,9 @@ public class Util {
         } else if ("!=".equals(constraint.getExpressionSymbol())) {
             pbConstraint.type = PBConstraintType.NOTEQ;
         }
-        pbConstraint.k = rightSum.stream().map(x -> x.factor).reduce(0, Integer::sum);
+        pbConstraint.k = rightSum.stream().map(x -> x.factor).reduce(0.0, Double::sum);
         pbConstraint.literalList = new LinkedList<>();
-        for (Map.Entry<String,Integer> e : literalMap.entrySet()) {
+        for (Map.Entry<String,Double> e : literalMap.entrySet()) {
             pbConstraint.literalList.add(new Literal(e.getValue(), e.getKey()));
         }
 

@@ -2,9 +2,9 @@ package de.vill.model.pbc;
 
 public class Literal {
     public String name;
-    public int factor;
+    public double factor;
     public Literal(){}
-    public Literal(int factor, String name) {
+    public Literal(double factor, String name) {
         this.name = name;
         this.factor = factor;
     }

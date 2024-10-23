@@ -127,10 +127,9 @@ public class LiteralExpression extends Expression {
     @Override
     public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
         Literal l = new Literal();
-        //TODO handle more than just Long attributes
-        var attribute = (Attribute<Long>)getContent();
+        var attribute = (Attribute<?>)getContent();
         l.name = attribute.getFeature().getFeatureName();
-        l.factor = Math.toIntExact((attribute.getValue()));
+        l.factor = attribute.getValue() instanceof Long ? ((Long) attribute.getValue()).doubleValue() : (double) attribute.getValue();
         List<Literal> result = new LinkedList<>();
         result.add(l);
         return result;
