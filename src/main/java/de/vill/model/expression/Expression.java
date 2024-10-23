@@ -3,7 +3,7 @@ package de.vill.model.expression;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBCConstraint;
+import de.vill.model.pbc.PBConstraint;
 
 import java.util.List;
 import java.util.Set;
@@ -46,5 +46,5 @@ public abstract class Expression {
 
     public abstract List<VariableReference> getReferences();
 
-    public abstract List<Literal> getAsSum(List<PBCConstraint> additionalConstraints);
+    public abstract List<Literal> getAsSum(List<PBConstraint> additionalConstraints);
 }

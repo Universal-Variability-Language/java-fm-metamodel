@@ -2,9 +2,14 @@ package de.vill.model.pbc;
 
 import java.util.List;
 
-public class PBCConstraint {
+public class PBConstraint {
     public List<Literal> literalList;
     public int k;
+    public PBConstraintType type;
+
+    public PBConstraint() {
+        type = PBConstraintType.GEQ;
+    }
 
     @Override
     public String toString() {
@@ -17,7 +22,8 @@ public class PBCConstraint {
             }
             res += " " + l.name;
         }
-        res += " >= " + k;
+        res += " " + type + " " + k;
         return res;
     }
 }
+

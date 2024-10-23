@@ -1,11 +1,11 @@
 package de.vill.util;
 
 import de.vill.config.Configuration;
-import de.vill.model.Attribute;
 import de.vill.model.constraint.*;
 import de.vill.model.expression.*;
 import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBCConstraint;
+import de.vill.model.pbc.PBConstraint;
+import de.vill.model.pbc.PBConstraintType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.ToDoubleBiFunction;
 import java.util.stream.Collectors;
 
 public class Util {
@@ -88,17 +87,17 @@ public class Util {
         return false;
     }
 
-    public static List<PBCConstraint> transformImplicationMap (HashMap<Integer, List<PBCConstraint>> implicationMap, int counter){
-        List<PBCConstraint> resultList = new LinkedList<>();
+    public static List<PBConstraint> transformImplicationMap (HashMap<Integer, List<PBConstraint>> implicationMap, int counter){
+        List<PBConstraint> resultList = new LinkedList<>();
         int max = 0;
-        for (Map.Entry<Integer, List<PBCConstraint>> entry : implicationMap.entrySet()) {
+        for (Map.Entry<Integer, List<PBConstraint>> entry : implicationMap.entrySet()) {
             int x = entry.getKey();
             if(x > max) {
                 max = x;
             }
-            for(PBCConstraint constraint : entry.getValue()){
+            for(PBConstraint constraint : entry.getValue()){
                 //x <=> constraint
-                PBCConstraint c2 = new PBCConstraint();
+                PBConstraint c2 = new PBConstraint();
                 c2.literalList = new LinkedList<>();
                 c2.k = constraint.k;
                 for(Literal lit : constraint.literalList){
@@ -137,27 +136,27 @@ public class Util {
             }
 
         }
-        PBCConstraint finalPBCConstraint = new PBCConstraint();
-        finalPBCConstraint.literalList = new LinkedList<>();
+        PBConstraint finalPBConstraint = new PBConstraint();
+        finalPBConstraint.literalList = new LinkedList<>();
         Literal l = new Literal();
         l.factor = 1;
         l.name = "x_" + counter + "_" + max;
-        finalPBCConstraint.literalList.add(l);
-        finalPBCConstraint.k = 1;
-        resultList.add(finalPBCConstraint);
+        finalPBConstraint.literalList.add(l);
+        finalPBConstraint.k = 1;
+        resultList.add(finalPBConstraint);
         return resultList;
     }
 
-    public static HashMap<Integer, List<PBCConstraint>> transformSubFormulas(HashMap<Integer, Constraint> subformulas, List<PBCConstraint> additionalConstraints){
-        HashMap<Integer, List<PBCConstraint>> resultMap = new HashMap<>();
+    public static HashMap<Integer, List<PBConstraint>> transformSubFormulas(HashMap<Integer, Constraint> subformulas, List<PBConstraint> additionalConstraints){
+        HashMap<Integer, List<PBConstraint>> resultMap = new HashMap<>();
         for (Map.Entry<Integer, Constraint> entry : subformulas.entrySet()) {
             resultMap.put(entry.getKey(), transformSubFormula(entry.getValue(), additionalConstraints));
         }
         return resultMap;
     }
 
-    public static List<PBCConstraint> transformSubFormula(Constraint constraint, List<PBCConstraint> additionalConstraints){
-        List<PBCConstraint> resultList = new LinkedList<>();
+    public static List<PBConstraint> transformSubFormula(Constraint constraint, List<PBConstraint> additionalConstraints){
+        List<PBConstraint> resultList = new LinkedList<>();
         if(constraint instanceof NotConstraint){
             resultList.add(transformNegLiteral((NotConstraint) constraint));
         } else if (constraint instanceof ImplicationConstraint) {
@@ -180,18 +179,18 @@ public class Util {
         return resultList;
     }
 
-    public static PBCConstraint transformNegLiteral(NotConstraint constraint){
+    public static PBConstraint transformNegLiteral(NotConstraint constraint){
         Literal literal = new Literal();
         literal.name = ((LiteralConstraint)constraint.getContent()).getReference().getIdentifier();
         literal.factor = -1;
-        PBCConstraint pbcConstraint = new PBCConstraint();
-        pbcConstraint.k = 0;
-        pbcConstraint.literalList = new LinkedList<>();
-        pbcConstraint.literalList.add(literal);
-        return pbcConstraint;
+        PBConstraint PBConstraint = new PBConstraint();
+        PBConstraint.k = 0;
+        PBConstraint.literalList = new LinkedList<>();
+        PBConstraint.literalList.add(literal);
+        return PBConstraint;
     }
 
-    public static PBCConstraint transformImplication(ImplicationConstraint constraint){
+    public static PBConstraint transformImplication(ImplicationConstraint constraint){
         Constraint c1 = constraint.getLeft();
         Constraint c2 = constraint.getRight();
         Literal l1 = new Literal();
@@ -201,49 +200,49 @@ public class Util {
             l2.name = ((LiteralConstraint)(((NotConstraint) c2).getContent())).getReference().getIdentifier();
             l1.factor = 1;
             l2.factor = -1;
-            PBCConstraint pbcConstraint1 = new PBCConstraint();
-            pbcConstraint1.k = 0;
-            pbcConstraint1.literalList = new LinkedList<>();
-            pbcConstraint1.literalList.add(l1);
-            pbcConstraint1.literalList.add(l2);
-            return pbcConstraint1;
+            PBConstraint PBConstraint1 = new PBConstraint();
+            PBConstraint1.k = 0;
+            PBConstraint1.literalList = new LinkedList<>();
+            PBConstraint1.literalList.add(l1);
+            PBConstraint1.literalList.add(l2);
+            return PBConstraint1;
         }else if(c1 instanceof LiteralConstraint && c2 instanceof LiteralConstraint){
             l1.name = ((LiteralConstraint)(c1)).getReference().getIdentifier();
             l2.name = ((LiteralConstraint)(c2)).getReference().getIdentifier();
             l1.factor = -1;
             l2.factor = 1;
-            PBCConstraint pbcConstraint1 = new PBCConstraint();
-            pbcConstraint1.k = 0;
-            pbcConstraint1.literalList = new LinkedList<>();
-            pbcConstraint1.literalList.add(l1);
-            pbcConstraint1.literalList.add(l2);
-            return pbcConstraint1;
+            PBConstraint PBConstraint1 = new PBConstraint();
+            PBConstraint1.k = 0;
+            PBConstraint1.literalList = new LinkedList<>();
+            PBConstraint1.literalList.add(l1);
+            PBConstraint1.literalList.add(l2);
+            return PBConstraint1;
         }else if (c1 instanceof NotConstraint) {
             l1.name = ((LiteralConstraint) (((NotConstraint) c1).getContent())).getReference().getIdentifier();
             l1.factor = 1;
             l2.name = ((LiteralConstraint) (c2)).getReference().getIdentifier();
             l2.factor = 1;
-            PBCConstraint pbcConstraint1 = new PBCConstraint();
-            pbcConstraint1.k = 1;
-            pbcConstraint1.literalList = new LinkedList<>();
-            pbcConstraint1.literalList.add(l1);
-            pbcConstraint1.literalList.add(l2);
-            return pbcConstraint1;
+            PBConstraint PBConstraint1 = new PBConstraint();
+            PBConstraint1.k = 1;
+            PBConstraint1.literalList = new LinkedList<>();
+            PBConstraint1.literalList.add(l1);
+            PBConstraint1.literalList.add(l2);
+            return PBConstraint1;
         }else{
             l1.name = ((LiteralConstraint)(c1)).getReference().getIdentifier();
             l2.name = ((LiteralConstraint) (((NotConstraint) c2).getContent())).getReference().getIdentifier();
             l1.factor = -1;
             l2.factor = -1;
-            PBCConstraint pbcConstraint1 = new PBCConstraint();
-            pbcConstraint1.k = -1;
-            pbcConstraint1.literalList = new LinkedList<>();
-            pbcConstraint1.literalList.add(l1);
-            pbcConstraint1.literalList.add(l2);
-            return pbcConstraint1;
+            PBConstraint PBConstraint1 = new PBConstraint();
+            PBConstraint1.k = -1;
+            PBConstraint1.literalList = new LinkedList<>();
+            PBConstraint1.literalList.add(l1);
+            PBConstraint1.literalList.add(l2);
+            return PBConstraint1;
         }
     }
 
-    public static List<PBCConstraint> transformBiImplication(EquivalenceConstraint constraint){
+    public static List<PBConstraint> transformBiImplication(EquivalenceConstraint constraint){
         Constraint c1 = constraint.getLeft();
         Constraint c2 = constraint.getRight();
         Literal l1 = new Literal();
@@ -253,11 +252,11 @@ public class Util {
             l2.name = ((LiteralConstraint)(((NotConstraint) c2).getContent())).getReference().getIdentifier();
             l1.factor = 1;
             l2.factor = -1;
-            PBCConstraint pbcConstraint1 = new PBCConstraint();
-            pbcConstraint1.k = 0;
-            pbcConstraint1.literalList = new LinkedList<>();
-            pbcConstraint1.literalList.add(l1);
-            pbcConstraint1.literalList.add(l2);
+            PBConstraint PBConstraint1 = new PBConstraint();
+            PBConstraint1.k = 0;
+            PBConstraint1.literalList = new LinkedList<>();
+            PBConstraint1.literalList.add(l1);
+            PBConstraint1.literalList.add(l2);
 
             Literal l1_1 = new Literal();
             Literal l2_1 = new Literal();
@@ -265,26 +264,26 @@ public class Util {
             l2_1.name = ((LiteralConstraint)(((NotConstraint) c2).getContent())).getReference().getIdentifier();
             l1_1.factor = -1;
             l2_1.factor = 1;
-            PBCConstraint pbcConstraint2 = new PBCConstraint();
-            pbcConstraint2.k = 0;
-            pbcConstraint2.literalList = new LinkedList<>();
-            pbcConstraint2.literalList.add(l1_1);
-            pbcConstraint2.literalList.add(l2_1);
+            PBConstraint PBConstraint2 = new PBConstraint();
+            PBConstraint2.k = 0;
+            PBConstraint2.literalList = new LinkedList<>();
+            PBConstraint2.literalList.add(l1_1);
+            PBConstraint2.literalList.add(l2_1);
 
-            List<PBCConstraint> constraintList = new LinkedList<>();
-            constraintList.add(pbcConstraint1);
-            constraintList.add(pbcConstraint2);
+            List<PBConstraint> constraintList = new LinkedList<>();
+            constraintList.add(PBConstraint1);
+            constraintList.add(PBConstraint2);
             return constraintList;
         }else if(c1 instanceof LiteralConstraint && c2 instanceof LiteralConstraint){
             l1.name = ((LiteralConstraint)(c1)).getReference().getIdentifier();
             l2.name = ((LiteralConstraint)(c2)).getReference().getIdentifier();
             l1.factor = 1;
             l2.factor = -1;
-            PBCConstraint pbcConstraint1 = new PBCConstraint();
-            pbcConstraint1.k = 0;
-            pbcConstraint1.literalList = new LinkedList<>();
-            pbcConstraint1.literalList.add(l1);
-            pbcConstraint1.literalList.add(l2);
+            PBConstraint PBConstraint1 = new PBConstraint();
+            PBConstraint1.k = 0;
+            PBConstraint1.literalList = new LinkedList<>();
+            PBConstraint1.literalList.add(l1);
+            PBConstraint1.literalList.add(l2);
 
             Literal l1_1 = new Literal();
             Literal l2_1 = new Literal();
@@ -292,26 +291,26 @@ public class Util {
             l2_1.name = ((LiteralConstraint)(c2)).getReference().getIdentifier();
             l1_1.factor = -1;
             l2_1.factor = 1;
-            PBCConstraint pbcConstraint2 = new PBCConstraint();
-            pbcConstraint2.k = 0;
-            pbcConstraint2.literalList = new LinkedList<>();
-            pbcConstraint2.literalList.add(l1_1);
-            pbcConstraint2.literalList.add(l2_1);
+            PBConstraint PBConstraint2 = new PBConstraint();
+            PBConstraint2.k = 0;
+            PBConstraint2.literalList = new LinkedList<>();
+            PBConstraint2.literalList.add(l1_1);
+            PBConstraint2.literalList.add(l2_1);
 
-            List<PBCConstraint> constraintList = new LinkedList<>();
-            constraintList.add(pbcConstraint1);
-            constraintList.add(pbcConstraint2);
+            List<PBConstraint> constraintList = new LinkedList<>();
+            constraintList.add(PBConstraint1);
+            constraintList.add(PBConstraint2);
             return constraintList;
         }else if (c1 instanceof NotConstraint) {
             l1.name = ((LiteralConstraint) (((NotConstraint) c1).getContent())).getReference().getIdentifier();
             l1.factor = -1;
             l2.name = ((LiteralConstraint) (c2)).getReference().getIdentifier();
             l2.factor = -1;
-            PBCConstraint pbcConstraint1 = new PBCConstraint();
-            pbcConstraint1.k = -1;
-            pbcConstraint1.literalList = new LinkedList<>();
-            pbcConstraint1.literalList.add(l1);
-            pbcConstraint1.literalList.add(l2);
+            PBConstraint PBConstraint1 = new PBConstraint();
+            PBConstraint1.k = -1;
+            PBConstraint1.literalList = new LinkedList<>();
+            PBConstraint1.literalList.add(l1);
+            PBConstraint1.literalList.add(l2);
 
             Literal l1_1 = new Literal();
             l1_1.name = ((LiteralConstraint) (((NotConstraint) c1).getContent())).getReference().getIdentifier();
@@ -319,25 +318,25 @@ public class Util {
             Literal l2_1 = new Literal();
             l2_1.name = ((LiteralConstraint) c2).getReference().getIdentifier();
             l2_1.factor = 1;
-            PBCConstraint pbcConstraint2 = new PBCConstraint();
-            pbcConstraint2.k = 1;
-            pbcConstraint2.literalList = new LinkedList<>();
-            pbcConstraint2.literalList.add(l1_1);
-            pbcConstraint2.literalList.add(l2_1);
-            List<PBCConstraint> constraintList = new LinkedList<>();
-            constraintList.add(pbcConstraint1);
-            constraintList.add(pbcConstraint2);
+            PBConstraint PBConstraint2 = new PBConstraint();
+            PBConstraint2.k = 1;
+            PBConstraint2.literalList = new LinkedList<>();
+            PBConstraint2.literalList.add(l1_1);
+            PBConstraint2.literalList.add(l2_1);
+            List<PBConstraint> constraintList = new LinkedList<>();
+            constraintList.add(PBConstraint1);
+            constraintList.add(PBConstraint2);
             return constraintList;
         }else{
             l1.name = ((LiteralConstraint)(c1)).getReference().getIdentifier();
             l2.name = ((LiteralConstraint) (((NotConstraint) c2).getContent())).getReference().getIdentifier();
             l1.factor = 1;
             l2.factor = 1;
-            PBCConstraint pbcConstraint1 = new PBCConstraint();
-            pbcConstraint1.k = 1;
-            pbcConstraint1.literalList = new LinkedList<>();
-            pbcConstraint1.literalList.add(l1);
-            pbcConstraint1.literalList.add(l2);
+            PBConstraint PBConstraint1 = new PBConstraint();
+            PBConstraint1.k = 1;
+            PBConstraint1.literalList = new LinkedList<>();
+            PBConstraint1.literalList.add(l1);
+            PBConstraint1.literalList.add(l2);
 
             Literal l1_1 = new Literal();
             Literal l2_1 = new Literal();
@@ -345,80 +344,103 @@ public class Util {
             l2_1.name = ((LiteralConstraint) (((NotConstraint) c2).getContent())).getReference().getIdentifier();
             l1_1.factor = -1;
             l2_1.factor = -1;
-            PBCConstraint pbcConstraint2 = new PBCConstraint();
-            pbcConstraint2.k = -1;
-            pbcConstraint2.literalList = new LinkedList<>();
-            pbcConstraint2.literalList.add(l1_1);
-            pbcConstraint2.literalList.add(l2_1);
+            PBConstraint PBConstraint2 = new PBConstraint();
+            PBConstraint2.k = -1;
+            PBConstraint2.literalList = new LinkedList<>();
+            PBConstraint2.literalList.add(l1_1);
+            PBConstraint2.literalList.add(l2_1);
 
-            List<PBCConstraint> constraintList = new LinkedList<>();
-            constraintList.add(pbcConstraint1);
-            constraintList.add(pbcConstraint2);
+            List<PBConstraint> constraintList = new LinkedList<>();
+            constraintList.add(PBConstraint1);
+            constraintList.add(PBConstraint2);
             return constraintList;
         }
     }
 
-    public static PBCConstraint transformAnd(Constraint constraint){
+    public static PBConstraint transformAnd(Constraint constraint){
         if(constraint instanceof AndConstraint){
-            PBCConstraint pbcConstraint1 = transformAnd(((AndConstraint) constraint).getLeft());
-            PBCConstraint pbcConstraint2 = transformAnd(((AndConstraint) constraint).getRight());
-            pbcConstraint1.k = pbcConstraint1.k + pbcConstraint2.k;
-            pbcConstraint1.literalList.addAll(pbcConstraint2.literalList);
-            return pbcConstraint1;
+            PBConstraint PBConstraint1 = transformAnd(((AndConstraint) constraint).getLeft());
+            PBConstraint PBConstraint2 = transformAnd(((AndConstraint) constraint).getRight());
+            PBConstraint1.k = PBConstraint1.k + PBConstraint2.k;
+            PBConstraint1.literalList.addAll(PBConstraint2.literalList);
+            return PBConstraint1;
         }else{
             Literal l1 = new Literal();
-            PBCConstraint pbcConstraint = new PBCConstraint();
+            PBConstraint PBConstraint = new PBConstraint();
             if(constraint instanceof NotConstraint){
                 l1.name = ((LiteralConstraint)((NotConstraint) constraint).getContent()).getReference().getIdentifier();
                 l1.factor = -1;
-                pbcConstraint.k = 0;
+                PBConstraint.k = 0;
             }else{
                 l1.name = ((LiteralConstraint)constraint).getReference().getIdentifier();
                 l1.factor = 1;
-                pbcConstraint.k = 1;
+                PBConstraint.k = 1;
             }
 
-            pbcConstraint.literalList = new LinkedList<>();
-            pbcConstraint.literalList.add(l1);
-            return pbcConstraint;
+            PBConstraint.literalList = new LinkedList<>();
+            PBConstraint.literalList.add(l1);
+            return PBConstraint;
         }
     }
 
-    public static PBCConstraint transformOr(Constraint constraint){
+    public static PBConstraint transformOr(Constraint constraint){
         if(constraint instanceof OrConstraint){
-            PBCConstraint pbcConstraint1 = transformOr(((OrConstraint) constraint).getLeft());
-            PBCConstraint pbcConstraint2 = transformOr(((OrConstraint) constraint).getRight());
-            pbcConstraint1.k = pbcConstraint1.k + pbcConstraint2.k;
-            pbcConstraint1.literalList.addAll(pbcConstraint2.literalList);
-            return pbcConstraint1;
+            PBConstraint PBConstraint1 = transformOr(((OrConstraint) constraint).getLeft());
+            PBConstraint PBConstraint2 = transformOr(((OrConstraint) constraint).getRight());
+            PBConstraint1.k = PBConstraint1.k + PBConstraint2.k;
+            PBConstraint1.literalList.addAll(PBConstraint2.literalList);
+            return PBConstraint1;
         }else{
             Literal l1 = new Literal();
-            PBCConstraint pbcConstraint = new PBCConstraint();
+            PBConstraint PBConstraint = new PBConstraint();
             if(constraint instanceof NotConstraint){
                 l1.name = ((LiteralConstraint)((NotConstraint) constraint).getContent()).getReference().getIdentifier();
                 l1.factor = -1;
-                pbcConstraint.k = -1;
+                PBConstraint.k = -1;
             }else{
                 l1.name = ((LiteralConstraint)constraint).getReference().getIdentifier();
                 l1.factor = 1;
-                pbcConstraint.k = 0;
+                PBConstraint.k = 0;
             }
 
-            pbcConstraint.literalList = new LinkedList<>();
-            pbcConstraint.literalList.add(l1);
-            return pbcConstraint;
+            PBConstraint.literalList = new LinkedList<>();
+            PBConstraint.literalList.add(l1);
+            return PBConstraint;
         }
     }
 
-    public static PBCConstraint transformExpression(ExpressionConstraint constraint, List<PBCConstraint> additionalConstraints) {
-        //TODO constraint.removeDiv
+    public static PBConstraint transformExpression(ExpressionConstraint constraint, List<PBConstraint> additionalConstraints) {
+        //transform all divisions to multiplications and ensure with additional constraints that denominators are not null
+        List<Expression> denominatorListLeftSide = new LinkedList<>();
+        List<Expression> denominatorListRightSide = new LinkedList<>();
+        List<Expression> allDenominators = new LinkedList<>();
+        reorderDenominators(constraint.getLeft(), denominatorListLeftSide, denominatorListRightSide, 0);
+        reorderDenominators(constraint.getRight(), denominatorListRightSide, denominatorListLeftSide, 0);
+        collectDenominators(constraint.getLeft(), allDenominators);
+        collectDenominators(constraint.getRight(), allDenominators);
+        additionalConstraints.addAll(getConstraintsToForbidZeroDivision(allDenominators));
+        constraint.setLeft(removeAllDenominators(constraint.getLeft()));
+        constraint.setRight(removeAllDenominators(constraint.getRight()));
+        while (!denominatorListLeftSide.isEmpty()) {
+            constraint.setLeft(new MulExpression(constraint.getLeft(), denominatorListLeftSide.get(0)));
+            denominatorListLeftSide.remove(0);
+        }
+        while (!denominatorListRightSide.isEmpty()) {
+            constraint.setRight(new MulExpression(constraint.getRight(), denominatorListRightSide.get(0)));
+            denominatorListRightSide.remove(0);
+        }
+
+        //transform everything to a sum
         var leftSum = constraint.getLeft().getAsSum(additionalConstraints);
         var rightSum = constraint.getRight().getAsSum(additionalConstraints);
+        //take all numbers to the right side
         rightSum.addAll(leftSum.stream().filter(x -> x.name == null).collect(Collectors.toList()));
         leftSum = leftSum.stream().filter(x -> x.name != null).collect(Collectors.toList());
+        //take all variables with factors to the left side
         leftSum.addAll(rightSum.stream().filter(x -> x.name != null).collect(Collectors.toList()));
         rightSum = rightSum.stream().filter(x -> x.name == null).collect(Collectors.toList());
 
+        //sum app factors with same variable
         HashMap<String, Integer> literalMap = new HashMap<>();
         for (Literal l : leftSum) {
             if (literalMap.containsKey(l.name)) {
@@ -427,13 +449,88 @@ public class Util {
                 literalMap.put(l.name, l.factor);
             }
         }
-        PBCConstraint pbcConstraint = new PBCConstraint();
-        pbcConstraint.k = rightSum.stream().map(x -> x.factor).reduce(0, Integer::sum);
-        pbcConstraint.literalList = new LinkedList<>();
+
+        //create constraint
+        PBConstraint pbConstraint = new PBConstraint();
+        if ("==".equals(constraint.getExpressionSymbol())) {
+            pbConstraint.type = PBConstraintType.EQ;
+        } else if ("<".equals(constraint.getExpressionSymbol())) {
+            pbConstraint.type = PBConstraintType.LE;
+        } else if (">".equals(constraint.getExpressionSymbol())) {
+            pbConstraint.type = PBConstraintType.GE;
+        } else if (">=".equals(constraint.getExpressionSymbol())) {
+            pbConstraint.type = PBConstraintType.GEQ;
+        } else if ("<=".equals(constraint.getExpressionSymbol())) {
+            pbConstraint.type = PBConstraintType.LEQ;
+        } else if ("!=".equals(constraint.getExpressionSymbol())) {
+            pbConstraint.type = PBConstraintType.NOTEQ;
+        }
+        pbConstraint.k = rightSum.stream().map(x -> x.factor).reduce(0, Integer::sum);
+        pbConstraint.literalList = new LinkedList<>();
         for (Map.Entry<String,Integer> e : literalMap.entrySet()) {
-            pbcConstraint.literalList.add(new Literal(e.getValue(), e.getKey()));
+            pbConstraint.literalList.add(new Literal(e.getValue(), e.getKey()));
         }
 
-        return pbcConstraint;
+        return pbConstraint;
+    }
+
+    public static void reorderDenominators(Expression expression, List<Expression> denominatorListSameSide, List<Expression> denominatorListOtherSide, int denominatorDepth) {
+        if (expression instanceof DivExpression) {
+            var divExpression = (DivExpression)expression;
+            reorderDenominators(divExpression.getLeft(), denominatorListSameSide, denominatorListOtherSide, denominatorDepth);
+            reorderDenominators(divExpression.getRight(), denominatorListSameSide, denominatorListOtherSide, denominatorDepth + 1);
+        }else if (expression instanceof LiteralExpression || expression instanceof NumberExpression) {
+            if (denominatorDepth > 0) {
+                if (denominatorDepth % 2 == 0) {
+                    denominatorListSameSide.add(expression);
+                }else {
+                    denominatorListOtherSide.add(expression);
+                }
+            }
+        }else{
+            for (Expression subExpression : expression.getExpressionSubParts()){
+                reorderDenominators(subExpression, denominatorListSameSide, denominatorListOtherSide, denominatorDepth);
+            }
+        }
+    }
+
+    public static void collectDenominators(Expression expression, List<Expression> denominators) {
+        if (expression instanceof DivExpression){
+            denominators.add(((DivExpression) expression).getRight());
+        }
+        for (Expression subExpression : expression.getExpressionSubParts()){
+            collectDenominators(subExpression, denominators);
+        }
+    }
+
+    public static Expression removeAllDenominators(Expression expression) {
+        if (expression instanceof DivExpression){
+            return removeAllDenominators(((DivExpression) expression).getLeft());
+        }else {
+            HashMap<Expression, Expression> newSubParts = new HashMap<>();
+            for (Expression subExpression : expression.getExpressionSubParts()){
+                newSubParts.put(subExpression, removeAllDenominators(subExpression));
+            }
+            for (Map.Entry<Expression, Expression> entry : newSubParts.entrySet()){
+                expression.replaceExpressionSubPart(entry.getKey(), entry.getValue());
+            }
+            return expression;
+        }
+    }
+
+    public static List<PBConstraint> getConstraintsToForbidZeroDivision(List<Expression> denominators) {
+        List<PBConstraint> additionalConstraints = new LinkedList<>();
+        for (Expression denominator : denominators){
+            removeAllDenominators(denominator);
+            PBConstraint pbConstraint = new PBConstraint();
+            pbConstraint.k = 0;
+            pbConstraint.type = PBConstraintType.NOTEQ;
+            pbConstraint.literalList = new LinkedList<>();
+            for (Literal l : denominator.getAsSum(additionalConstraints)) {
+                pbConstraint.literalList.add(l);
+            }
+            additionalConstraints.add(pbConstraint);
+        }
+        return additionalConstraints;
     }
 }

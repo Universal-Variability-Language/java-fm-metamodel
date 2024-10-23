@@ -11,12 +11,11 @@ import java.util.Set;
 
 import de.vill.config.Configuration;
 import de.vill.model.constraint.Constraint;
-import de.vill.model.constraint.ExpressionConstraint;
 import de.vill.model.constraint.LiteralConstraint;
 import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
-import de.vill.model.pbc.PBCConstraint;
+import de.vill.model.pbc.PBConstraint;
 import de.vill.util.Util;
 
 import static de.vill.util.Util.*;
@@ -265,22 +264,22 @@ public class FeatureModel {
         List<Constraint> constraints = getConstraints();
         constraints.addAll(getFeatureConstraints());
 
-        List<PBCConstraint> additionalConstraints = new LinkedList<>();
+        List<PBConstraint> additionalConstraints = new LinkedList<>();
 
         for(Constraint constraint : constraints){
             HashMap<Integer, Constraint> subMap = new HashMap<>();
             int n = 1;
             constraint.extractTseitinSubConstraints(subMap, n, counter);
             var map = transformSubFormulas(subMap, additionalConstraints);
-            List<PBCConstraint> pbcList = transformImplicationMap(map, counter);
-            for(PBCConstraint pbcConstraint : pbcList){
-                result += pbcConstraint.toString() + ";\n";
+            List<PBConstraint> pbcList = transformImplicationMap(map, counter);
+            for(PBConstraint PBConstraint : pbcList){
+                result += PBConstraint.toString() + ";\n";
             }
             counter++;
         }
 
-        for (PBCConstraint pbcConstraint : additionalConstraints){
-            result += pbcConstraint.toString() + ";\n";
+        for (PBConstraint PBConstraint : additionalConstraints){
+            result += PBConstraint.toString() + ";\n";
         }
         return result;
     }

@@ -3,7 +3,7 @@ package de.vill.model.expression;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBCConstraint;
+import de.vill.model.pbc.PBConstraint;
 import de.vill.util.Constants;
 
 import java.util.*;
@@ -78,7 +78,7 @@ public class SubExpression extends BinaryExpression {
         return result;
     }
 
-    public List<Literal> getAsSum(List<PBCConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
         var result = left.getAsSum(additionalConstraints);
         var rightResult = right.getAsSum(additionalConstraints);
         for (Literal l : rightResult){

@@ -3,7 +3,7 @@ package de.vill.model.expression;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBCConstraint;
+import de.vill.model.pbc.PBConstraint;
 import de.vill.util.Constants;
 import de.vill.util.SubstitutionVariableIndex;
 
@@ -97,7 +97,7 @@ public class MulExpression extends BinaryExpression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBCConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
         var leftSum = left.getAsSum(additionalConstraints);
         var rightSum = right.getAsSum(additionalConstraints);
         List<Literal> result = new LinkedList<>();
@@ -114,22 +114,22 @@ public class MulExpression extends BinaryExpression {
         return result;
     }
 
-    private List<PBCConstraint> getSubstitutionConstraints(String a, String b, String c){
-        List<PBCConstraint> result = new LinkedList<>();
-        PBCConstraint pbcConstraint1 = new PBCConstraint();
-        pbcConstraint1.literalList = new LinkedList<>();
-        pbcConstraint1.k = 0;
-        pbcConstraint1.literalList.add(new Literal(1, a));
-        pbcConstraint1.literalList.add(new Literal(1, b));
-        pbcConstraint1.literalList.add(new Literal(-2, c));
-        result.add(pbcConstraint1);
-        PBCConstraint pbcConstraint2 = new PBCConstraint();
-        pbcConstraint2.literalList = new LinkedList<>();
-        pbcConstraint2.k = -1;
-        pbcConstraint2.literalList.add(new Literal(-1, a));
-        pbcConstraint2.literalList.add(new Literal(-1, b));
-        pbcConstraint2.literalList.add(new Literal(2, c));
-        result.add(pbcConstraint2);
+    private List<PBConstraint> getSubstitutionConstraints(String a, String b, String c){
+        List<PBConstraint> result = new LinkedList<>();
+        PBConstraint PBConstraint1 = new PBConstraint();
+        PBConstraint1.literalList = new LinkedList<>();
+        PBConstraint1.k = 0;
+        PBConstraint1.literalList.add(new Literal(1, a));
+        PBConstraint1.literalList.add(new Literal(1, b));
+        PBConstraint1.literalList.add(new Literal(-2, c));
+        result.add(PBConstraint1);
+        PBConstraint PBConstraint2 = new PBConstraint();
+        PBConstraint2.literalList = new LinkedList<>();
+        PBConstraint2.k = -1;
+        PBConstraint2.literalList.add(new Literal(-1, a));
+        PBConstraint2.literalList.add(new Literal(-1, b));
+        PBConstraint2.literalList.add(new Literal(2, c));
+        result.add(PBConstraint2);
         return result;
     }
 

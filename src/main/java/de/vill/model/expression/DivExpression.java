@@ -3,9 +3,8 @@ package de.vill.model.expression;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBCConstraint;
+import de.vill.model.pbc.PBConstraint;
 import de.vill.util.Constants;
-import jdk.jshell.spi.ExecutionControl;
 
 import java.util.*;
 
@@ -88,7 +87,7 @@ public class DivExpression extends BinaryExpression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBCConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
         throw new UnsupportedOperationException("All DivExpressions must be removed before method is called.");
     }
 }

@@ -28,6 +28,14 @@ public abstract class ExpressionConstraint extends Constraint {
         return right;
     }
 
+    public void setLeft(Expression expression) {
+        left = expression;
+    }
+
+    public void setRight(Expression expression) {
+        right = expression;
+    }
+
     public String getExpressionSymbol() {
         return expressionSymbol;
     }
