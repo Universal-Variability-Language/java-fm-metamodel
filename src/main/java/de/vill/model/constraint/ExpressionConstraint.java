@@ -74,6 +74,9 @@ public abstract class ExpressionConstraint extends Constraint {
     public boolean evaluate(Set<Feature> selectedFeatures) {
         double leftResult = left.evaluate(selectedFeatures);
         double rightResult = right.evaluate(selectedFeatures);
+        if (Double.isNaN(leftResult) || Double.isNaN(rightResult)){
+            return false;
+        }
 
         if ("==".equals(expressionSymbol)) {
             return leftResult == rightResult;
