@@ -434,10 +434,18 @@ public class Util {
         var leftSum = constraint.getLeft().getAsSum(additionalConstraints);
         var rightSum = constraint.getRight().getAsSum(additionalConstraints);
         //take all numbers to the right side
-        rightSum.addAll(leftSum.stream().filter(x -> x.name == null).collect(Collectors.toList()));
+        List<Literal> numbersFromLeftToRight = leftSum.stream().filter(x -> x.name == null).collect(Collectors.toList());
+        for (Literal l : numbersFromLeftToRight){
+            l.factor *= -1;
+        }
+        rightSum.addAll(numbersFromLeftToRight);
         leftSum = leftSum.stream().filter(x -> x.name != null).collect(Collectors.toList());
         //take all variables with factors to the left side
-        leftSum.addAll(rightSum.stream().filter(x -> x.name != null).collect(Collectors.toList()));
+        List<Literal> numbersFromRightToLeft = rightSum.stream().filter(x -> x.name != null).collect(Collectors.toList());
+        for (Literal l : numbersFromRightToLeft){
+            l.factor *= -1;
+        }
+        leftSum.addAll(numbersFromRightToLeft);
         rightSum = rightSum.stream().filter(x -> x.name == null).collect(Collectors.toList());
 
         //sum app factors with same variable
