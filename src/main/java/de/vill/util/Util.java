@@ -108,7 +108,7 @@ public class Util {
                 }
 
                 //-x v constraint
-                double f = constraint.k;
+                double f = Math.abs(constraint.k);
                 for(Literal lit : constraint.literalList){
                     f += Math.abs(lit.factor);
                 }
@@ -120,14 +120,12 @@ public class Util {
                 resultList.add(constraint);
 
                 //x v -constraint
-                for(Literal lit : c2.literalList){
-                    lit.factor = -1 * lit.factor;
-                }
-                c2.k = -1 * c2.k + 1;
-                f = c2.k;
+                f = Math.abs(c2.k);
                 for(Literal lit : c2.literalList){
                     f += Math.abs(lit.factor);
                 }
+                f *= -1;
+                c2.type = PBConstraintType.LE;
                 Literal l2 = new Literal();
                 l2.name = "x_" + counter + "_" + x;
                 l2.factor = f;
@@ -421,6 +419,7 @@ public class Util {
         additionalConstraints.addAll(getConstraintsToForbidZeroDivision(allDenominators));
         constraint.setLeft(removeAllDenominators(constraint.getLeft()));
         constraint.setRight(removeAllDenominators(constraint.getRight()));
+        //TODO: wrong! we also need multiply with both sides
         while (!denominatorListLeftSide.isEmpty()) {
             constraint.setLeft(new MulExpression(constraint.getLeft(), denominatorListLeftSide.get(0)));
             denominatorListLeftSide.remove(0);
