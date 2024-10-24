@@ -104,11 +104,19 @@ public class MulExpression extends BinaryExpression {
         SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
         for (int i=0;i<leftSum.size();i++){
             for (int j=0;j<rightSum.size();j++){
-                Literal l = new Literal();
-                l.factor = leftSum.get(i).factor * rightSum.get(j).factor;
-                l.name = substitutionVariableIndex.getIndex();
-                result.add(l);
-                additionalConstraints.addAll(getSubstitutionConstraints(leftSum.get(i).name, rightSum.get(j).name, l.name));
+                if (leftSum.get(i).name == null) {
+                    rightSum.get(j).factor *= leftSum.get(i).factor;
+                    result.add(rightSum.get(j));
+                }else if (rightSum.get(j).name == null) {
+                    leftSum.get(i).factor *= rightSum.get(j).factor;
+                    result.add(leftSum.get(i));
+                }else {
+                    Literal l = new Literal();
+                    l.factor = leftSum.get(i).factor * rightSum.get(j).factor;
+                    l.name = substitutionVariableIndex.getIndex();
+                    result.add(l);
+                    additionalConstraints.addAll(getSubstitutionConstraints(leftSum.get(i).name, rightSum.get(j).name, l.name));
+                }
             }
         }
         return result;
