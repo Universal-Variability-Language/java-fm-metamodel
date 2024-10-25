@@ -1,12 +1,18 @@
 package de.vill.model.expression;
 
+import com.google.common.collect.Sets;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
+import de.vill.model.constraint.Constraint;
+import de.vill.model.constraint.LiteralConstraint;
 import de.vill.model.pbc.Literal;
 import de.vill.model.pbc.PBConstraint;
 import de.vill.util.Constants;
+import de.vill.util.SubstitutionVariableIndex;
 
 import java.util.*;
+
+import static de.vill.util.Util.substitutionConstraint;
 
 public class DivExpression extends BinaryExpression {
     private Expression left;
@@ -88,6 +94,61 @@ public class DivExpression extends BinaryExpression {
 
     @Override
     public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
-        throw new UnsupportedOperationException("All DivExpressions must be removed before method is called.");
+        List<Literal> result = new LinkedList<>();
+        List<Literal> numeratorSum = getLeft().getAsSum(additionalConstraints);
+        List<Literal> denominatorSum = getRight().getAsSum(additionalConstraints);
+        SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
+        for (Literal l : numeratorSum) {
+            Set<Set<Literal>> literalCombinations = getLiteralCombinations(new HashSet<Literal>(denominatorSum));
+            for (Set<Literal> combination : literalCombinations) {
+                Literal newSummand = new Literal();
+                newSummand.factor = l.factor;
+                double denominatorFactorSum = 0.0;
+                for (Literal denominatorLiteral : combination) {
+                    denominatorFactorSum += denominatorLiteral.factor;
+                }
+                newSummand.factor /= denominatorFactorSum;
+                newSummand.name = substitutionVariableIndex.getIndex();
+                result.add(newSummand);
+                PBConstraint denominatorConstraint = featureCombinationToPBConstraint(combination, denominatorSum);
+                denominatorConstraint.literalList.add(new Literal(1, l.name));
+                denominatorConstraint.k += 1;
+                additionalConstraints.addAll(substitutionConstraint(denominatorConstraint, newSummand.name));
+                //TODO add x <=> l & combination (with positive and negative literals)
+            }
+        }
+        return result;
+    }
+
+    private Set<Set<Literal>> getLiteralCombinations(Set<Literal> literals) {
+        Set<Set<Literal>> literalCombinations = new HashSet<>();
+        for (int i = 1; i <= literals.size(); i++) {
+            literalCombinations.addAll(Sets.combinations(literals, i));
+        }
+        return literalCombinations;
+    }
+
+    private PBConstraint featureCombinationToPBConstraint(Set<Literal> takenLiterals, List<Literal> allLiterals) {
+        PBConstraint pbConstraint = new PBConstraint();
+        pbConstraint.literalList = new LinkedList<>();
+        pbConstraint.k = allLiterals.size();
+        for (Literal literal : allLiterals) {
+            if (takenLiterals.contains(literal)) {
+                //literal positive in result
+                Literal newLiteral = new Literal();
+                newLiteral.name = literal.name;
+                newLiteral.factor = 1;
+                pbConstraint.literalList.add(newLiteral);
+            }else {
+                //literal negative in result
+                Literal negatedLiteral = new Literal();
+                negatedLiteral.name = literal.name;
+                negatedLiteral.factor = -1;
+                pbConstraint.k -= 1;
+                pbConstraint.literalList.add(negatedLiteral);
+            }
+
+        }
+        return pbConstraint;
     }
 }

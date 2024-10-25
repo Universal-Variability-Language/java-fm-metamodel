@@ -96,41 +96,7 @@ public class Util {
                 max = x;
             }
             for(PBConstraint constraint : entry.getValue()){
-                //x <=> constraint
-                PBConstraint c2 = new PBConstraint();
-                c2.literalList = new LinkedList<>();
-                c2.k = constraint.k;
-                for(Literal lit : constraint.literalList){
-                    Literal l2 = new Literal();
-                    l2.factor = lit.factor;
-                    l2.name = lit.name;
-                    c2.literalList.add(l2);
-                }
-
-                //-x v constraint
-                double f = Math.abs(constraint.k);
-                for(Literal lit : constraint.literalList){
-                    f += Math.abs(lit.factor);
-                }
-                Literal l1 = new Literal();
-                l1.name = "x_" + counter + "_" + x;
-                l1.factor = -f;
-                constraint.k = constraint.k - f;
-                constraint.literalList.add(l1);
-                resultList.add(constraint);
-
-                //x v -constraint
-                f = Math.abs(c2.k);
-                for(Literal lit : c2.literalList){
-                    f += Math.abs(lit.factor);
-                }
-                f *= -1;
-                c2.type = PBConstraintType.LE;
-                Literal l2 = new Literal();
-                l2.name = "x_" + counter + "_" + x;
-                l2.factor = f;
-                c2.literalList.add(l2);
-                resultList.add(c2);
+                resultList.addAll(substitutionConstraint(constraint, "x_" + counter + "_" + x));
             }
 
         }
@@ -142,6 +108,46 @@ public class Util {
         finalPBConstraint.literalList.add(l);
         finalPBConstraint.k = 1;
         resultList.add(finalPBConstraint);
+        return resultList;
+    }
+
+    public static List<PBConstraint> substitutionConstraint(PBConstraint constraint, String substitutionName) {
+        List<PBConstraint> resultList = new LinkedList<>();
+        //x <=> constraint
+        PBConstraint c2 = new PBConstraint();
+        c2.literalList = new LinkedList<>();
+        c2.k = constraint.k;
+        for(Literal lit : constraint.literalList){
+            Literal l2 = new Literal();
+            l2.factor = lit.factor;
+            l2.name = lit.name;
+            c2.literalList.add(l2);
+        }
+
+        //-x v constraint
+        double f = Math.abs(constraint.k);
+        for(Literal lit : constraint.literalList){
+            f += Math.abs(lit.factor);
+        }
+        Literal l1 = new Literal();
+        l1.name = substitutionName;
+        l1.factor = -f;
+        constraint.k = constraint.k - f;
+        constraint.literalList.add(l1);
+        resultList.add(constraint);
+
+        //x v -constraint
+        f = Math.abs(c2.k);
+        for(Literal lit : c2.literalList){
+            f += Math.abs(lit.factor);
+        }
+        f *= -1;
+        c2.type = PBConstraintType.LE;
+        Literal l2 = new Literal();
+        l2.name = substitutionName;
+        l2.factor = f;
+        c2.literalList.add(l2);
+        resultList.add(c2);
         return resultList;
     }
 
@@ -408,26 +414,10 @@ public class Util {
     }
 
     public static PBConstraint transformExpression(ExpressionConstraint constraint, List<PBConstraint> additionalConstraints) {
-        //transform all divisions to multiplications and ensure with additional constraints that denominators are not null
-        List<Expression> denominatorListLeftSide = new LinkedList<>();
-        List<Expression> denominatorListRightSide = new LinkedList<>();
         List<Expression> allDenominators = new LinkedList<>();
-        reorderDenominators(constraint.getLeft(), denominatorListLeftSide, denominatorListRightSide, 0);
-        reorderDenominators(constraint.getRight(), denominatorListRightSide, denominatorListLeftSide, 0);
         collectDenominators(constraint.getLeft(), allDenominators);
         collectDenominators(constraint.getRight(), allDenominators);
         additionalConstraints.addAll(getConstraintsToForbidZeroDivision(allDenominators));
-        constraint.setLeft(removeAllDenominators(constraint.getLeft()));
-        constraint.setRight(removeAllDenominators(constraint.getRight()));
-        //TODO: wrong! we also need multiply with both sides
-        while (!denominatorListLeftSide.isEmpty()) {
-            constraint.setLeft(new MulExpression(constraint.getLeft(), denominatorListLeftSide.get(0)));
-            denominatorListLeftSide.remove(0);
-        }
-        while (!denominatorListRightSide.isEmpty()) {
-            constraint.setRight(new MulExpression(constraint.getRight(), denominatorListRightSide.get(0)));
-            denominatorListRightSide.remove(0);
-        }
 
         //transform everything to a sum
         var leftSum = constraint.getLeft().getAsSum(additionalConstraints);
@@ -479,26 +469,6 @@ public class Util {
         }
 
         return pbConstraint;
-    }
-
-    public static void reorderDenominators(Expression expression, List<Expression> denominatorListSameSide, List<Expression> denominatorListOtherSide, int denominatorDepth) {
-        if (expression instanceof DivExpression) {
-            var divExpression = (DivExpression)expression;
-            reorderDenominators(divExpression.getLeft(), denominatorListSameSide, denominatorListOtherSide, denominatorDepth);
-            reorderDenominators(divExpression.getRight(), denominatorListSameSide, denominatorListOtherSide, denominatorDepth + 1);
-        }else if (expression instanceof LiteralExpression || expression instanceof NumberExpression) {
-            if (denominatorDepth > 0) {
-                if (denominatorDepth % 2 == 0) {
-                    denominatorListSameSide.add(expression);
-                }else {
-                    denominatorListOtherSide.add(expression);
-                }
-            }
-        }else{
-            for (Expression subExpression : expression.getExpressionSubParts()){
-                reorderDenominators(subExpression, denominatorListSameSide, denominatorListOtherSide, denominatorDepth);
-            }
-        }
     }
 
     public static void collectDenominators(Expression expression, List<Expression> denominators) {
