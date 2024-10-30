@@ -11,33 +11,133 @@ import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.io.uvl.UVLFeatureModelFormat;
 import de.vill.model.FeatureModel;
 import de.vill.model.LanguageLevel;
+import de.vill.util.CountingResult;
+import de.vill.util.ModelEvalResult;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class Eval {
 
     public static final String WORKING_DIR = "/home/stefan/stefan-vill-master/tmp_eval/";
+    public static final String D4_PATH = "/home/stefan/Downloads/d4/d4";
+    public static final String P2D_PATH = "/home/stefan/p2d/target/release/p2d";
 
-    public static void main(String[] args) throws IOException {
-        long start = System.currentTimeMillis();
-        uvlToOPB("test");
-        long finish = System.currentTimeMillis();
-        System.out.println("opb_encoding: " + (finish - start));
-        start = System.currentTimeMillis();
-        uvlToDimacsFeatureIDE("test");
-        finish = System.currentTimeMillis();
-        System.out.println("dimacs_encoding: " + (finish - start));
+    public static void main(String[] args) throws IOException, InterruptedException {
+        runEval();
+
     }
 
-    public static void uvlToOPB(String modelName) throws IOException {
+    public static void runEval() throws IOException, InterruptedException {
+        List<ModelEvalResult> resultList = new LinkedList<>();
+        File folder = Paths.get(WORKING_DIR, "models").toFile();
+        File[] files = folder.listFiles();
+        for (File f : files) {
+            resultList.add(evaluateModel(f));
+        }
+        StringBuilder result = new StringBuilder();
+        result.append("name;d4 time;p2d time;dimacs encoding time; opb encoding time; same result;solving-factor;encoding-factor;total-factor\n");
+        for (ModelEvalResult r : resultList) {
+            result.append(r.toCSVString());
+            result.append("\n");
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(WORKING_DIR, "result.csv").toString()))) {
+            writer.append(result);
+            writer.flush();
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
+    }
+
+    public static ModelEvalResult evaluateModel(File file) throws IOException, InterruptedException {
+        long totalTimeDimacs = 0;
+        final long NUMBER_RUNS = 1;
+        for (int i=0;i<NUMBER_RUNS;i++){
+            long start = System.currentTimeMillis();
+            uvlToDimacsFeatureIDE(file);
+            long finish = System.currentTimeMillis();
+            totalTimeDimacs += finish - start;
+        }
+
+        long totalTimeOpb = 0;
+        for (int i=0;i<NUMBER_RUNS;i++){
+            long start = System.currentTimeMillis();
+            uvlToOPB(file);
+            long finish = System.currentTimeMillis();
+            totalTimeOpb += finish - start;
+        }
+        CountingResult d4 = runD4(file);
+        CountingResult p2d = runp2d(file);
+        return new ModelEvalResult(file.getName(), d4.TIME_TO_COMPUTE, p2d.TIME_TO_COMPUTE, d4.MODEL_COUNT, p2d.MODEL_COUNT, d4.MODEL_COUNT.equals(p2d.MODEL_COUNT), totalTimeDimacs / NUMBER_RUNS, totalTimeOpb / NUMBER_RUNS);
+    }
+
+    public static CountingResult runD4(File file) throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command(D4_PATH, Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".dimacs").toString(), "-mc");
+        // Start the process
+        Process process = processBuilder.start();
+        // Read the output from the process
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        String time = "";
+        String result = "";
+        while ((line = reader.readLine()) != null) {
+            System.out.println(line);
+            if (line.contains("Final time:")) {
+                time = String.valueOf(Double.parseDouble(line.split("Final time: ")[1]) * 1000);
+            }else if (line.charAt(0) == 's') {
+                result = line.split("s ")[1];
+            }
+        }
+
+        // Wait for the process to complete and get the exit value
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new IOException("d4 error");
+        }
+        System.out.println("Process exited with code: " + exitCode);
+        return new CountingResult(time, result);
+    }
+
+    public static CountingResult runp2d(File file) throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command(P2D_PATH, Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".opb").toString());
+        // Start the process
+        Process process = processBuilder.start();
+        // Read the output from the process
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        String time = "";
+        String result = "";
+        while ((line = reader.readLine()) != null) {
+            System.out.println(line);
+            if (line.contains("time_to_compute:")) {
+                time = line.split("time_to_compute: ")[1];
+                time = time.substring(0, time.length() - 1);
+            }else if (line.contains("result: ")) {
+                result = line.split("result: ")[1];
+            }
+        }
+
+        // Wait for the process to complete and get the exit value
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new IOException("d4 error");
+        }
+        System.out.println("Process exited with code: " + exitCode);
+        return new CountingResult(time, result);
+    }
+
+    public static void uvlToOPB(File file) throws IOException {
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        FeatureModel featureModel = loadUVLFeatureModelFromFile(WORKING_DIR + modelName + ".uvl");
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(WORKING_DIR + "test.opb"))) {
+        FeatureModel featureModel = loadUVLFeatureModelFromFile(Paths.get(WORKING_DIR, "models", file.getName()).toString());
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".opb").toString()))) {
             writer.append(featureModel.toOPBString());
             writer.flush();
         } catch (IOException e) {
@@ -45,11 +145,11 @@ public class Eval {
         }
     }
 
-    public static void uvlToDimacsFeatureIDE(String modelName) throws IOException {
+    public static void uvlToDimacsFeatureIDE(File file) throws IOException {
         LibraryManager.registerLibrary(FMCoreLibrary.getInstance());
         FMFormatManager.getInstance().addExtension(new UVLFeatureModelFormat());
-        IFeatureModel featureModel = FeatureModelManager.load(Paths.get(WORKING_DIR + modelName + ".uvl"));
-        FileHandler.save(Paths.get(WORKING_DIR + modelName + ".dimacs"), featureModel, new DIMACSFormat());
+        IFeatureModel featureModel = FeatureModelManager.load(Paths.get(WORKING_DIR, "models", file.getName()));
+        FileHandler.save(Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".dimacs"), featureModel, new DIMACSFormat());
     }
 
     public static void uvlToDimacsZ3(String modelName) throws IOException {

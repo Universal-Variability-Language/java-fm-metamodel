@@ -257,7 +257,7 @@ public class FeatureModel {
         return toString(false, "");
     }
 
-    public String toOPBString(){
+    public StringBuilder toOPBString(){
         OPBResult result = new OPBResult();
         result.numberVariables++;
         result.opbString.append(getRootFeature().getFeatureName().replace(" ", "_"));
@@ -292,7 +292,7 @@ public class FeatureModel {
         String header = "#variable= " + result.numberVariables + " #constraint= " + result.numberConstraints + "\n";
         result.opbString.insert(0,header);
 
-        return result.opbString.toString();
+        return result.opbString;
     }
 
     public StringBuilder toSMT2string() {

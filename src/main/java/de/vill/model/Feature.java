@@ -2,6 +2,7 @@ package de.vill.model;
 
 import static de.vill.util.Util.addNecessaryQuotes;
 
+import java.io.BufferedWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
