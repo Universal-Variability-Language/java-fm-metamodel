@@ -15,7 +15,9 @@ import de.vill.model.constraint.LiteralConstraint;
 import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
+import de.vill.model.pbc.OPBResult;
 import de.vill.model.pbc.PBConstraint;
+import de.vill.util.SubstitutionVariableIndex;
 import de.vill.util.Util;
 
 import static de.vill.util.Util.*;
@@ -256,9 +258,12 @@ public class FeatureModel {
     }
 
     public String toOPBString(){
-        String result = "";
-        result += getRootFeature().getFeatureName().replace(" ", "_") + " >= 1;\n";
-        result += getRootFeature().toOPBString();
+        OPBResult result = new OPBResult();
+        result.numberVariables++;
+        result.opbString.append(getRootFeature().getFeatureName().replace(" ", "_"));
+        result.opbString.append(" >= 1;\n");
+        result.numberConstraints++;
+        getRootFeature().toOPBString(result);
         int counter = 0;
 
         List<Constraint> constraints = getConstraints();
@@ -272,16 +277,22 @@ public class FeatureModel {
             constraint.extractTseitinSubConstraints(subMap, n, counter);
             var map = transformSubFormulas(subMap, additionalConstraints);
             List<PBConstraint> pbcList = transformImplicationMap(map, counter);
-            for(PBConstraint PBConstraint : pbcList){
-                result += PBConstraint.toString() + ";\n";
+            for(PBConstraint pBConstraint : pbcList){
+                result.numberVariables++;
+                pBConstraint.toOPBString(result);
             }
             counter++;
         }
 
-        for (PBConstraint PBConstraint : additionalConstraints){
-            result += PBConstraint.toString() + ";\n";
+        for (PBConstraint pBConstraint : additionalConstraints){
+            pBConstraint.toOPBString(result);
         }
-        return result;
+        SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
+        result.numberVariables += substitutionVariableIndex.peekIndex();
+        String header = "#variable= " + result.numberVariables + " #constraint= " + result.numberConstraints + "\n";
+        result.opbString.insert(0,header);
+
+        return result.opbString.toString();
     }
 
     public StringBuilder toSMT2string() {

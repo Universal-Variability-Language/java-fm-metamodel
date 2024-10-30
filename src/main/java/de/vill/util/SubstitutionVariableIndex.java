@@ -18,4 +18,8 @@ public class SubstitutionVariableIndex {
         index++;
         return "sub_z_" + index;
     }
+
+    public int peekIndex(){
+        return index;
+    }
 }

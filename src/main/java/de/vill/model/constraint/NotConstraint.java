@@ -2,10 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class NotConstraint extends Constraint {
     private Constraint content;

@@ -12,6 +12,7 @@ import java.util.Objects;
 
 import de.vill.config.Configuration;
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.OPBResult;
 import de.vill.util.Util;
 
 /**
@@ -369,69 +370,102 @@ public class Feature implements VariableReference {
         return toString(true, "");
     }
 
-    public String toOPBString() {
-        String result = "";
+    public void toOPBString(OPBResult result) {
         List<Group> childGroups = getChildren();
         for (Group group : childGroups){
             switch (group.GROUPTYPE) {
                 case OPTIONAL:
-                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    result.opbString.append(group.getFeatures().size());
+                    result.opbString.append(" * ");
+                    result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                        result.opbString.append(" -1 * ");
+                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result += " >= 0;\n";
+                    result.opbString.append(" >= 0;\n");
+                    result.numberConstraints++;
                     break;
                 case MANDATORY:
-                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    result.opbString.append(group.getFeatures().size());
+                    result.opbString.append(" * ");
+                    result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                        result.opbString.append(" -1 * ");
+                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result += " = 0;\n";
+                    result.opbString.append(" = 0;\n");
+                    result.numberConstraints += 2;
                     break;
                 case OR:
-                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    result.opbString.append(group.getFeatures().size());
+                    result.opbString.append(" * ");
+                    result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                        result.opbString.append(" -1 * ");
+                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result += " <= " + (group.getFeatures().size() - 1) + ";\n";
-                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    result.opbString.append(" <= ");
+                    result.opbString.append(group.getFeatures().size() - 1);
+                    result.opbString.append(";\n");
+                    result.numberConstraints++;
+                    result.opbString.append(group.getFeatures().size());
+                    result.opbString.append(" * ");
+                    result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                        result.opbString.append(" -1 * ");
+                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result += " >= 0;\n";
+                    result.opbString.append(" >= 0;\n");
+                    result.numberConstraints++;
                     break;
                 case ALTERNATIVE:
-                    result += getFeatureName();
+                    result.opbString.append(getFeatureName());
                     for (Feature child : group.getFeatures()){
-                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                        result.opbString.append(" -1 * ");
+                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result += " = 0;\n";
+                    result.opbString.append(" = 0;\n");
+                    result.numberConstraints += 2;
                     break;
                 case GROUP_CARDINALITY:
-                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    result.opbString.append(group.getFeatures().size());
+                    result.opbString.append(" * ");
+                    result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                        result.opbString.append(" -1 * ");
+                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result += " >= 0;\n";
-                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    result.opbString.append(" >= 0;\n");
+                    result.numberConstraints++;
+                    result.opbString.append(group.getFeatures().size());
+                    result.opbString.append(" * ");
+                    result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                        result.opbString.append(" -1 * ");
+                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result += " >= " + (group.getFeatures().size() - group.getCardinality().upper) + ";\n";
-                    result += group.getFeatures().size() + " * " + getFeatureName().replace(" ", "_");
+                    result.opbString.append(" >= ");
+                    result.opbString.append(group.getFeatures().size() - group.getCardinality().upper);
+                    result.opbString.append(";\n");
+                    result.numberConstraints++;
+                    result.opbString.append(group.getFeatures().size());
+                    result.opbString.append(" * ");
+                    result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result += " -1 * " + child.getFeatureName().replace(" ", "_");
+                        result.opbString.append(" -1 * ");
+                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result += " <= " + (group.getFeatures().size() - group.getCardinality().lower) + ";\n";
+                    result.opbString.append(" <= ");
+                    result.opbString.append(group.getFeatures().size() - group.getCardinality().lower);
+                    result.opbString.append(";\n");
             }
             for (Feature child : group.getFeatures()){
+                result.numberVariables++;
                 if(child.getChildren().size() > 0) {
-                    result += child.toOPBString();
+                    child.toOPBString(result);
                 }
             }
         }
-
-        return result;
     }
 
     /**

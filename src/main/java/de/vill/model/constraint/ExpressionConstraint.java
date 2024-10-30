@@ -125,11 +125,6 @@ public abstract class ExpressionConstraint extends Constraint {
     }
 
     @Override
-    public StringBuilder toSMT2string() {
-        return null;
-    }
-
-    @Override
     public List<ExpressionConstraint> collectExpressions(){
         List<ExpressionConstraint> expressions = new LinkedList<>();
         expressions.add(this);

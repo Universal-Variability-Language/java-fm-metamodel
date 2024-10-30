@@ -124,6 +124,9 @@ public class AndConstraint extends Constraint {
         builder.append("(and\n");
         builder.append(left.toSMT2string());
         builder.append("\n");
+        if (right.toSMT2string().length() == 0) {
+            System.out.println("test");
+        }
         builder.append(right.toSMT2string());
         builder.append(")");
         return builder;

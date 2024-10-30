@@ -11,20 +11,25 @@ public class PBConstraint {
         type = PBConstraintType.GEQ;
     }
 
-    @Override
-    public String toString() {
+    public void toOPBString(OPBResult result) {
+        result.numberConstraints++;
         int maxDecimalPlaces = getMaxDecimalPlaces();
-        String res = "";
         for(Literal l : literalList){
             if(l.factor < 0){
-                res += " " + (long) (l.factor * Math.pow(10,maxDecimalPlaces));
+                result.opbString.append(" ");
+                result.opbString.append((long) (l.factor * Math.pow(10,maxDecimalPlaces)));
             }else{
-                res += " +" + (long) (l.factor * Math.pow(10,maxDecimalPlaces));
+                result.opbString.append(" +");
+                result.opbString.append((long) (l.factor * Math.pow(10,maxDecimalPlaces)));
             }
-            res += " " + l.name;
+            result.opbString.append(" ");
+            result.opbString.append(l.name);
         }
-        res += " " + type + " " + (long) (k * Math.pow(10,maxDecimalPlaces));
-        return res;
+        result.opbString.append(" ");
+        result.opbString.append(type);
+        result.opbString.append(" ");
+        result.opbString.append((long) (k * Math.pow(10,maxDecimalPlaces)));
+        result.opbString.append(";\n");
     }
 
     private int getMaxDecimalPlaces() {

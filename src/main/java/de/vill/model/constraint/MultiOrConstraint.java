@@ -2,10 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class MultiOrConstraint extends Constraint{
 

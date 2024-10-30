@@ -117,7 +117,7 @@ public class EquivalenceConstraint extends Constraint {
     @Override
     public StringBuilder toSMT2string() {
         StringBuilder builder = new StringBuilder();
-        builder.append("(<=>\n");
+        builder.append("(=\n");
         builder.append(left.toSMT2string());
         builder.append("\n");
         builder.append(right.toSMT2string());
