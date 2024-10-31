@@ -438,26 +438,29 @@ public class Feature implements VariableReference {
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
-                    result.opbString.append(group.getFeatures().size());
+
+
+                    result.opbString.append("-");
+                    result.opbString.append(group.getCardinality().lower);
                     result.opbString.append(" * ");
                     result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result.opbString.append(" -1 * ");
+                        result.opbString.append(" +1 * ");
                         result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" >= ");
-                    result.opbString.append(group.getFeatures().size() - group.getCardinality().upper);
+                    result.opbString.append(0);
                     result.opbString.append(";\n");
+
+
                     result.numberConstraints++;
-                    result.opbString.append(group.getFeatures().size());
-                    result.opbString.append(" * ");
                     result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result.opbString.append(" -1 * ");
+                        result.opbString.append(" +1 * ");
                         result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" <= ");
-                    result.opbString.append(group.getFeatures().size() - group.getCardinality().lower);
+                    result.opbString.append(group.getCardinality().upper + 1);
                     result.opbString.append(";\n");
             }
             for (Feature child : group.getFeatures()){
