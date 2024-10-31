@@ -2,15 +2,15 @@ package de.vill.util;
 
 public class ModelEvalResult {
     public final String MODEL_NAME;
-    public final String TIME_TO_COMPUTE_D4;
-    public final String TIME_TO_COMPUTE_P2D;
+    public final Double TIME_TO_COMPUTE_D4;
+    public final Double TIME_TO_COMPUTE_P2D;
     public final String MODEL_COUNT_D4;
     public final String MODEL_COUNT_P2D;
     public final boolean SAME_RESULT;
-    public final long TO_DIMACS_TIME;
-    public final long TO_OPB_TIME;
+    public final Double TO_DIMACS_TIME;
+    public final Double TO_OPB_TIME;
 
-    public ModelEvalResult(String modelName, String timeToComputeD4, String timeToComputeP2D, String modelCountD4, String modelCountP2D, boolean sameResult, long toDimacsTime, long toOpbTime) {
+    public ModelEvalResult(String modelName, Double timeToComputeD4, Double timeToComputeP2D, String modelCountD4, String modelCountP2D, boolean sameResult, Double toDimacsTime, Double toOpbTime) {
         MODEL_NAME = modelName;
         TIME_TO_COMPUTE_D4 = timeToComputeD4;
         TIME_TO_COMPUTE_P2D = timeToComputeP2D;
@@ -22,6 +22,6 @@ public class ModelEvalResult {
     }
 
     public String toCSVString() {
-        return MODEL_NAME + ";" + TIME_TO_COMPUTE_D4 + ";" + TIME_TO_COMPUTE_P2D + ";" + TO_DIMACS_TIME + ";" + TO_OPB_TIME + ";" + SAME_RESULT + ";" + Double.valueOf(TIME_TO_COMPUTE_P2D) / Double.valueOf(TIME_TO_COMPUTE_D4) + ";" + Double.valueOf(TO_OPB_TIME) / Double.valueOf(TO_DIMACS_TIME) + ";" + (Double.valueOf(TIME_TO_COMPUTE_P2D) + Double.valueOf(TO_OPB_TIME)) / (Double.valueOf(TIME_TO_COMPUTE_D4) + Double.valueOf(TO_DIMACS_TIME));
+        return MODEL_NAME + ";" + TIME_TO_COMPUTE_D4 + ";" + TIME_TO_COMPUTE_P2D + ";" + TO_DIMACS_TIME + ";" + TO_OPB_TIME + ";" + SAME_RESULT + ";" + TIME_TO_COMPUTE_P2D / TIME_TO_COMPUTE_D4 + ";" + TO_OPB_TIME / TO_DIMACS_TIME + ";" + (TIME_TO_COMPUTE_P2D + TO_OPB_TIME) / (TIME_TO_COMPUTE_D4 + TO_DIMACS_TIME);
     }
 }
