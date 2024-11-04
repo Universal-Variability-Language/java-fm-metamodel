@@ -35,7 +35,21 @@ public class ConvertSMTLevel implements IConversionStrategy {
         }
         featureModel.getOwnConstraints().removeIf(x -> x instanceof ExpressionConstraint);
         featureModel.getOwnConstraints().addAll(replacements);
+        for (Constraint constraint : featureModel.getOwnConstraints()) {
+            convertConstraint(constraint);
+        }
         traverseFeatures(featureModel.getRootFeature());
+    }
+
+    private void convertConstraint(Constraint constraint) {
+        for (Constraint subConstraint : constraint.getConstraintSubParts()) {
+            if (subConstraint instanceof ExpressionConstraint) {
+                Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) subConstraint);
+                constraint.replaceConstraintSubPart(subConstraint, equationReplacement);
+            }else{
+                convertConstraint(subConstraint);
+            }
+        }
     }
 
     private void replaceEquationInConstraint(Constraint constraint) {
