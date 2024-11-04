@@ -57,19 +57,25 @@ public class ConvertFeatureCardinalityForOPB {
         }
         for (int i = min; i < max; i++) {
             Constraint lastTakenInGroupCardinality = new LiteralConstraint(newChildren.getFeatures().get(i - min));
-            Constraint notToTakeInGroupCarrdinality = new MultiOrConstraint();
+            List<LiteralConstraint> notToTakeInGroupCarrdinality = new LinkedList<>();
             for (int k=i+1;k<=max;k++){
-                ((MultiOrConstraint)notToTakeInGroupCarrdinality).add_sub_part(new LiteralConstraint(newChildren.getFeatures().get(k - min)));
+                notToTakeInGroupCarrdinality.add(new LiteralConstraint(newChildren.getFeatures().get(k - min)));
             }
-            if (notToTakeInGroupCarrdinality.getConstraintSubParts().size() == 1) {
-                notToTakeInGroupCarrdinality = notToTakeInGroupCarrdinality.getConstraintSubParts().get(0);
-            }
-            Constraint groupCardinalityOrderConstraint = new ImplicationConstraint(new NotConstraint(lastTakenInGroupCardinality), new NotConstraint(notToTakeInGroupCarrdinality));
+            Constraint groupCardinalityOrderConstraint = new ImplicationConstraint(new NotConstraint(lastTakenInGroupCardinality), new NotConstraint(createDisjunction(notToTakeInGroupCarrdinality)));
             featureModel.getOwnConstraints().add(groupCardinalityOrderConstraint);
         }
         feature.getChildren().removeAll(feature.getChildren());
         feature.getChildren().add(newChildren);
         newChildren.setParentFeature(feature);
+    }
+
+    private Constraint createDisjunction(List<LiteralConstraint> literals) {
+        if (literals.size() == 1) {
+            return literals.get(0);
+        }
+        LiteralConstraint literalConstraint = literals.get(0);
+        literals.remove(0);
+        return new OrConstraint(literalConstraint, createDisjunction(literals));
     }
 
     private void addPrefixToNamesRecursively(Feature feature, String prefix) {
