@@ -160,6 +160,10 @@ public class Eval {
         FeatureModel featureModel = loadUVLFeatureModelFromFile(file.toString());
         ConvertFeatureCardinalityForOPB convertFeatureCardinalityForOPB = new ConvertFeatureCardinalityForOPB();
         convertFeatureCardinalityForOPB.convertFeatureModel(featureModel);
+        Set<LanguageLevel> levels = new HashSet<>();
+        levels.add(LanguageLevel.AGGREGATE_FUNCTION);
+        levels.add( LanguageLevel.STRING_CONSTRAINTS);
+        uvlModelFactory.convertLanguageLevel(featureModel, levels);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".opb").toString()))) {
             writer.append(featureModel.toOPBString());
             writer.flush();
