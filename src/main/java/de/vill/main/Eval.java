@@ -11,6 +11,7 @@ import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.io.uvl.UVLFeatureModelFormat;
 import de.vill.model.FeatureModel;
 import de.vill.model.LanguageLevel;
+import de.vill.util.ConvertFeatureCardinalityForOPB;
 import de.vill.util.CountingResult;
 import de.vill.util.ModelEvalResult;
 
@@ -157,6 +158,8 @@ public class Eval {
     public static void uvlToOPB(File file) throws IOException {
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
         FeatureModel featureModel = loadUVLFeatureModelFromFile(file.toString());
+        ConvertFeatureCardinalityForOPB convertFeatureCardinalityForOPB = new ConvertFeatureCardinalityForOPB();
+        convertFeatureCardinalityForOPB.convertFeatureModel(featureModel);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".opb").toString()))) {
             writer.append(featureModel.toOPBString());
             writer.flush();
