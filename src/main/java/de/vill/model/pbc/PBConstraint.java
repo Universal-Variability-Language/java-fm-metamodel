@@ -1,14 +1,94 @@
 package de.vill.model.pbc;
 
+import java.util.LinkedList;
 import java.util.List;
 
-public class PBConstraint {
+public class PBConstraint implements Cloneable{
     public List<Literal> literalList;
     public double k;
     public PBConstraintType type;
 
     public PBConstraint() {
         type = PBConstraintType.GEQ;
+    }
+
+    public PBConstraint negatedConstraint() {
+        PBConstraint newConstraint = (PBConstraint)clone();
+        switch (type) {
+            case GEQ:
+                newConstraint.type = PBConstraintType.LE;
+                break;
+            case GE:
+                newConstraint.type = PBConstraintType.LEQ;
+                break;
+            case LEQ:
+                newConstraint.type = PBConstraintType.GE;
+                break;
+            case LE:
+                newConstraint.type = PBConstraintType.GEQ;
+                break;
+            case EQ:
+                newConstraint.type = PBConstraintType.NOTEQ;
+                break;
+            case NOTEQ:
+                newConstraint.type = PBConstraintType.EQ;
+                break;
+        }
+        return newConstraint;
+    }
+
+    public List<PBConstraint> orWithLiteral(String literalName, boolean sign) {
+        PBConstraint newConstraint = (PBConstraint)clone();
+        double f = this.k;
+        switch (type) {
+            case GEQ:
+                for (Literal l : this.literalList){
+                    f += Math.abs(l.factor);
+                }
+                break;
+            case GE:
+                for (Literal l : this.literalList){
+                    f += Math.abs(l.factor);
+                }
+                f++;
+                break;
+            case LEQ:
+                for (Literal l : this.literalList){
+                    f -= Math.abs(l.factor);
+                }
+                break;
+            case LE:
+                for (Literal l : this.literalList){
+                    f -= Math.abs(l.factor);
+                }
+                f--;
+                break;
+            case EQ:
+                PBConstraint c1 = clone();
+                PBConstraint c2 = clone();
+                c1.type = PBConstraintType.LEQ;
+                c2.type = PBConstraintType.GEQ;
+                List<PBConstraint> resultList = new LinkedList<>();
+                resultList.addAll(c1.orWithLiteral(literalName, sign));
+                resultList.addAll(c2.orWithLiteral(literalName, sign));
+                return resultList;
+            case NOTEQ:
+                for (Literal l : this.literalList){
+                    f += Math.abs(l.factor);
+                }
+                f++;
+                break;
+        }
+        if (sign) {
+            newConstraint.literalList.add(new Literal(f, literalName));
+        } else {
+            newConstraint.k -= f;
+            newConstraint.literalList.add(new Literal(-f, literalName));
+        }
+
+        List<PBConstraint> resultList = new LinkedList<>();
+        resultList.add(newConstraint);
+        return resultList;
     }
 
     public void toOPBString(OPBResult result) {
@@ -55,6 +135,24 @@ public class PBConstraint {
         } else {
             return 0;
         }
+    }
+
+    @Override
+    public PBConstraint clone() {
+        PBConstraint pbConstraint = null;
+        try {
+            pbConstraint = (PBConstraint) super.clone();
+        } catch (CloneNotSupportedException e) {
+            pbConstraint = new PBConstraint();
+            pbConstraint.type = this.type;
+            pbConstraint.k = this.k;
+        }
+        pbConstraint.literalList = new LinkedList<>();
+        for (Literal l : this.literalList) {
+            pbConstraint.literalList.add(l.clone());
+        }
+
+        return pbConstraint;
     }
 }
 

@@ -113,41 +113,11 @@ public class Util {
 
     public static List<PBConstraint> substitutionConstraint(PBConstraint constraint, String substitutionName) {
         List<PBConstraint> resultList = new LinkedList<>();
-        //x <=> constraint
-        PBConstraint c2 = new PBConstraint();
-        c2.literalList = new LinkedList<>();
-        c2.k = constraint.k;
-        for(Literal lit : constraint.literalList){
-            Literal l2 = new Literal();
-            l2.factor = lit.factor;
-            l2.name = lit.name;
-            c2.literalList.add(l2);
-        }
-
-        //-x v constraint
-        double f = Math.abs(constraint.k);
-        for(Literal lit : constraint.literalList){
-            f += Math.abs(lit.factor);
-        }
-        Literal l1 = new Literal();
-        l1.name = substitutionName;
-        l1.factor = -f;
-        constraint.k = constraint.k - f;
-        constraint.literalList.add(l1);
-        resultList.add(constraint);
-
-        //x v -constraint
-        f = Math.abs(c2.k);
-        for(Literal lit : c2.literalList){
-            f += Math.abs(lit.factor);
-        }
-        f *= -1;
-        c2.type = PBConstraintType.LE;
-        Literal l2 = new Literal();
-        l2.name = substitutionName;
-        l2.factor = f;
-        c2.literalList.add(l2);
-        resultList.add(c2);
+        // x <=> constraint is the same as -x v constraint AND x v -constraint
+        // -x v constraint
+        resultList.addAll(constraint.orWithLiteral(substitutionName, false));
+        // x v -constraint
+        resultList.addAll(constraint.negatedConstraint().orWithLiteral(substitutionName, true));
         return resultList;
     }
 
