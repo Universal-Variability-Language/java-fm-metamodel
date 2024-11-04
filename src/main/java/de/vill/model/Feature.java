@@ -624,7 +624,9 @@ public class Feature implements VariableReference {
     public Feature clone() {
         Feature feature = new Feature(getFeatureName());
         feature.setNameSpace(getNameSpace());
-        feature.setCardinality(cardinality.clone());
+        if (cardinality != null){
+            feature.setCardinality(cardinality.clone());
+        }
         feature.setSubmodelRoot(isSubmodelRoot);
         feature.setRelatedImport(getRelatedImport());
         feature.setFeatureType(this.getFeatureType());
