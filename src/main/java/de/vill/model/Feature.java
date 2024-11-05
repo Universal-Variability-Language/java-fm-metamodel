@@ -398,16 +398,13 @@ public class Feature implements VariableReference {
                     result.numberConstraints += 2;
                     break;
                 case OR:
-                    result.opbString.append(group.getFeatures().size());
-                    result.opbString.append(" * ");
+                    result.opbString.append("-1 * ");
                     result.opbString.append(getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
-                        result.opbString.append(" -1 * ");
+                        result.opbString.append(" + ");
                         result.opbString.append(child.getFeatureName().replace(" ", "_"));
                     }
-                    result.opbString.append(" <= ");
-                    result.opbString.append(group.getFeatures().size() - 1);
-                    result.opbString.append(";\n");
+                    result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
