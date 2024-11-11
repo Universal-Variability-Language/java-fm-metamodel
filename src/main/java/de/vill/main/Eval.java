@@ -1,10 +1,13 @@
 package de.vill.main;
 
 
+import de.ovgu.featureide.fm.core.ExtensionManager;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.impl.*;
 import de.ovgu.featureide.fm.core.init.FMCoreLibrary;
 import de.ovgu.featureide.fm.core.init.LibraryManager;
+import de.ovgu.featureide.fm.core.io.IPersistentFormat;
+import de.ovgu.featureide.fm.core.io.Problem;
 import de.ovgu.featureide.fm.core.io.dimacs.DIMACSFormat;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
@@ -31,7 +34,7 @@ public class Eval {
     public static final String P2D_PATH = "/home/stefan/p2d/target/release/p2d";
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        runSingleFile("test.uvl");
+        runSingleFile("/models/automotive01.uvl");
         //runEval();
 
     }
@@ -179,17 +182,35 @@ public class Eval {
         levels.add(LanguageLevel.BOOLEAN_LEVEL);
         levels.add( LanguageLevel.TYPE_LEVEL);
         uvlModelFactory.convertExceptAcceptedLanguageLevel(featureModel, levels);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(WORKING_DIR, "tmp_files", file.getName() + "_sat_level.uvl").toString()))) {
-            writer.append(featureModel.toString());
-            writer.flush();
-        } catch (IOException e) {
-            System.err.println("Error writing to file: " + e.getMessage());
-        }
+
         LibraryManager.registerLibrary(FMCoreLibrary.getInstance());
         FMFormatManager.getInstance().addExtension(new UVLFeatureModelFormat());
-        IFeatureModel fm = FeatureModelManager.load(Paths.get(WORKING_DIR, "tmp_files", file.getName() + "_sat_level.uvl"));
+
+        IFeatureModel fm = getFeatureIdeFMFromString(file.toPath(), featureModel.toString());
         FileHandler.save(Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".dimacs"), fm, new DIMACSFormat());
     }
+
+
+    public static IFeatureModel getFeatureIdeFMFromString(Path path, String content) throws IOException {
+        final FileHandler<IFeatureModel> fileHandler = new FileHandler<>(path, null, null);
+        final UVLFeatureModelFormat format = new UVLFeatureModelFormat();
+        try {
+            final IFeatureModel fm = FMFactoryManager.getInstance().getFactory(path, format).create();
+            fileHandler.setObject(fm);
+            fileHandler.setFormat(format);
+            format.getInstance().read(fm, content, path);
+
+        }catch (ExtensionManager.NoSuchExtensionException e) {
+            throw new IOException("Error while parsing UVL model");
+        }
+        return fileHandler.getObject();
+    }
+
+
+
+
+
+
 
     public static void uvlToDimacsZ3(String modelName) throws IOException {
         uvlToSMT2(modelName + ".uvl", modelName + ".smt2");
