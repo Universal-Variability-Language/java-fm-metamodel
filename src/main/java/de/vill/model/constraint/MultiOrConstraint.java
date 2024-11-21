@@ -1,6 +1,7 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.PBCLiteralConstraint;
 
 import java.util.*;
 
@@ -91,6 +92,12 @@ public class MultiOrConstraint extends Constraint{
             references.addAll(sub_parts.get(i).getReferences());
         }
         return references;
+    }
+
+    @Override
+    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
+        //TODO
+        return null;
     }
 
     @Override

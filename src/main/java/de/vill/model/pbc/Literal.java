@@ -3,10 +3,12 @@ package de.vill.model.pbc;
 public class Literal implements Cloneable{
     public String name;
     public double factor;
+    public boolean sign;
     public Literal(){}
-    public Literal(double factor, String name) {
+    public Literal(double factor, String name, boolean sign) {
         this.name = name;
         this.factor = factor;
+        this.sign = sign;
     }
 
     @Override
@@ -18,6 +20,7 @@ public class Literal implements Cloneable{
             literal = new Literal();
             literal.name = this.name;
             literal.factor = this.factor;
+            literal.sign = this.sign;
         }
         return literal;
     }

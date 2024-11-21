@@ -113,7 +113,7 @@ public class MulExpression extends BinaryExpression {
                 }else {
                     Literal l = new Literal();
                     l.factor = leftSum.get(i).factor * rightSum.get(j).factor;
-                    l.name = substitutionVariableIndex.getIndex();
+                    l.name = substitutionVariableIndex.getSubName();
                     result.add(l);
                     additionalConstraints.addAll(getSubstitutionConstraints(leftSum.get(i).name, rightSum.get(j).name, l.name));
                 }
@@ -127,16 +127,16 @@ public class MulExpression extends BinaryExpression {
         PBConstraint PBConstraint1 = new PBConstraint();
         PBConstraint1.literalList = new LinkedList<>();
         PBConstraint1.k = 0;
-        PBConstraint1.literalList.add(new Literal(1, a));
-        PBConstraint1.literalList.add(new Literal(1, b));
-        PBConstraint1.literalList.add(new Literal(-2, c));
+        PBConstraint1.literalList.add(new Literal(1, a, true));
+        PBConstraint1.literalList.add(new Literal(1, b, true));
+        PBConstraint1.literalList.add(new Literal(-2, c, true));
         result.add(PBConstraint1);
         PBConstraint PBConstraint2 = new PBConstraint();
         PBConstraint2.literalList = new LinkedList<>();
         PBConstraint2.k = -1;
-        PBConstraint2.literalList.add(new Literal(-1, a));
-        PBConstraint2.literalList.add(new Literal(-1, b));
-        PBConstraint2.literalList.add(new Literal(2, c));
+        PBConstraint2.literalList.add(new Literal(-1, a, true));
+        PBConstraint2.literalList.add(new Literal(-1, b, true));
+        PBConstraint2.literalList.add(new Literal(2, c, true));
         result.add(PBConstraint2);
         return result;
     }

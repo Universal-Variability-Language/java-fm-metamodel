@@ -6,6 +6,8 @@ import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
 import de.vill.model.pbc.Literal;
+import de.vill.model.pbc.PBCLiteralConstraint;
+import de.vill.util.SubstitutionVariableIndex;
 
 import java.util.*;
 
@@ -132,17 +134,16 @@ public abstract class ExpressionConstraint extends Constraint {
     }
 
     @Override
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
-        final int finalN = n;
-        Constraint l1 = new LiteralConstraint(new VariableReference() {
-            @Override
-            public String getIdentifier() {
-                return "x_" + counter + "_" + finalN;
-            }
-        });
-        n++;
-
-        substitutionMapping.put(n, this);
-        return n;
+    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
+        int substitutionIndex = SubstitutionVariableIndex.getInstance().getIndex();
+        substitutionMapping.put(substitutionIndex, this);
+        return new PBCLiteralConstraint(
+                new LiteralConstraint(new VariableReference() {
+                    @Override
+                    public String getIdentifier() {
+                        return "x_" + substitutionIndex;
+                    }
+                })
+        );
     }
 }

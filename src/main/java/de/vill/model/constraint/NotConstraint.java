@@ -1,6 +1,9 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.PBCLiteralConstraint;
+import de.vill.util.SubstitutionVariableIndex;
+import org.prop4j.Or;
 
 import java.util.*;
 
@@ -68,31 +71,25 @@ public class NotConstraint extends Constraint {
         return content.getReferences();
     }
 
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
-        /*
-        if (content instanceof LiteralConstraint){
-            return 0;
-        }
-        
-         */
-        int a1 = content.extractTseitinSubConstraints(substitutionMapping, n, counter);
-        int finalA = a1;
-        Constraint l1 = new LiteralConstraint(new VariableReference() {
-            @Override
-            public String getIdentifier() {
-                return "x_" + counter + "_" + finalA;
-            }
-        });
-        if(a1 == 0) {
-            l1 = content;
-        }else{
-            n = a1 + 1;
-        }
+    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
+        PBCLiteralConstraint subContent = content.extractTseitinSubConstraints(substitutionMapping);
+        //int substitutionIndex = SubstitutionVariableIndex.getInstance().getIndex();
+        //substitutionMapping.put(substitutionIndex, new NotConstraint(subContent));
+/*
+        PBCLiteralConstraint result = new PBCLiteralConstraint(
+            new LiteralConstraint(new VariableReference() {
+                @Override
+                public String getIdentifier() {
+                    return "x_" + substitutionIndex;
+                }
+            })
+        );
+        result.toggleSign();
 
-        Constraint newConstraint = new NotConstraint(l1);
-        substitutionMapping.put(n, newConstraint);
-        return n;
-    };
+ */
+        subContent.toggleSign();
+        return subContent;
+    }
 
     @Override
     public StringBuilder toSMT2string() {

@@ -12,9 +12,11 @@ import java.util.Set;
 import de.vill.config.Configuration;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.constraint.LiteralConstraint;
+import de.vill.model.constraint.NotConstraint;
 import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
+import de.vill.model.pbc.Literal;
 import de.vill.model.pbc.OPBResult;
 import de.vill.model.pbc.PBConstraint;
 import de.vill.util.SubstitutionVariableIndex;
@@ -260,7 +262,7 @@ public class FeatureModel {
     public StringBuilder toOPBString(){
         OPBResult result = new OPBResult();
         result.numberVariables++;
-        result.opbString.append(getRootFeature().getFeatureName().replace(" ", "_"));
+        result.opbString.append("_" + getRootFeature().getFeatureName().replace(" ", "_"));
         result.opbString.append(" >= 1;\n");
         result.numberConstraints++;
         getRootFeature().toOPBString(result);
@@ -272,11 +274,27 @@ public class FeatureModel {
         List<PBConstraint> additionalConstraints = new LinkedList<>();
 
         for(Constraint constraint : constraints){
+            if (constraint instanceof LiteralConstraint){
+                PBConstraint pbConstraint = new PBConstraint();
+                pbConstraint.literalList = new LinkedList<>();
+                pbConstraint.k = 1;
+                Literal literal = new Literal(1, ((LiteralConstraint) constraint).getReference().getIdentifier(), true);
+                pbConstraint.literalList.add(literal);
+                result.numberVariables++;
+                pbConstraint.toOPBString(result);
+                continue;
+            }
             HashMap<Integer, Constraint> subMap = new HashMap<>();
-            int n = 1;
-            constraint.extractTseitinSubConstraints(subMap, n, counter);
+            constraint.extractTseitinSubConstraints(subMap);
             var map = transformSubFormulas(subMap, additionalConstraints);
-            List<PBConstraint> pbcList = transformImplicationMap(map, counter);
+            List<PBConstraint> pbcList = transformImplicationMap(map);
+            PBConstraint pbConstraint = new PBConstraint();
+            pbConstraint.literalList = new LinkedList<>();
+            pbConstraint.k = 1;
+            boolean sign = !(constraint instanceof NotConstraint);
+            Literal literal = new Literal(1, "x_" + SubstitutionVariableIndex.getInstance().peekIndex(), sign);
+            pbConstraint.literalList.add(literal);
+            pbcList.add(pbConstraint);
             for(PBConstraint pBConstraint : pbcList){
                 result.numberVariables++;
                 pBConstraint.toOPBString(result);

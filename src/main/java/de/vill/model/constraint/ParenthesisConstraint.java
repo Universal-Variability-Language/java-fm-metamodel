@@ -1,6 +1,7 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.PBCLiteralConstraint;
 
 import java.util.*;
 
@@ -61,8 +62,8 @@ public class ParenthesisConstraint extends Constraint {
         return content.getReferences();
     }
 
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
-        return content.extractTseitinSubConstraints(substitutionMapping, n, counter);
+    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
+        return content.extractTseitinSubConstraints(substitutionMapping);
     };
 
     @Override

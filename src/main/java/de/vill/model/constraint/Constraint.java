@@ -2,6 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.Literal;
+import de.vill.model.pbc.PBCLiteralConstraint;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -45,9 +46,7 @@ public abstract class Constraint {
 
     public abstract List<VariableReference> getReferences();
 
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
-        return 0;
-    };
+    public abstract PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping);
 
     public StringBuilder toSMT2string(){
         return null;

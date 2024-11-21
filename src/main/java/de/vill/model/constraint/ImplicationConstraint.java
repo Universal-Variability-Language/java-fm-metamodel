@@ -1,6 +1,8 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.PBCLiteralConstraint;
+import de.vill.util.SubstitutionVariableIndex;
 
 import java.util.*;
 
@@ -79,39 +81,21 @@ public class ImplicationConstraint extends Constraint {
         return references;
     }
 
-    public int extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping, int n, int counter) {
-        int a1 = left.extractTseitinSubConstraints(substitutionMapping, n, counter);
-        n += a1;
-        int a2 = right.extractTseitinSubConstraints(substitutionMapping, n+1, counter);
-        n+= a2;
-        int finalA = a1;
-        Constraint l1 = new LiteralConstraint(new VariableReference() {
-            @Override
-            public String getIdentifier() {
-                return "x_" + counter + "_" + finalA;
-            }
-        });
-        int finalA1 = a2;
-        Constraint l2 = new LiteralConstraint(new VariableReference() {
-            @Override
-            public String getIdentifier() {
-                return "x_" + counter + "_" + finalA1;
-            }
-        });
-        if(a1 == 0) {
-            l1 = left;
-        }
-        if(a2 == 0) {
-            l2 = right;
-        }
-        if (a1 + a2 != 0){
-            n++;
-        }
+    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
+        Constraint leftSub = left.extractTseitinSubConstraints(substitutionMapping);
+        Constraint rightSub = right.extractTseitinSubConstraints(substitutionMapping);
+        int substitutionIndex = SubstitutionVariableIndex.getInstance().getIndex();
+        substitutionMapping.put(substitutionIndex, new ImplicationConstraint(leftSub, rightSub));
 
-        Constraint newConstraint = new ImplicationConstraint(l1, l2);
-        substitutionMapping.put(n, newConstraint);
-        return n;
-    };
+        return new PBCLiteralConstraint(
+                new LiteralConstraint(new VariableReference() {
+                    @Override
+                    public String getIdentifier() {
+                        return "x_" + substitutionIndex;
+                    }
+                })
+        );
+    }
 
     @Override
     public StringBuilder toSMT2string() {

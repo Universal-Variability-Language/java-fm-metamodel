@@ -3,8 +3,6 @@ package de.vill.model.expression;
 import com.google.common.collect.Sets;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
-import de.vill.model.constraint.Constraint;
-import de.vill.model.constraint.LiteralConstraint;
 import de.vill.model.pbc.Literal;
 import de.vill.model.pbc.PBConstraint;
 import de.vill.util.Constants;
@@ -108,10 +106,10 @@ public class DivExpression extends BinaryExpression {
                     denominatorFactorSum += denominatorLiteral.factor;
                 }
                 newSummand.factor /= denominatorFactorSum;
-                newSummand.name = substitutionVariableIndex.getIndex();
+                newSummand.name = substitutionVariableIndex.getSubName();
                 result.add(newSummand);
                 PBConstraint denominatorConstraint = featureCombinationToPBConstraint(combination, denominatorSum);
-                denominatorConstraint.literalList.add(new Literal(1, l.name));
+                denominatorConstraint.literalList.add(new Literal(1, l.name, true));
                 denominatorConstraint.k += 1;
                 additionalConstraints.addAll(substitutionConstraint(denominatorConstraint, newSummand.name));
                 //TODO add x <=> l & combination (with positive and negative literals)

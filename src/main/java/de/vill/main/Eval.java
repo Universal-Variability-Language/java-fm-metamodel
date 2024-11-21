@@ -34,9 +34,16 @@ public class Eval {
     public static final String P2D_PATH = "/home/stefan/p2d/target/release/p2d";
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        runSingleFile("/models/automotive01.uvl");
-        //runEval();
+        //runSingleFile("test.uvl");
+        //bs("/test.uvl");
+        runEval();
 
+    }
+
+    public static void bs(String modelName)throws IOException, InterruptedException {
+        File file = Paths.get(WORKING_DIR, modelName).toFile();
+        uvlToOPB(file);
+        runp2d(file);
     }
     public static void runSingleFile(String modelName) throws IOException, InterruptedException {
         File file = Paths.get(WORKING_DIR, modelName).toFile();
@@ -46,7 +53,7 @@ public class Eval {
     }
 
     public static void runEval() throws IOException, InterruptedException {
-        final int NUMBER_RUNS = 10;
+        final int NUMBER_RUNS = 3;
         List<ModelEvalResult> resultList = new LinkedList<>();
         File folder = Paths.get(WORKING_DIR, "models").toFile();
         File[] files = folder.listFiles();
@@ -81,7 +88,7 @@ public class Eval {
 
     public static ModelEvalResult evaluateModel(File file) throws IOException, InterruptedException {
         double totalTimeDimacs = 0;
-        final long NUMBER_RUNS = 1;
+        final long NUMBER_RUNS = 3;
         for (int i=0;i<NUMBER_RUNS;i++){
             long start = System.currentTimeMillis();
             uvlToDimacsFeatureIDE(file);

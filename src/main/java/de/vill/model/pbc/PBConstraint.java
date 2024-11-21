@@ -80,10 +80,10 @@ public class PBConstraint implements Cloneable{
                 break;
         }
         if (sign) {
-            newConstraint.literalList.add(new Literal(f, literalName));
+            newConstraint.literalList.add(new Literal(f, literalName, true));
         } else {
             newConstraint.k -= f;
-            newConstraint.literalList.add(new Literal(-f, literalName));
+            newConstraint.literalList.add(new Literal(-f, literalName, true));
         }
 
         List<PBConstraint> resultList = new LinkedList<>();
@@ -92,6 +92,13 @@ public class PBConstraint implements Cloneable{
     }
 
     public void toOPBString(OPBResult result) {
+        for (Literal l : literalList) {
+            if (!l.sign){
+                k -= l.factor;
+                l.factor *= -1;
+                l.sign = !l.sign;
+            }
+        }
         result.numberConstraints++;
         int maxDecimalPlaces = getMaxDecimalPlaces();
         for(Literal l : literalList){
@@ -103,7 +110,7 @@ public class PBConstraint implements Cloneable{
                 result.opbString.append((long) (l.factor * Math.pow(10,maxDecimalPlaces)));
             }
             result.opbString.append(" ");
-            result.opbString.append(l.name);
+            result.opbString.append("_" + l.name);
         }
         result.opbString.append(" ");
         result.opbString.append(type);

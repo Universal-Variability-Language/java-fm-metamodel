@@ -1,10 +1,13 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.model.pbc.PBCLiteralConstraint;
+import de.vill.util.SubstitutionVariableIndex;
 import de.vill.util.Util;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class LiteralConstraint extends Constraint {
@@ -68,5 +71,10 @@ public class LiteralConstraint extends Constraint {
         StringBuilder builder = new StringBuilder();
         builder.append(reference.getIdentifier());
         return builder;
+    }
+
+    @Override
+    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
+        return new PBCLiteralConstraint(this);
     }
 }

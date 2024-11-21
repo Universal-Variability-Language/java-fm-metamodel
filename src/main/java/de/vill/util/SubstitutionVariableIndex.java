@@ -14,9 +14,14 @@ public class SubstitutionVariableIndex {
         return objectRef;
     }
 
-    public String getIndex() {
+    public String getSubName() {
         index++;
         return "sub_z_" + index;
+    }
+
+    public int getIndex() {
+        index++;
+        return index;
     }
 
     public int peekIndex(){

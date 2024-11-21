@@ -378,10 +378,10 @@ public class Feature implements VariableReference {
                 case OPTIONAL:
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
-                    result.opbString.append(getFeatureName().replace(" ", "_"));
+                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
@@ -389,38 +389,38 @@ public class Feature implements VariableReference {
                 case MANDATORY:
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
-                    result.opbString.append(getFeatureName().replace(" ", "_"));
+                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" = 0;\n");
                     result.numberConstraints += 2;
                     break;
                 case OR:
                     result.opbString.append("-1 * ");
-                    result.opbString.append(getFeatureName().replace(" ", "_"));
+                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" + ");
-                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
-                    result.opbString.append(getFeatureName().replace(" ", "_"));
+                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
                     break;
                 case ALTERNATIVE:
-                    result.opbString.append(getFeatureName());
+                    result.opbString.append("_" + getFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" = 0;\n");
                     result.numberConstraints += 2;
@@ -428,10 +428,10 @@ public class Feature implements VariableReference {
                 case GROUP_CARDINALITY:
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
-                    result.opbString.append(getFeatureName().replace(" ", "_"));
+                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
@@ -440,10 +440,10 @@ public class Feature implements VariableReference {
                     result.opbString.append("-");
                     result.opbString.append(group.getCardinality().lower);
                     result.opbString.append(" * ");
-                    result.opbString.append(getFeatureName().replace(" ", "_"));
+                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" +1 * ");
-                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" >= ");
                     result.opbString.append(0);
@@ -451,10 +451,10 @@ public class Feature implements VariableReference {
 
 
                     result.numberConstraints++;
-                    result.opbString.append(getFeatureName().replace(" ", "_"));
+                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" +1 * ");
-                        result.opbString.append(child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
                     }
                     result.opbString.append(" <= ");
                     result.opbString.append(group.getCardinality().upper + 1);
