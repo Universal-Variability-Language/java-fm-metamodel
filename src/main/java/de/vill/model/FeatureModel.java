@@ -286,6 +286,29 @@ public class FeatureModel {
             }
             HashMap<Integer, Constraint> subMap = new HashMap<>();
             constraint.extractTseitinSubConstraints(subMap);
+
+            if (subMap.isEmpty()) {
+                if (constraint instanceof LiteralConstraint){
+                    PBConstraint pbConstraint = new PBConstraint();
+                    pbConstraint.literalList = new LinkedList<>();
+                    pbConstraint.k = 1;
+                    Literal literal = new Literal(1, ((LiteralConstraint) constraint).getReference().getIdentifier(), true);
+                    pbConstraint.literalList.add(literal);
+                    result.numberVariables++;
+                    pbConstraint.toOPBString(result);
+                    continue;
+                }else if(constraint instanceof NotConstraint){
+                    PBConstraint pbConstraint = new PBConstraint();
+                    pbConstraint.literalList = new LinkedList<>();
+                    pbConstraint.k = 0;
+                    Literal literal = new Literal(-1, ((LiteralConstraint)((NotConstraint)constraint).getContent()).getReference().getIdentifier(), true);
+                    pbConstraint.literalList.add(literal);
+                    result.numberVariables++;
+                    pbConstraint.toOPBString(result);
+                    continue;
+                }
+            }
+
             var map = transformSubFormulas(subMap, additionalConstraints);
             List<PBConstraint> pbcList = transformImplicationMap(map);
             PBConstraint pbConstraint = new PBConstraint();
