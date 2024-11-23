@@ -40,7 +40,7 @@ public class ConvertFeatureCardinalityForOPB {
 
         feature.setCardinality(null);
 
-        for (int i = min; i <= max; i++) {
+        for (int i = Math.max(min,1); i <= max; i++) {
             Feature subTreeClone = feature.clone();
             addPrefixToNamesRecursively(subTreeClone, "_" + i);
             newChildren.getFeatures().add(subTreeClone);
@@ -51,11 +51,14 @@ public class ConvertFeatureCardinalityForOPB {
             constraintReplacementMap.remove(feature.getFeatureName());
             for (Constraint constraint : constraintsToClone) {
                 Constraint newConstraint = constraint.clone();
-                featureModel.getOwnConstraints().add(newConstraint);
                 adaptConstraint(subTreeClone, newConstraint, constraintReplacementMap);
+                LiteralConstraint subTreeRootConstraint = new LiteralConstraint(subTreeClone);
+                newConstraint = new ImplicationConstraint(subTreeRootConstraint, new ParenthesisConstraint(newConstraint));
+                featureModel.getOwnConstraints().add(newConstraint);
+
             }
         }
-        for (int i = min; i < max; i++) {
+        for (int i = Math.max(min,1); i < max; i++) {
             Constraint lastTakenInGroupCardinality = new LiteralConstraint(newChildren.getFeatures().get(i - min));
             List<LiteralConstraint> notToTakeInGroupCarrdinality = new LinkedList<>();
             for (int k=i+1;k<=max;k++){
@@ -122,7 +125,10 @@ public class ConvertFeatureCardinalityForOPB {
                     return true;
                 }
             } else {
-                constraintContains(subPart, subTreeFeatures);
+                if (constraintContains(subPart, subTreeFeatures)) {
+                    return true;
+                }
+
             }
         }
         return false;
@@ -148,7 +154,7 @@ public class ConvertFeatureCardinalityForOPB {
                 if (featureReplacementMap.containsKey(toReplace)) {
                     LiteralConstraint subTreeRootConstraint = new LiteralConstraint(subTreeRoot);
                     LiteralConstraint newLiteral = new LiteralConstraint(featureReplacementMap.get(toReplace));
-                    constraint.replaceConstraintSubPart(subPart, new ParenthesisConstraint(new ImplicationConstraint(subTreeRootConstraint, newLiteral)));
+                    constraint.replaceConstraintSubPart(subPart, newLiteral);
                 }
             } else {
                 adaptConstraint(subTreeRoot, subPart, featureReplacementMap);

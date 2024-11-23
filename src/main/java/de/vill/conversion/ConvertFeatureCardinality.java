@@ -71,8 +71,10 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
                 constraintReplacementMap.remove(feature.getFeatureName());
                 for (Constraint constraint : constraintsToClone) {
                     Constraint newConstraint = constraint.clone();
-                    featureModel.getOwnConstraints().add(newConstraint);
                     adaptConstraint(subTreeClone, newConstraint, constraintReplacementMap);
+                    LiteralConstraint subTreeRootConstraint = new LiteralConstraint(newChild);
+                    newConstraint = new ImplicationConstraint(subTreeRootConstraint, new ParenthesisConstraint(newConstraint));
+                    featureModel.getOwnConstraints().add(newConstraint);
                 }
             }
         }
@@ -124,8 +126,8 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
                 if (subTreeFeatures.contains(feature)) {
                     return true;
                 }
-            } else {
-                constraintContains(subPart, subTreeFeatures);
+            } else if (constraintContains(subPart, subTreeFeatures)){
+                return true;
             }
         }
         return false;
@@ -149,9 +151,8 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
             if (subPart instanceof LiteralConstraint) {
                 String toReplace = ((LiteralConstraint) subPart).getReference().getIdentifier();
                 if (featureReplacementMap.containsKey(toReplace)) {
-                    LiteralConstraint subTreeRootConstraint = new LiteralConstraint(subTreeRoot);
                     LiteralConstraint newLiteral = new LiteralConstraint(featureReplacementMap.get(toReplace));
-                    constraint.replaceConstraintSubPart(subPart, new ParenthesisConstraint(new ImplicationConstraint(subTreeRootConstraint, newLiteral)));
+                    constraint.replaceConstraintSubPart(subPart, newLiteral);
                 }
             } else {
                 adaptConstraint(subTreeRoot, subPart, featureReplacementMap);
