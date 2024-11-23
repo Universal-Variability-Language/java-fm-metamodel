@@ -10,6 +10,7 @@ public class PBConstraint implements Cloneable{
 
     public PBConstraint() {
         type = PBConstraintType.GEQ;
+        literalList = new LinkedList<>();
     }
 
     public PBConstraint negatedConstraint() {
@@ -110,7 +111,7 @@ public class PBConstraint implements Cloneable{
                 result.opbString.append((long) (l.factor * Math.pow(10,maxDecimalPlaces)));
             }
             result.opbString.append(" ");
-            result.opbString.append("_" + l.name);
+            result.opbString.append("\"" + l.name + "\"");
         }
         result.opbString.append(" ");
         result.opbString.append(type);
