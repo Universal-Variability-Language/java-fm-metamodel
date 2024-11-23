@@ -262,7 +262,7 @@ public class FeatureModel {
     public StringBuilder toOPBString(){
         OPBResult result = new OPBResult();
         result.numberVariables++;
-        result.opbString.append("_" + getRootFeature().getFeatureName().replace(" ", "_"));
+        result.opbString.append(getRootFeature().getQuotedFeatureName());
         result.opbString.append(" >= 1;\n");
         result.numberConstraints++;
         getRootFeature().toOPBString(result);
