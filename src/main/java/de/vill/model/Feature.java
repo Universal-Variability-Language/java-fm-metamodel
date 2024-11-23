@@ -371,6 +371,9 @@ public class Feature implements VariableReference {
         return toString(true, "");
     }
 
+    public String getQuotedFeatureName(){
+        return  "\"" + getFeatureName() + "\"";
+    }
     public void toOPBString(OPBResult result) {
         List<Group> childGroups = getChildren();
         for (Group group : childGroups){
@@ -378,10 +381,10 @@ public class Feature implements VariableReference {
                 case OPTIONAL:
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
-                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
+                    result.opbString.append(getQuotedFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append(child.getQuotedFeatureName());
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
@@ -389,38 +392,38 @@ public class Feature implements VariableReference {
                 case MANDATORY:
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
-                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
+                    result.opbString.append(getQuotedFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append(child.getQuotedFeatureName());
                     }
                     result.opbString.append(" = 0;\n");
                     result.numberConstraints += 2;
                     break;
                 case OR:
                     result.opbString.append("-1 * ");
-                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
+                    result.opbString.append(getQuotedFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" + ");
-                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append(child.getQuotedFeatureName());
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
-                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
+                    result.opbString.append(getQuotedFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append(child.getQuotedFeatureName());
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
                     break;
                 case ALTERNATIVE:
-                    result.opbString.append("_" + getFeatureName());
+                    result.opbString.append(getQuotedFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append(child.getQuotedFeatureName());
                     }
                     result.opbString.append(" = 0;\n");
                     result.numberConstraints += 2;
@@ -428,10 +431,10 @@ public class Feature implements VariableReference {
                 case GROUP_CARDINALITY:
                     result.opbString.append(group.getFeatures().size());
                     result.opbString.append(" * ");
-                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
+                    result.opbString.append(getQuotedFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" -1 * ");
-                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append(child.getQuotedFeatureName());
                     }
                     result.opbString.append(" >= 0;\n");
                     result.numberConstraints++;
@@ -440,10 +443,10 @@ public class Feature implements VariableReference {
                     result.opbString.append("-");
                     result.opbString.append(group.getCardinality().lower);
                     result.opbString.append(" * ");
-                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
+                    result.opbString.append(getQuotedFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" +1 * ");
-                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append(child.getQuotedFeatureName());
                     }
                     result.opbString.append(" >= ");
                     result.opbString.append(0);
@@ -451,10 +454,10 @@ public class Feature implements VariableReference {
 
 
                     result.numberConstraints++;
-                    result.opbString.append("_" + getFeatureName().replace(" ", "_"));
+                    result.opbString.append(getQuotedFeatureName());
                     for (Feature child : group.getFeatures()){
                         result.opbString.append(" +1 * ");
-                        result.opbString.append("_" + child.getFeatureName().replace(" ", "_"));
+                        result.opbString.append(child.getQuotedFeatureName());
                     }
                     result.opbString.append(" <= ");
                     result.opbString.append(group.getCardinality().upper + 1);
