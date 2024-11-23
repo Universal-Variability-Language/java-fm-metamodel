@@ -1,10 +1,7 @@
 package de.vill.conversion;
 
 import de.vill.model.*;
-import de.vill.model.constraint.Constraint;
-import de.vill.model.constraint.ImplicationConstraint;
-import de.vill.model.constraint.LiteralConstraint;
-import de.vill.model.constraint.ParenthesisConstraint;
+import de.vill.model.constraint.*;
 
 import java.util.*;
 
@@ -52,6 +49,7 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
 
         for (int i = min; i <= max; i++) {
             Feature newChild = new Feature(feature.getFeatureName() + "-" + i);
+            featureModel.getFeatureMap().put(newChild.getFeatureName(), newChild);
             newChild.getAttributes().put("abstract", new Attribute<Boolean>("abstract", true, feature));
             newChildren.getFeatures().add(newChild);
             newChild.setParentGroup(newChildren);
@@ -62,7 +60,7 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
             }
             for (int j = 1; j <= i; j++) {
                 Feature subTreeClone = feature.clone();
-                addPrefixToNamesRecursively(subTreeClone, "-" + i + "-" + j);
+                addPrefixToNamesRecursively(subTreeClone, "-" + i + "-" + j, featureModel);
                 mandatoryGroup.getFeatures().add(subTreeClone);
                 subTreeClone.setParentGroup(mandatoryGroup);
 
@@ -71,24 +69,73 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
                 constraintReplacementMap.remove(feature.getFeatureName());
                 for (Constraint constraint : constraintsToClone) {
                     Constraint newConstraint = constraint.clone();
-                    adaptConstraint(subTreeClone, newConstraint, constraintReplacementMap);
-                    LiteralConstraint subTreeRootConstraint = new LiteralConstraint(newChild);
-                    newConstraint = new ImplicationConstraint(subTreeRootConstraint, new ParenthesisConstraint(newConstraint));
+                    if (newConstraint instanceof LiteralConstraint) {
+                        String toReplace = ((LiteralConstraint) newConstraint).getReference().getIdentifier();
+                        if (constraintReplacementMap.containsKey(toReplace)) {
+                            LiteralConstraint newLiteral = new LiteralConstraint(constraintReplacementMap.get(toReplace));
+                            LiteralConstraint subTreeRootConstraint = new LiteralConstraint(newChild);
+                            newConstraint = new ImplicationConstraint(subTreeRootConstraint, new ParenthesisConstraint(newLiteral));;
+                        }
+                    }else{
+                        adaptConstraint(subTreeClone, newConstraint, constraintReplacementMap);
+                        LiteralConstraint subTreeRootConstraint = new LiteralConstraint(newChild);
+                        newConstraint = new ImplicationConstraint(subTreeRootConstraint, new ParenthesisConstraint(newConstraint));
+                    }
                     featureModel.getOwnConstraints().add(newConstraint);
                 }
             }
         }
+
+        Set<String> allFeatureNamesInSubTree = new HashSet<>();
+        getAllSubFeatureNamesRecursively(feature, allFeatureNamesInSubTree);
+        for (Constraint constraint : constraintsToClone) {
+            Constraint newConstraint = constraint.clone();
+            orAdaptedConstraint(newConstraint, allFeatureNamesInSubTree, min, max, featureModel);
+            featureModel.getOwnConstraints().add(newConstraint);
+        }
+
+
         feature.getChildren().removeAll(feature.getChildren());
         feature.getChildren().add(newChildren);
         newChildren.setParentFeature(feature);
     }
 
-    private void addPrefixToNamesRecursively(Feature feature, String prefix) {
+    private void orAdaptedConstraint(Constraint constraint, Set<String> featuresToReplace, int min, int max, FeatureModel featureModel) {
+        for (Constraint subPart : constraint.getConstraintSubParts()) {
+            if (subPart instanceof LiteralConstraint) {
+                String toReplace = ((LiteralConstraint) subPart).getReference().getIdentifier();
+                if (featuresToReplace.contains(toReplace)){
+                    Feature f = featureModel.getFeatureMap().get(toReplace + "-" + min + "-1");
+                    Constraint newOr = new LiteralConstraint(f);
+                    for (int i = min + 1; i <= max; i++) {
+                        for (int j = 1; j <= i; j++) {
+                            newOr = new OrConstraint(newOr, new LiteralConstraint(featureModel.getFeatureMap().get(toReplace + "-" + i + "-" + j)));
+                        }
+                    }
+                    constraint.replaceConstraintSubPart(subPart, new ParenthesisConstraint(newOr));
+                }
+            }else {
+                orAdaptedConstraint(subPart, featuresToReplace, min, max, featureModel);
+            }
+        }
+    }
+
+    private void getAllSubFeatureNamesRecursively(Feature feature, Set<String> names) {
+        names.add(feature.getFeatureName());
+        for (Group child : feature.getChildren()) {
+            for(Feature childFeature : child.getFeatures()){
+                getAllSubFeatureNamesRecursively(childFeature, names);
+            }
+        }
+    }
+
+    private void addPrefixToNamesRecursively(Feature feature, String prefix, FeatureModel featureModel) {
         feature.setFeatureName(feature.getFeatureName() + prefix);
+        featureModel.getFeatureMap().put(feature.getFeatureName(), feature);
         if (!feature.isSubmodelRoot()) {
             for (Group group : feature.getChildren()) {
                 for (Feature subFeature : group.getFeatures()) {
-                    addPrefixToNamesRecursively(subFeature, prefix);
+                    addPrefixToNamesRecursively(subFeature, prefix, featureModel);
                 }
             }
         }
@@ -120,6 +167,13 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
 
     private boolean constraintContains(Constraint constraint, List<Feature> subTreeFeatures) {
         List<Constraint> subParts = constraint.getConstraintSubParts();
+        if (constraint instanceof LiteralConstraint && ((LiteralConstraint) constraint).getReference() instanceof Feature) {
+            Feature feature = (Feature) ((LiteralConstraint) constraint).getReference();
+            if (subTreeFeatures.contains(feature)) {
+                return true;
+            }
+        }
+
         for (Constraint subPart : subParts) {
             if (subPart instanceof LiteralConstraint && ((LiteralConstraint) subPart).getReference() instanceof Feature) {
                 Feature feature = (Feature) ((LiteralConstraint) subPart).getReference();
