@@ -16,7 +16,7 @@ public class SubstitutionVariableIndex {
 
     public String getSubName() {
         index++;
-        return "sub_z_" + index;
+        return "x_" + index;
     }
 
     public int getIndex() {

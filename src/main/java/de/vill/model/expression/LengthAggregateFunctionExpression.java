@@ -90,7 +90,12 @@ public class LengthAggregateFunctionExpression extends Expression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
         throw new UnsupportedOperationException("All AggregateFunctions must be removed before method is called.");
+    }
+
+    @Override
+    public Expression clone(){
+        return new LengthAggregateFunctionExpression(getReference());
     }
 }

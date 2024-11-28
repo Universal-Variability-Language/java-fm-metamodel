@@ -261,23 +261,12 @@ public class UVLModelFactory {
         List<LanguageLevel> completeOrderedLevelsToRemove = new LinkedList<>();
         while (!levelsToRemoveClone.isEmpty()) {
             LanguageLevel highestLevel = getMaxLanguageLevel(levelsToRemoveClone);
-            if (LanguageLevel.isMajorLevel(highestLevel)) {
-                //highestLevel is major level
-                int numberCorrespondingMinorLevels = highestLevel.getValue() + 1;
-                List<LanguageLevel> correspondingMinorLevels = LanguageLevel.valueOf(numberCorrespondingMinorLevels);
-                if (correspondingMinorLevels != null) {
-                    correspondingMinorLevels.retainAll(featureModel.getUsedLanguageLevelsRecursively());
-                    completeOrderedLevelsToRemove.addAll(correspondingMinorLevels);
-                }
+
+            if (featureModel.getUsedLanguageLevelsRecursively().contains(highestLevel)) {
                 completeOrderedLevelsToRemove.add(highestLevel);
-                levelsToRemoveClone.remove(highestLevel);
-            } else {
-                //highestLevel is minor level
-                if (featureModel.getUsedLanguageLevelsRecursively().contains(highestLevel)) {
-                    completeOrderedLevelsToRemove.add(highestLevel);
-                }
-                levelsToRemoveClone.remove(highestLevel);
             }
+            levelsToRemoveClone.remove(highestLevel);
+
         }
         //SAT-level can not be removed
         completeOrderedLevelsToRemove.remove(LanguageLevel.BOOLEAN_LEVEL);

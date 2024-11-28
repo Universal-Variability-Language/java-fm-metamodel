@@ -78,9 +78,9 @@ public class SubExpression extends BinaryExpression {
         return result;
     }
 
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
-        var result = left.getAsSum(additionalConstraints);
-        var rightResult = right.getAsSum(additionalConstraints);
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
+        var result = left.getAsSum(additionalSubstitution);
+        var rightResult = right.getAsSum(additionalSubstitution);
         for (Literal l : rightResult){
             l.factor *= -1;
         }
@@ -91,5 +91,10 @@ public class SubExpression extends BinaryExpression {
     @Override
     public String getReturnType() {
         return Constants.NUMBER;
+    }
+
+    @Override
+    public Expression clone(){
+        return new SubExpression(left.clone(), right.clone());
     }
 }

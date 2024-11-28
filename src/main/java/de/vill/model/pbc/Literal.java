@@ -24,4 +24,13 @@ public class Literal implements Cloneable{
         }
         return literal;
     }
+
+    @Override
+    public String toString() {
+        String signString = "+";
+        if (factor < 0) {
+            signString = "";
+        }
+        return " " + signString + factor + " * " + (sign ? name : "neg(" + name + ")");
+    }
 }

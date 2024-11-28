@@ -91,10 +91,10 @@ public class DivExpression extends BinaryExpression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
         List<Literal> result = new LinkedList<>();
-        List<Literal> numeratorSum = getLeft().getAsSum(additionalConstraints);
-        List<Literal> denominatorSum = getRight().getAsSum(additionalConstraints);
+        List<Literal> numeratorSum = getLeft().getAsSum(additionalSubstitution);
+        List<Literal> denominatorSum = getRight().getAsSum(additionalSubstitution);
         SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
         for (Literal l : numeratorSum) {
             Set<Set<Literal>> literalCombinations = getLiteralCombinations(new HashSet<Literal>(denominatorSum));
@@ -106,13 +106,16 @@ public class DivExpression extends BinaryExpression {
                     denominatorFactorSum += denominatorLiteral.factor;
                 }
                 newSummand.factor /= denominatorFactorSum;
-                newSummand.name = substitutionVariableIndex.getSubName();
+                var subIndex = substitutionVariableIndex.getIndex();
+                newSummand.name = "x_" + subIndex;
                 result.add(newSummand);
                 PBConstraint denominatorConstraint = featureCombinationToPBConstraint(combination, denominatorSum);
-                denominatorConstraint.literalList.add(new Literal(1, l.name, true));
-                denominatorConstraint.k += 1;
-                additionalConstraints.addAll(substitutionConstraint(denominatorConstraint, newSummand.name));
-                //TODO add x <=> l & combination (with positive and negative literals)
+                if (l.name != null) {
+                    denominatorConstraint.literalList.add(new Literal(1, l.name, l.sign));
+                    denominatorConstraint.k += 1;
+                }
+
+                additionalSubstitution.addAll(substitutionConstraint(denominatorConstraint, newSummand.name));
             }
         }
         return result;
@@ -131,22 +134,29 @@ public class DivExpression extends BinaryExpression {
         pbConstraint.literalList = new LinkedList<>();
         pbConstraint.k = allLiterals.size();
         for (Literal literal : allLiterals) {
-            if (takenLiterals.contains(literal)) {
-                //literal positive in result
-                Literal newLiteral = new Literal();
-                newLiteral.name = literal.name;
-                newLiteral.factor = 1;
-                pbConstraint.literalList.add(newLiteral);
-            }else {
-                //literal negative in result
-                Literal negatedLiteral = new Literal();
-                negatedLiteral.name = literal.name;
-                negatedLiteral.factor = -1;
-                pbConstraint.k -= 1;
-                pbConstraint.literalList.add(negatedLiteral);
+            if (literal.name != null){
+                if (takenLiterals.contains(literal)) {
+                    //literal positive in result
+                    Literal newLiteral = new Literal();
+                    newLiteral.name = literal.name;
+                    newLiteral.factor = 1;
+                    newLiteral.sign = literal.sign;
+                    pbConstraint.literalList.add(newLiteral);
+                }else {
+                    //literal negative in result
+                    Literal negatedLiteral = new Literal();
+                    negatedLiteral.name = literal.name;
+                    negatedLiteral.factor = 1;
+                    negatedLiteral.sign = !literal.sign;
+                    pbConstraint.literalList.add(negatedLiteral);
+                }
             }
-
         }
         return pbConstraint;
+    }
+
+    @Override
+    public Expression clone(){
+        return new DivExpression(left.clone(), right.clone());
     }
 }

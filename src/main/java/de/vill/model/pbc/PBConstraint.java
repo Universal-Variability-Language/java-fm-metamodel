@@ -1,5 +1,6 @@
 package de.vill.model.pbc;
 
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -93,13 +94,16 @@ public class PBConstraint implements Cloneable{
     }
 
     public void toOPBString(OPBResult result) {
+        DecimalFormat df = new DecimalFormat("#.####");
         for (Literal l : literalList) {
             if (!l.sign){
                 k -= l.factor;
                 l.factor *= -1;
                 l.sign = !l.sign;
             }
+            l.factor = Double.parseDouble(df.format(l.factor));
         }
+        k = Double.parseDouble(df.format(k));
         result.numberConstraints++;
         int maxDecimalPlaces = getMaxDecimalPlaces();
         for(Literal l : literalList){
@@ -161,6 +165,16 @@ public class PBConstraint implements Cloneable{
         }
 
         return pbConstraint;
+    }
+
+    @Override
+    public String toString() {
+        String result = "";
+        for (Literal literal : literalList) {
+            result += literal.toString();
+        }
+        result += " " + type + k;
+        return result;
     }
 }
 

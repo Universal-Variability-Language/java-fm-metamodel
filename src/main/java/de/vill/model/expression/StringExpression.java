@@ -82,12 +82,17 @@ public class StringExpression extends Expression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
         throw new UnsupportedOperationException("All AggregateFunctions must be removed before method is called.");
     }
 
     @Override
     public String getReturnType() {
         return Constants.STRING;
+    }
+
+    @Override
+    public Expression clone(){
+        return new StringExpression(getString());
     }
 }

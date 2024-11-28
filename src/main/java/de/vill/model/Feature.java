@@ -630,7 +630,9 @@ public class Feature implements VariableReference {
         feature.setSubmodelRoot(isSubmodelRoot);
         feature.setRelatedImport(getRelatedImport());
         feature.setFeatureType(this.getFeatureType());
-        feature.getAttributes().putAll(getAttributes());
+        for (Map.Entry<String, Attribute<?>> entry : getAttributes().entrySet()){
+            feature.getAttributes().put(entry.getKey(),entry.getValue().cloneWithFeature(feature));
+        }
         for (Group group : getChildren()) {
             feature.getChildren().add(group.clone());
         }

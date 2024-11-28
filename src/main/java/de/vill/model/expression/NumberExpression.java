@@ -85,7 +85,7 @@ public class NumberExpression extends Expression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
         List<Literal> result = new LinkedList<>();
         result.add(new Literal(number, null, true));
         return result;
@@ -94,5 +94,10 @@ public class NumberExpression extends Expression {
     @Override
     public String getReturnType() {
         return Constants.NUMBER;
+    }
+
+    @Override
+    public Expression clone(){
+        return new NumberExpression(getNumber());
     }
 }

@@ -110,17 +110,34 @@ public class Util {
 
     public static List<PBConstraint> transformImplicationMap (HashMap<Integer, List<PBConstraint>> implicationMap){
         List<PBConstraint> resultList = new LinkedList<>();
+        SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
         for (Map.Entry<Integer, List<PBConstraint>> entry : implicationMap.entrySet()) {
             int index = entry.getKey();
-            for(PBConstraint constraint : entry.getValue()){
-                resultList.addAll(substitutionConstraint(constraint, "x_" + index));
+            if (entry.getValue().size() > 1) {
+                PBConstraint pbConstraint = new PBConstraint();
+                pbConstraint.k = entry.getValue().size();
+
+                for(PBConstraint constraint : entry.getValue()){
+                    String subName = substitutionVariableIndex.getSubName();
+                    pbConstraint.literalList.add(new Literal(
+                            1, subName, true
+                    ));
+                    resultList.addAll(substitutionConstraint(constraint, subName));
+                }
+                resultList.addAll(substitutionConstraint(pbConstraint, "x_" + index));
+            }else {
+                for(PBConstraint constraint : entry.getValue()){
+                    resultList.addAll(substitutionConstraint(constraint, "x_" + index));
+                }
             }
+
 
         }
         return resultList;
     }
 
     public static List<PBConstraint> substitutionConstraint(PBConstraint constraint, String substitutionName) {
+        System.out.println(substitutionName + " <=> " + constraint.toString());
         List<PBConstraint> resultList = new LinkedList<>();
         // x <=> constraint is the same as -x v constraint AND x v -constraint
         // -x v constraint
@@ -130,15 +147,15 @@ public class Util {
         return resultList;
     }
 
-    public static HashMap<Integer, List<PBConstraint>> transformSubFormulas(HashMap<Integer, Constraint> subformulas, List<PBConstraint> additionalConstraints){
+    public static HashMap<Integer, List<PBConstraint>> transformSubFormulas(HashMap<Integer, Constraint> subformulas, List<PBConstraint> additionalSubstitution){
         HashMap<Integer, List<PBConstraint>> resultMap = new HashMap<>();
         for (Map.Entry<Integer, Constraint> entry : subformulas.entrySet()) {
-            resultMap.put(entry.getKey(), transformSubFormula(entry.getValue(), additionalConstraints));
+            resultMap.put(entry.getKey(), transformSubFormula(entry.getValue(), additionalSubstitution));
         }
         return resultMap;
     }
 
-    public static List<PBConstraint> transformSubFormula(Constraint constraint, List<PBConstraint> additionalConstraints){
+    public static List<PBConstraint> transformSubFormula(Constraint constraint, List<PBConstraint> additionalSubstitution){
         List<PBConstraint> resultList = new LinkedList<>();
         if(constraint instanceof NotConstraint){
             System.err.println("error");
@@ -158,9 +175,8 @@ public class Util {
         }
         else if (constraint instanceof ExpressionConstraint) {
             ExpressionConstraint expressionConstraint = (ExpressionConstraint) constraint;
-            resultList.add(transformExpression(expressionConstraint, additionalConstraints));
-        }
-        return resultList;
+            resultList.addAll(transformExpression(expressionConstraint, additionalSubstitution));
+        }return resultList;
     }
 
     public static PBConstraint transformNegLiteral(NotConstraint constraint){
@@ -271,15 +287,16 @@ public class Util {
         }
     }
 
-    public static PBConstraint transformExpression(ExpressionConstraint constraint, List<PBConstraint> additionalConstraints) {
+    public static List<PBConstraint> transformExpression(ExpressionConstraint constraint, List<PBConstraint> additionalSubstitution) {
+        List<PBConstraint> additionalConstraints = new LinkedList<>();
         List<Expression> allDenominators = new LinkedList<>();
         collectDenominators(constraint.getLeft(), allDenominators);
         collectDenominators(constraint.getRight(), allDenominators);
         additionalConstraints.addAll(getConstraintsToForbidZeroDivision(allDenominators));
 
         //transform everything to a sum
-        var leftSum = constraint.getLeft().getAsSum(additionalConstraints);
-        var rightSum = constraint.getRight().getAsSum(additionalConstraints);
+        var leftSum = constraint.getLeft().getAsSum(additionalSubstitution);
+        var rightSum = constraint.getRight().getAsSum(additionalSubstitution);
         //take all numbers to the right side
         List<Literal> numbersFromLeftToRight = leftSum.stream().filter(x -> x.name == null).collect(Collectors.toList());
         for (Literal l : numbersFromLeftToRight){
@@ -326,7 +343,9 @@ public class Util {
             pbConstraint.literalList.add(new Literal(e.getValue(), e.getKey(), true));
         }
 
-        return pbConstraint;
+        additionalConstraints.add(pbConstraint);
+
+        return additionalConstraints;
     }
 
     public static void collectDenominators(Expression expression, List<Expression> denominators) {

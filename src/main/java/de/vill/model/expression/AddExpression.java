@@ -87,11 +87,17 @@ public class AddExpression extends BinaryExpression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
         List<Literal> result = new LinkedList<>();
-        result.addAll(left.getAsSum(additionalConstraints));
-        List<Literal> rightSum = right.getAsSum(additionalConstraints);
+        result.addAll(left.getAsSum(additionalSubstitution));
+        List<Literal> rightSum = right.getAsSum(additionalSubstitution);
         result.addAll(rightSum);
         return result;
     }
+
+    @Override
+    public Expression clone(){
+        return new AddExpression(left.clone(), right.clone());
+    }
+
 }

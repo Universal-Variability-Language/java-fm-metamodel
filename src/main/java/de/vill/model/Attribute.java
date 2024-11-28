@@ -6,6 +6,8 @@ import java.util.Objects;
 
 import de.vill.model.building.VariableReference;
 import de.vill.model.constraint.Constraint;
+import de.vill.model.expression.AddExpression;
+import de.vill.model.expression.Expression;
 import de.vill.util.Constants;
 
 /**
@@ -20,7 +22,7 @@ public class Attribute<T> implements VariableReference {
     private int line;
     private final String name;
     private final T value;
-    private final Feature feature;
+    private Feature feature;
 
     /**
      * The constructor of the attribute class takes an attribute name (does not contain the feature name) and a value of type T
@@ -81,6 +83,10 @@ public class Attribute<T> implements VariableReference {
      * @return Feature
      */
     public Feature getFeature() {return feature;}
+
+    public void setFeature(Feature feature) {
+        this.feature = feature;
+    }
 
     /**
      * Returns a uvl representation of the attribute as string (different for the possible types of the value)
@@ -162,5 +168,14 @@ public class Attribute<T> implements VariableReference {
     @Override
     public String getIdentifier() {
         return feature.getIdentifier() + "." + name;
+    }
+
+    @Override
+    public Attribute<T> clone(){
+        return new Attribute<T>(name, value, feature);
+    }
+
+    public Attribute<T> cloneWithFeature(Feature feature){
+        return new Attribute<T>(name, value, feature);
     }
 }

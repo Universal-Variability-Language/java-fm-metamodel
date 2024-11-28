@@ -97,9 +97,9 @@ public class MulExpression extends BinaryExpression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
-        var leftSum = left.getAsSum(additionalConstraints);
-        var rightSum = right.getAsSum(additionalConstraints);
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
+        var leftSum = left.getAsSum(additionalSubstitution);
+        var rightSum = right.getAsSum(additionalSubstitution);
         List<Literal> result = new LinkedList<>();
         SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
         for (int i=0;i<leftSum.size();i++){
@@ -113,9 +113,10 @@ public class MulExpression extends BinaryExpression {
                 }else {
                     Literal l = new Literal();
                     l.factor = leftSum.get(i).factor * rightSum.get(j).factor;
-                    l.name = substitutionVariableIndex.getSubName();
+                    var subIndex = substitutionVariableIndex.getIndex();
+                    l.name = "x_" + subIndex;
                     result.add(l);
-                    additionalConstraints.addAll(getSubstitutionConstraints(leftSum.get(i).name, rightSum.get(j).name, l.name));
+                    additionalSubstitution.addAll(getSubstitutionConstraints(leftSum.get(i).name, rightSum.get(j).name, l.name));
                 }
             }
         }
@@ -144,5 +145,10 @@ public class MulExpression extends BinaryExpression {
     @Override
     public String getReturnType() {
         return Constants.NUMBER;
+    }
+
+    @Override
+    public Expression clone(){
+        return new MulExpression(left.clone(), right.clone());
     }
 }

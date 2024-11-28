@@ -76,12 +76,17 @@ public class ParenthesisExpression extends Expression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
-        return getContent().getAsSum(additionalConstraints);
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
+        return getContent().getAsSum(additionalSubstitution);
     }
 
     @Override
     public String getReturnType() {
         return content.getReturnType();
+    }
+
+    @Override
+    public Expression clone(){
+        return new ParenthesisExpression(content.clone());
     }
 }

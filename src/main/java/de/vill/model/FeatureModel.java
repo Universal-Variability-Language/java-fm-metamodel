@@ -271,8 +271,6 @@ public class FeatureModel {
         List<Constraint> constraints = getConstraints();
         constraints.addAll(getFeatureConstraints());
 
-        List<PBConstraint> additionalConstraints = new LinkedList<>();
-
         for(Constraint constraint : constraints){
             if (constraint instanceof LiteralConstraint){
                 PBConstraint pbConstraint = new PBConstraint();
@@ -309,15 +307,19 @@ public class FeatureModel {
                 }
             }
 
-            var map = transformSubFormulas(subMap, additionalConstraints);
+            boolean sign = !(constraint instanceof NotConstraint);
+            Literal literal = new Literal(1, "x_" + SubstitutionVariableIndex.getInstance().peekIndex(), sign);
+
+            List<PBConstraint> additionalSubstitutionConstraints = new LinkedList<>();
+            var map = transformSubFormulas(subMap, additionalSubstitutionConstraints);
             List<PBConstraint> pbcList = transformImplicationMap(map);
             PBConstraint pbConstraint = new PBConstraint();
             pbConstraint.literalList = new LinkedList<>();
             pbConstraint.k = 1;
-            boolean sign = !(constraint instanceof NotConstraint);
-            Literal literal = new Literal(1, "x_" + SubstitutionVariableIndex.getInstance().peekIndex(), sign);
+
             pbConstraint.literalList.add(literal);
             pbcList.add(pbConstraint);
+            pbcList.addAll(additionalSubstitutionConstraints);
             for(PBConstraint pBConstraint : pbcList){
                 result.numberVariables++;
                 pBConstraint.toOPBString(result);
@@ -325,9 +327,6 @@ public class FeatureModel {
             counter++;
         }
 
-        for (PBConstraint pBConstraint : additionalConstraints){
-            pBConstraint.toOPBString(result);
-        }
         SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
         result.numberVariables += substitutionVariableIndex.peekIndex();
         String header = "#variable= " + result.numberVariables + " #constraint= " + result.numberConstraints + "\n";

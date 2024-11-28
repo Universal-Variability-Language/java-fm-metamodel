@@ -125,7 +125,7 @@ public class LiteralExpression extends Expression {
     }
 
     @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalConstraints) {
+    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
         Literal l = new Literal();
         var attribute = (Attribute<?>)getContent();
         l.name = attribute.getFeature().getFeatureName();
@@ -133,6 +133,11 @@ public class LiteralExpression extends Expression {
         List<Literal> result = new LinkedList<>();
         result.add(l);
         return result;
+    }
+
+    @Override
+    public Expression clone(){
+        return new LiteralExpression(content);
     }
 
 }
