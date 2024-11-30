@@ -266,65 +266,13 @@ public class FeatureModel {
         result.opbString.append(" >= 1;\n");
         result.numberConstraints++;
         getRootFeature().toOPBString(result);
-        int counter = 0;
 
         List<Constraint> constraints = getConstraints();
         constraints.addAll(getFeatureConstraints());
 
         for(Constraint constraint : constraints){
-            if (constraint instanceof LiteralConstraint){
-                PBConstraint pbConstraint = new PBConstraint();
-                pbConstraint.literalList = new LinkedList<>();
-                pbConstraint.k = 1;
-                Literal literal = new Literal(1, ((LiteralConstraint) constraint).getReference().getIdentifier(), true);
-                pbConstraint.literalList.add(literal);
-                result.numberVariables++;
-                pbConstraint.toOPBString(result);
-                continue;
-            }
-            HashMap<Integer, Constraint> subMap = new HashMap<>();
-            constraint.extractTseitinSubConstraints(subMap);
-
-            if (subMap.isEmpty()) {
-                if (constraint instanceof LiteralConstraint){
-                    PBConstraint pbConstraint = new PBConstraint();
-                    pbConstraint.literalList = new LinkedList<>();
-                    pbConstraint.k = 1;
-                    Literal literal = new Literal(1, ((LiteralConstraint) constraint).getReference().getIdentifier(), true);
-                    pbConstraint.literalList.add(literal);
-                    result.numberVariables++;
-                    pbConstraint.toOPBString(result);
-                    continue;
-                }else if(constraint instanceof NotConstraint){
-                    PBConstraint pbConstraint = new PBConstraint();
-                    pbConstraint.literalList = new LinkedList<>();
-                    pbConstraint.k = 0;
-                    Literal literal = new Literal(-1, ((LiteralConstraint)((NotConstraint)constraint).getContent()).getReference().getIdentifier(), true);
-                    pbConstraint.literalList.add(literal);
-                    result.numberVariables++;
-                    pbConstraint.toOPBString(result);
-                    continue;
-                }
-            }
-
-            boolean sign = !(constraint instanceof NotConstraint);
-            Literal literal = new Literal(1, "x_" + SubstitutionVariableIndex.getInstance().peekIndex(), sign);
-
-            List<PBConstraint> additionalSubstitutionConstraints = new LinkedList<>();
-            var map = transformSubFormulas(subMap, additionalSubstitutionConstraints);
-            List<PBConstraint> pbcList = transformImplicationMap(map);
-            PBConstraint pbConstraint = new PBConstraint();
-            pbConstraint.literalList = new LinkedList<>();
-            pbConstraint.k = 1;
-
-            pbConstraint.literalList.add(literal);
-            pbcList.add(pbConstraint);
-            pbcList.addAll(additionalSubstitutionConstraints);
-            for(PBConstraint pBConstraint : pbcList){
-                result.numberVariables++;
-                pBConstraint.toOPBString(result);
-            }
-            counter++;
+            constraintDistributiveToOPB(constraint,result);
+            //encodeConstraintTseitinStyle(constraint, result);
         }
 
         SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();

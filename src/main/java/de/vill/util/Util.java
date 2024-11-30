@@ -1,12 +1,10 @@
 package de.vill.util;
 
 import de.vill.config.Configuration;
+import de.vill.model.building.VariableReference;
 import de.vill.model.constraint.*;
 import de.vill.model.expression.*;
-import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBCLiteralConstraint;
-import de.vill.model.pbc.PBConstraint;
-import de.vill.model.pbc.PBConstraintType;
+import de.vill.model.pbc.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -137,7 +135,7 @@ public class Util {
     }
 
     public static List<PBConstraint> substitutionConstraint(PBConstraint constraint, String substitutionName) {
-        System.out.println(substitutionName + " <=> " + constraint.toString());
+        //System.out.println(substitutionName + " <=> " + constraint.toString());
         List<PBConstraint> resultList = new LinkedList<>();
         // x <=> constraint is the same as -x v constraint AND x v -constraint
         // -x v constraint
@@ -387,4 +385,261 @@ public class Util {
         }
         return additionalConstraints;
     }
+
+    public static void constraintDistributiveToOPB(Constraint constraint, OPBResult result) {
+        constraint = substituteExpressions(constraint, result);
+        constraint = removeParenthesisConstraint(constraint);
+        constraint = removeBiimplication(constraint);
+        constraint = removeImplication(constraint);
+        constraint = pushDownNegation(constraint);
+        constraint = distributeOrOverAnd(constraint);
+        cnfToOpb(constraint,result.opbString);
+    }
+
+    private static void cnfToOpb(Constraint constraint, StringBuilder stringBuilder){
+        if (constraint instanceof OrConstraint || constraint instanceof NotConstraint || constraint instanceof LiteralConstraint) {
+            int negatives = clauseToOpb(constraint, stringBuilder);
+            stringBuilder.append(" >= ");
+            stringBuilder.append(1 - negatives);
+            stringBuilder.append(";\n");
+        }else {
+            var and = (AndConstraint) constraint;
+            if (and.getLeft() instanceof AndConstraint){
+                cnfToOpb(and.getLeft(), stringBuilder);
+            }else{
+                int negatives = clauseToOpb(and.getLeft(), stringBuilder);
+                stringBuilder.append(" >= ");
+                stringBuilder.append(1 - negatives);
+                stringBuilder.append(";\n");
+            }
+
+            if (and.getRight() instanceof AndConstraint){
+                cnfToOpb(and.getRight(), stringBuilder);
+            }else{
+                int negatives = clauseToOpb(and.getRight(), stringBuilder);
+                stringBuilder.append(" >= ");
+                stringBuilder.append(1 - negatives);
+                stringBuilder.append(";\n");
+            }
+        }
+    }
+
+    private static int clauseToOpb(Constraint constraint, StringBuilder stringBuilder) {
+        int negatives = 0;
+        if (constraint instanceof NotConstraint) {
+            stringBuilder.append(" -1 * ");
+            var literal = (LiteralConstraint)((NotConstraint) constraint).getContent();
+            stringBuilder.append('"');
+            stringBuilder.append(literal.getReference().getIdentifier());
+            stringBuilder.append('"');
+            negatives++;
+        }else if (constraint instanceof LiteralConstraint){
+            stringBuilder.append(" +1 * ");
+            var literal = (LiteralConstraint)constraint;
+            stringBuilder.append('"');
+            stringBuilder.append(literal.getReference().getIdentifier());
+            stringBuilder.append('"');
+        }else {
+            var or = (OrConstraint)constraint;
+            negatives += clauseToOpb(or.getLeft(), stringBuilder);
+            negatives += clauseToOpb(or.getRight(), stringBuilder);
+        }
+        return negatives;
+    }
+
+    private static Constraint removeParenthesisConstraint(Constraint constraint){
+        if (constraint instanceof ParenthesisConstraint){
+            return removeParenthesisConstraint(((ParenthesisConstraint) constraint).getContent());
+        }else{
+            for (Constraint subConstraint : constraint.getConstraintSubParts()){
+                constraint.replaceConstraintSubPart(subConstraint, removeParenthesisConstraint(subConstraint));
+            }
+        }
+        return constraint;
+    }
+
+    private static Constraint substituteExpressions(Constraint constraint, OPBResult result){
+        if (constraint instanceof ExpressionConstraint){
+            SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
+            int subIndex = substitutionVariableIndex.getIndex();
+            String subName = "x_" + subIndex;
+            LiteralConstraint subLiteral = new LiteralConstraint(new VariableReference() {
+                @Override
+                public String getIdentifier() {
+                    return subName;
+                }
+            });
+            HashMap<Integer, List<PBConstraint>> subMap = new HashMap<>();
+            List<PBConstraint> additionalSubs = new LinkedList<>();
+            List<PBConstraint> expressionEncoding = transformExpression((ExpressionConstraint) constraint, additionalSubs);
+            subMap.put(subIndex, expressionEncoding);
+            List<PBConstraint> resultList = transformImplicationMap(subMap);
+            resultList.addAll(additionalSubs);
+            for (PBConstraint pbConstraint : resultList){
+                pbConstraint.toOPBString(result);
+            }
+            return subLiteral;
+        }else{
+            for (Constraint subConstraint : constraint.getConstraintSubParts()){
+                constraint.replaceConstraintSubPart(subConstraint, substituteExpressions(subConstraint, result));
+            }
+        }
+        return constraint;
+    }
+
+    private static Constraint removeImplication(Constraint constraint){
+        if (constraint instanceof ImplicationConstraint) {
+            return new OrConstraint(
+                    new NotConstraint(
+                            removeImplication(((ImplicationConstraint) constraint).getLeft())),
+                    removeImplication(((ImplicationConstraint) constraint).getRight())
+            );
+        }else{
+            for (Constraint subConstraint : constraint.getConstraintSubParts()){
+                constraint.replaceConstraintSubPart(subConstraint, removeImplication(subConstraint));
+            }
+        }
+        return constraint;
+    }
+
+    private static Constraint removeBiimplication(Constraint constraint){
+        if (constraint instanceof EquivalenceConstraint) {
+            return new AndConstraint(
+                    new OrConstraint(
+                            new NotConstraint(
+                                removeBiimplication(((EquivalenceConstraint) constraint).getLeft())
+                            ),
+                            removeBiimplication(((EquivalenceConstraint) constraint).getRight())),
+                    new OrConstraint(
+                            new NotConstraint(
+                                    removeBiimplication(((EquivalenceConstraint) constraint).getRight())),
+                            removeBiimplication(((EquivalenceConstraint) constraint).getLeft()))
+            );
+        }else{
+            for (Constraint subConstraint : constraint.getConstraintSubParts()){
+                constraint.replaceConstraintSubPart(subConstraint, removeBiimplication(subConstraint));
+            }
+        }
+        return constraint;
+    }
+
+    private static Constraint pushDownNegation(Constraint constraint){
+        if (constraint instanceof NotConstraint) {
+            var notConstraint = (NotConstraint) constraint;
+            if (notConstraint.getContent() instanceof AndConstraint){
+                return pushDownNegation(
+                        new OrConstraint(
+                            new NotConstraint(((AndConstraint) notConstraint.getContent()).getLeft()),
+                            new NotConstraint(((AndConstraint) notConstraint.getContent()).getRight())
+                        )
+                );
+            }else if (notConstraint.getContent() instanceof OrConstraint){
+                return pushDownNegation(
+                        new AndConstraint(
+                                new NotConstraint(((OrConstraint) notConstraint.getContent()).getLeft()),
+                                new NotConstraint(((OrConstraint) notConstraint.getContent()).getRight())
+                        )
+                );
+            }else if (notConstraint.getContent() instanceof NotConstraint){
+                return pushDownNegation(
+                        ((NotConstraint) notConstraint.getContent()).getContent()
+                );
+            }else {
+                return notConstraint;
+            }
+        }else {
+            for (Constraint subConstraint : constraint.getConstraintSubParts()){
+               constraint.replaceConstraintSubPart(subConstraint, pushDownNegation(subConstraint));
+            }
+        }
+        return constraint;
+    }
+
+    public static void encodeConstraintTseitinStyle(Constraint constraint, OPBResult result){
+        if (constraint instanceof LiteralConstraint){
+            PBConstraint pbConstraint = new PBConstraint();
+            pbConstraint.literalList = new LinkedList<>();
+            pbConstraint.k = 1;
+            Literal literal = new Literal(1, ((LiteralConstraint) constraint).getReference().getIdentifier(), true);
+            pbConstraint.literalList.add(literal);
+            result.numberVariables++;
+            pbConstraint.toOPBString(result);
+            return;
+        }
+        HashMap<Integer, Constraint> subMap = new HashMap<>();
+        constraint.extractTseitinSubConstraints(subMap);
+
+        if (subMap.isEmpty()) {
+            if (constraint instanceof LiteralConstraint){
+                PBConstraint pbConstraint = new PBConstraint();
+                pbConstraint.literalList = new LinkedList<>();
+                pbConstraint.k = 1;
+                Literal literal = new Literal(1, ((LiteralConstraint) constraint).getReference().getIdentifier(), true);
+                pbConstraint.literalList.add(literal);
+                result.numberVariables++;
+                pbConstraint.toOPBString(result);
+                return;
+            }else if(constraint instanceof NotConstraint){
+                PBConstraint pbConstraint = new PBConstraint();
+                pbConstraint.literalList = new LinkedList<>();
+                pbConstraint.k = 0;
+                Literal literal = new Literal(-1, ((LiteralConstraint)((NotConstraint)constraint).getContent()).getReference().getIdentifier(), true);
+                pbConstraint.literalList.add(literal);
+                result.numberVariables++;
+                pbConstraint.toOPBString(result);
+                return;
+            }
+        }
+
+        boolean sign = !(constraint instanceof NotConstraint);
+        Literal literal = new Literal(1, "x_" + SubstitutionVariableIndex.getInstance().peekIndex(), sign);
+
+        List<PBConstraint> additionalSubstitutionConstraints = new LinkedList<>();
+        var map = transformSubFormulas(subMap, additionalSubstitutionConstraints);
+        List<PBConstraint> pbcList = transformImplicationMap(map);
+        PBConstraint pbConstraint = new PBConstraint();
+        pbConstraint.literalList = new LinkedList<>();
+        pbConstraint.k = 1;
+
+        pbConstraint.literalList.add(literal);
+        pbcList.add(pbConstraint);
+        pbcList.addAll(additionalSubstitutionConstraints);
+        for(PBConstraint pBConstraint : pbcList){
+            result.numberVariables++;
+            pBConstraint.toOPBString(result);
+        }
+    }
+
+    private static Constraint distributeOrOverAnd(Constraint constraint) {
+        if (constraint instanceof OrConstraint) {
+            OrConstraint or = (OrConstraint) constraint;
+            Constraint left = distributeOrOverAnd(or.getLeft());
+            Constraint right = distributeOrOverAnd(or.getRight());
+
+            if (left instanceof AndConstraint) {
+                AndConstraint leftAnd = (AndConstraint) left;
+                return new AndConstraint(
+                        distributeOrOverAnd(new OrConstraint(leftAnd.getLeft(), right)),
+                        distributeOrOverAnd(new OrConstraint(leftAnd.getRight(), right))
+                );
+            } else if (right instanceof AndConstraint) {
+                AndConstraint rightAnd = (AndConstraint) right;
+                return new AndConstraint(
+                        distributeOrOverAnd(new OrConstraint(left, rightAnd.getLeft())),
+                        distributeOrOverAnd(new OrConstraint(left, rightAnd.getRight()))
+                );
+            }
+            return new OrConstraint(left, right);
+        } else if (constraint instanceof AndConstraint) {
+
+            AndConstraint and = (AndConstraint) constraint;
+            return new AndConstraint(
+                    distributeOrOverAnd(and.getLeft()),
+                    distributeOrOverAnd(and.getRight())
+            );
+        }
+
+        return constraint;
+    }
+
 }

@@ -2,8 +2,6 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.PBCLiteralConstraint;
-import de.vill.util.SubstitutionVariableIndex;
-import org.prop4j.Or;
 
 import java.util.*;
 
