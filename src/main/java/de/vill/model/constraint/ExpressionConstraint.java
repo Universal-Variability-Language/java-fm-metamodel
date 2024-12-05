@@ -8,6 +8,8 @@ import de.vill.model.expression.LiteralExpression;
 import de.vill.model.pbc.Literal;
 import de.vill.model.pbc.PBCLiteralConstraint;
 import de.vill.util.SubstitutionVariableIndex;
+import org.prop4j.And;
+import org.prop4j.Node;
 
 import java.util.*;
 
@@ -145,5 +147,10 @@ public abstract class ExpressionConstraint extends Constraint {
                     }
                 })
         );
+    }
+
+    @Override
+    public Node getNode() {
+        return null;
     }
 }

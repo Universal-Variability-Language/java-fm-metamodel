@@ -3,6 +3,7 @@ package de.vill.model.constraint;
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.Literal;
 import de.vill.model.pbc.PBCLiteralConstraint;
+import org.prop4j.Node;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,6 +20,8 @@ public abstract class Constraint {
     }
 
     private int lineNumber;
+
+    public abstract Node getNode();
 
     @Override
     public String toString() {

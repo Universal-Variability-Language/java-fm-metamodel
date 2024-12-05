@@ -4,6 +4,9 @@ import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.PBCLiteralConstraint;
 import de.vill.util.SubstitutionVariableIndex;
 import de.vill.util.Util;
+import org.prop4j.And;
+import org.prop4j.Literal;
+import org.prop4j.Node;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,5 +79,11 @@ public class LiteralConstraint extends Constraint {
     @Override
     public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
         return new PBCLiteralConstraint(this);
+    }
+
+    @Override
+    public Node getNode() {
+        var node = new Literal(reference.getIdentifier(), true);
+        return node;
     }
 }

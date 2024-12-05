@@ -2,6 +2,10 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.PBCLiteralConstraint;
+import org.prop4j.And;
+import org.prop4j.Node;
+import org.prop4j.Not;
+import org.prop4j.Or;
 
 import java.util.*;
 
@@ -97,5 +101,11 @@ public class NotConstraint extends Constraint {
         builder.append("\n");
         builder.append(")");
         return builder;
+    }
+
+    @Override
+    public Node getNode() {
+        var node = new Not(content.getNode());
+        return node;
     }
 }

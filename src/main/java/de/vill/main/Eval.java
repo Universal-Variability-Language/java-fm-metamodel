@@ -2,8 +2,13 @@ package de.vill.main;
 
 
 import de.ovgu.featureide.fm.core.ExtensionManager;
+import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
+import de.ovgu.featureide.fm.core.analysis.cnf.Nodes;
+import de.ovgu.featureide.fm.core.analysis.cnf.Variables;
+import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.impl.*;
+import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
 import de.ovgu.featureide.fm.core.init.FMCoreLibrary;
 import de.ovgu.featureide.fm.core.init.LibraryManager;
 import de.ovgu.featureide.fm.core.io.IPersistentFormat;
@@ -12,8 +17,9 @@ import de.ovgu.featureide.fm.core.io.dimacs.DIMACSFormat;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.io.uvl.UVLFeatureModelFormat;
+import de.vill.model.*;
+import de.vill.model.Feature;
 import de.vill.model.FeatureModel;
-import de.vill.model.LanguageLevel;
 import de.vill.util.ConvertFeatureCardinalityForOPB;
 import de.vill.util.CountingResult;
 import de.vill.util.ModelEvalResult;
@@ -27,22 +33,78 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static java.awt.SystemColor.text;
+
 public class Eval {
 
     public static final String WORKING_DIR = "/home/stefan/stefan-vill-master/tmp_eval/";
     public static final String D4_PATH = "/home/stefan/Downloads/d4/d4";
     public static final String P2D_PATH = "/home/stefan/p2d/target/release/p2d";
+    final static long NUMBER_RUNS = 1;
+    public static boolean tseitin = false;
+
+    public static FeatureModel genGroupCardN(int n){
+        int lo = (int) (0.25 * n);
+        int hi = (int) (0.75 * n);
+        FeatureModel featureModel = new FeatureModel();
+        Feature root = new Feature("r");
+        featureModel.setRootFeature(root);
+        Group g = new Group(Group.GroupType.GROUP_CARDINALITY);
+        g.setCardinality(new Cardinality(lo, hi));
+        root.getChildren().add(g);
+        for (int i=1;i<=n;i++){
+            Feature f = new Feature("f_" + i);
+            g.getFeatures().add(f);
+        }
+        return featureModel;
+    }
+
+    public static void safeFMGroupCardFrom1ToN(String path, int n) throws FileNotFoundException {
+        for (int i=1;i<=n;i++){
+            FeatureModel fm = genGroupCardN(i);
+            try (PrintWriter out = new PrintWriter(path + "/fm_" + i + ".uvl")) {
+                out.println(fm.toString());
+            }
+        }
+    }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        //runSingleFile("test.uvl");
-        //bs("/test.uvl");
-        runEval();
+        //runSingleFile("./models/automotive01.uvl");
+        //bs("rnd_models/fm0.uvl");
+        //runEval();
+
+        //safeFMGroupCardFrom1ToN("/home/stefan/stefan-vill-master/eval/genGroupCardModel", 10);
+
+        //System.exit(0);
+
+        final File UVL_FILE = new File(args[0]);
+        final File TARGET_FILE = new File(args[1]);
+        final Target target = args[2].equals("dimacs") ? Target.DIMACS : Target.OPB;
+        tseitin = args[3] != null && args[3].equals("tseitin");
+
+        switch (target) {
+            case DIMACS: {
+                uvlToDimacsFeatureIDE(UVL_FILE, TARGET_FILE);
+                break;
+            }
+            case OPB: {
+                uvlToOPB(UVL_FILE, TARGET_FILE);
+                break;
+            }
+        }
+
+    }
+
+    public static enum Target{
+        DIMACS,
+        OPB
 
     }
 
     public static void bs(String modelName)throws IOException, InterruptedException {
         File file = Paths.get(WORKING_DIR, modelName).toFile();
-        uvlToOPB(file);
+        File opbTargetFile = Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".opb").toFile();
+        uvlToOPB(file, opbTargetFile);
         runp2d(file);
     }
     public static void runSingleFile(String modelName) throws IOException, InterruptedException {
@@ -53,7 +115,6 @@ public class Eval {
     }
 
     public static void runEval() throws IOException, InterruptedException {
-        final int NUMBER_RUNS = 3;
         List<ModelEvalResult> resultList = new LinkedList<>();
         File folder = Paths.get(WORKING_DIR, "models").toFile();
         File[] files = folder.listFiles();
@@ -88,10 +149,11 @@ public class Eval {
 
     public static ModelEvalResult evaluateModel(File file) throws IOException, InterruptedException {
         double totalTimeDimacs = 0;
-        final long NUMBER_RUNS = 3;
+        File dimacsTargetFile = Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".dimacs").toFile();
+        File opbTargetFile = Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".opb").toFile();
         for (int i=0;i<NUMBER_RUNS;i++){
             long start = System.currentTimeMillis();
-            uvlToDimacsFeatureIDE(file);
+            uvlToDimacsFeatureIDE(file, dimacsTargetFile);
             long finish = System.currentTimeMillis();
             totalTimeDimacs += finish - start;
         }
@@ -99,7 +161,7 @@ public class Eval {
         double totalTimeOpb = 0;
         for (int i=0;i<NUMBER_RUNS;i++){
             long start = System.currentTimeMillis();
-            uvlToOPB(file);
+            uvlToOPB(file, opbTargetFile);
             long finish = System.currentTimeMillis();
             totalTimeOpb += finish - start;
         }
@@ -116,7 +178,7 @@ public class Eval {
         // Read the output from the process
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
-        String time = "";
+        String time = "0";
         String result = "";
         while ((line = reader.readLine()) != null) {
             System.out.println(line);
@@ -165,36 +227,42 @@ public class Eval {
         return new CountingResult(Double.parseDouble(time), result);
     }
 
-    public static void uvlToOPB(File file) throws IOException {
+    public static void uvlToOPB(File modelFile, File targetFile) throws IOException {
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        FeatureModel featureModel = loadUVLFeatureModelFromFile(file.toString());
+        FeatureModel featureModel = loadUVLFeatureModelFromFile(modelFile.toString());
         ConvertFeatureCardinalityForOPB convertFeatureCardinalityForOPB = new ConvertFeatureCardinalityForOPB();
         convertFeatureCardinalityForOPB.convertFeatureModel(featureModel);
+
         Set<LanguageLevel> levels = new HashSet<>();
         levels.add(LanguageLevel.AGGREGATE_FUNCTION);
         levels.add( LanguageLevel.STRING_CONSTRAINTS);
         uvlModelFactory.convertLanguageLevel(featureModel, levels);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".opb").toString()))) {
-            writer.append(featureModel.toOPBString());
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(targetFile))) {
+            if (tseitin) {
+                writer.append(featureModel.toOPBString());
+            }else{
+                featureModel.writeOPBStringToFile(modelFile, targetFile,writer);
+            }
             writer.flush();
         } catch (IOException e) {
             System.err.println("Error writing to file: " + e.getMessage());
         }
     }
 
-    public static void uvlToDimacsFeatureIDE(File file) throws IOException {
+    public static void uvlToDimacsFeatureIDE(File modelFile, File targetFile) throws IOException {
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        FeatureModel featureModel = loadUVLFeatureModelFromFile(file.toString());
+        FeatureModel featureModel = loadUVLFeatureModelFromFile(modelFile.toString());
         Set<LanguageLevel> levels = new HashSet<>();
         levels.add(LanguageLevel.BOOLEAN_LEVEL);
-        levels.add( LanguageLevel.TYPE_LEVEL);
+        levels.add(LanguageLevel.TYPE_LEVEL);
         uvlModelFactory.convertExceptAcceptedLanguageLevel(featureModel, levels);
 
         LibraryManager.registerLibrary(FMCoreLibrary.getInstance());
         FMFormatManager.getInstance().addExtension(new UVLFeatureModelFormat());
 
-        IFeatureModel fm = getFeatureIdeFMFromString(file.toPath(), featureModel.toString());
-        FileHandler.save(Paths.get(WORKING_DIR, "tmp_files", file.getName() + ".dimacs"), fm, new DIMACSFormat());
+        IFeatureModel fm = getFeatureIdeFMFromString(modelFile.toPath(), featureModel.toString());
+        FileHandler.save(targetFile.toPath(), fm, new DIMACSFormat());
     }
 
 

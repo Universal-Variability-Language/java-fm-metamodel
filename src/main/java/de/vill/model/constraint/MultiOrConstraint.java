@@ -2,6 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.PBCLiteralConstraint;
+import org.prop4j.Node;
 
 import java.util.*;
 
@@ -11,6 +12,11 @@ public class MultiOrConstraint extends Constraint{
 
     public MultiOrConstraint() {
         sub_parts = new LinkedList<>();
+    }
+
+    @Override
+    public Node getNode() {
+        return null;
     }
 
     @Override
@@ -111,4 +117,6 @@ public class MultiOrConstraint extends Constraint{
         builder.append(")");
         return builder;
     }
+
+
 }

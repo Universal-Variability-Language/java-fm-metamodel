@@ -2,6 +2,8 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.PBCLiteralConstraint;
+import org.prop4j.And;
+import org.prop4j.Node;
 
 import java.util.*;
 
@@ -71,5 +73,10 @@ public class ParenthesisConstraint extends Constraint {
         StringBuilder builder = new StringBuilder();
         builder.append(content.toSMT2string());
         return builder;
+    }
+
+    @Override
+    public Node getNode() {
+        return content.getNode();
     }
 }

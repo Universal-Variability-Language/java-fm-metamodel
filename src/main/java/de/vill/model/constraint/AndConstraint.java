@@ -3,6 +3,8 @@ package de.vill.model.constraint;
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.PBCLiteralConstraint;
 import de.vill.util.SubstitutionVariableIndex;
+import org.prop4j.And;
+import org.prop4j.Node;
 
 import java.util.*;
 
@@ -24,6 +26,21 @@ public class AndConstraint extends Constraint {
 
     public Constraint getRight() {
         return right;
+    }
+
+    public void setLeft(Constraint left) {
+        this.left = left;
+    }
+
+    public void setRight(Constraint right){
+        this.right = right;
+    }
+
+    @Override
+    public Node getNode() {
+        var node = new And();
+        node.setChildren(left.getNode(), right.getNode());
+        return node;
     }
 
     @Override

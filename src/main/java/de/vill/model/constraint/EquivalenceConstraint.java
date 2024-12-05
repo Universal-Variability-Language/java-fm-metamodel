@@ -3,6 +3,9 @@ package de.vill.model.constraint;
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.PBCLiteralConstraint;
 import de.vill.util.SubstitutionVariableIndex;
+import org.prop4j.And;
+import org.prop4j.Implies;
+import org.prop4j.Node;
 
 import java.util.*;
 
@@ -107,6 +110,15 @@ public class EquivalenceConstraint extends Constraint {
         builder.append(right.toSMT2string());
         builder.append(")");
         return builder;
+    }
+
+    @Override
+    public Node getNode() {
+        var node = new And(
+                new Implies(left.getNode(), right.getNode()),
+                new Implies(right.getNode(), left.getNode())
+        );
+        return node;
     }
 
 }

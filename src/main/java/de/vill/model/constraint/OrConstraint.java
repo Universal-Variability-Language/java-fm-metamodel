@@ -3,6 +3,9 @@ package de.vill.model.constraint;
 import de.vill.model.building.VariableReference;
 import de.vill.model.pbc.PBCLiteralConstraint;
 import de.vill.util.SubstitutionVariableIndex;
+import org.prop4j.And;
+import org.prop4j.Node;
+import org.prop4j.Or;
 
 import java.util.*;
 
@@ -24,6 +27,14 @@ public class OrConstraint extends Constraint {
 
     public Constraint getRight() {
         return right;
+    }
+
+    public void setLeft(Constraint left) {
+        this.left = left;
+    }
+
+    public void setRight(Constraint right){
+        this.right = right;
     }
 
     @Override
@@ -106,5 +117,12 @@ public class OrConstraint extends Constraint {
         builder.append(right.toSMT2string());
         builder.append(")");
         return builder;
+    }
+
+    @Override
+    public Node getNode() {
+        var node = new Or();
+        node.setChildren(left.getNode(), right.getNode());
+        return node;
     }
 }

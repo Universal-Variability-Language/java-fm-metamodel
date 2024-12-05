@@ -1,12 +1,14 @@
 package de.vill.util;
 
 import de.vill.config.Configuration;
+import de.vill.conversion.ConvertAggregateFunction;
 import de.vill.model.building.VariableReference;
 import de.vill.model.constraint.*;
 import de.vill.model.expression.*;
 import de.vill.model.pbc.*;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -386,63 +388,72 @@ public class Util {
         return additionalConstraints;
     }
 
-    public static void constraintDistributiveToOPB(Constraint constraint, OPBResult result) {
+    static int counter = 0;
+    public static void constraintDistributiveToOPB(Constraint constraint, OPBResult result, Writer writer) throws IOException {
         constraint = substituteExpressions(constraint, result);
         constraint = removeParenthesisConstraint(constraint);
         constraint = removeBiimplication(constraint);
         constraint = removeImplication(constraint);
         constraint = pushDownNegation(constraint);
-        constraint = distributeOrOverAnd(constraint);
-        cnfToOpb(constraint,result.opbString);
+        System.out.println(constraint.toString());
+        System.out.println(counter);
+        if (counter == 74){
+            System.out.println("test");
+        }
+
+        constraint = distributeOrOverAnd(constraint, 0);
+        //cnfToOpb(constraint,writer);
+        constraint = null;
+        counter++;
     }
 
-    private static void cnfToOpb(Constraint constraint, StringBuilder stringBuilder){
+    private static void cnfToOpb(Constraint constraint, Writer writer) throws IOException {
         if (constraint instanceof OrConstraint || constraint instanceof NotConstraint || constraint instanceof LiteralConstraint) {
-            int negatives = clauseToOpb(constraint, stringBuilder);
-            stringBuilder.append(" >= ");
-            stringBuilder.append(1 - negatives);
-            stringBuilder.append(";\n");
+            int negatives = clauseToOpb(constraint, writer);
+            writer.write(" >= ");
+            writer.write(String.valueOf(1 - negatives));
+            writer.write(";\n");
         }else {
             var and = (AndConstraint) constraint;
             if (and.getLeft() instanceof AndConstraint){
-                cnfToOpb(and.getLeft(), stringBuilder);
+                cnfToOpb(and.getLeft(), writer);
             }else{
-                int negatives = clauseToOpb(and.getLeft(), stringBuilder);
-                stringBuilder.append(" >= ");
-                stringBuilder.append(1 - negatives);
-                stringBuilder.append(";\n");
+                int negatives = clauseToOpb(and.getLeft(), writer);
+                writer.write(" >= ");
+                writer.write(String.valueOf(1 - negatives));
+                writer.write(";\n");
             }
 
             if (and.getRight() instanceof AndConstraint){
-                cnfToOpb(and.getRight(), stringBuilder);
+                cnfToOpb(and.getRight(), writer);
             }else{
-                int negatives = clauseToOpb(and.getRight(), stringBuilder);
-                stringBuilder.append(" >= ");
-                stringBuilder.append(1 - negatives);
-                stringBuilder.append(";\n");
+                int negatives = clauseToOpb(and.getRight(), writer);
+                writer.write(" >= ");
+                writer.write(String.valueOf(1 - negatives));
+                writer.write(";\n");
             }
         }
     }
 
-    private static int clauseToOpb(Constraint constraint, StringBuilder stringBuilder) {
+    private static int clauseToOpb(Constraint constraint, Writer writer) throws IOException {
         int negatives = 0;
         if (constraint instanceof NotConstraint) {
-            stringBuilder.append(" -1 * ");
+            writer.write(" -1 * ");
             var literal = (LiteralConstraint)((NotConstraint) constraint).getContent();
-            stringBuilder.append('"');
-            stringBuilder.append(literal.getReference().getIdentifier());
-            stringBuilder.append('"');
+            writer.write('"');
+            writer.write(literal.getReference().getIdentifier());
+            writer.write('"');
             negatives++;
         }else if (constraint instanceof LiteralConstraint){
-            stringBuilder.append(" +1 * ");
+            writer.append(" +1 * ");
             var literal = (LiteralConstraint)constraint;
-            stringBuilder.append('"');
-            stringBuilder.append(literal.getReference().getIdentifier());
-            stringBuilder.append('"');
+            writer.write('"');
+            writer.write(literal.getReference().getIdentifier());
+            writer.write('"');
         }else {
             var or = (OrConstraint)constraint;
-            negatives += clauseToOpb(or.getLeft(), stringBuilder);
-            negatives += clauseToOpb(or.getRight(), stringBuilder);
+            negatives += clauseToOpb(or.getLeft(), writer);
+            negatives += clauseToOpb(or.getRight(), writer);
         }
         return negatives;
     }
@@ -458,7 +469,7 @@ public class Util {
         return constraint;
     }
 
-    private static Constraint substituteExpressions(Constraint constraint, OPBResult result){
+    public static Constraint substituteExpressions(Constraint constraint, OPBResult result){
         if (constraint instanceof ExpressionConstraint){
             SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
             int subIndex = substitutionVariableIndex.getIndex();
@@ -610,33 +621,61 @@ public class Util {
         }
     }
 
-    private static Constraint distributeOrOverAnd(Constraint constraint) {
+    private static Constraint distributeOrOverAnd(Constraint constraint, int d) {
+        if (counter == 74 && d >= 20) {
+            System.out.println("test");
+        }
+        d++;
         if (constraint instanceof OrConstraint) {
             OrConstraint or = (OrConstraint) constraint;
-            Constraint left = distributeOrOverAnd(or.getLeft());
-            Constraint right = distributeOrOverAnd(or.getRight());
+            Constraint left = distributeOrOverAnd(or.getLeft(), d);
+            Constraint right = distributeOrOverAnd(or.getRight(), d);
 
             if (left instanceof AndConstraint) {
                 AndConstraint leftAnd = (AndConstraint) left;
+                leftAnd.setLeft(distributeOrOverAnd(new OrConstraint(leftAnd.getLeft(), right),d));
+                leftAnd.setRight(distributeOrOverAnd(new OrConstraint(leftAnd.getRight(), right),d));
+                return leftAnd;
+                /*
                 return new AndConstraint(
                         distributeOrOverAnd(new OrConstraint(leftAnd.getLeft(), right)),
                         distributeOrOverAnd(new OrConstraint(leftAnd.getRight(), right))
                 );
+
+                 */
             } else if (right instanceof AndConstraint) {
                 AndConstraint rightAnd = (AndConstraint) right;
+                rightAnd.setLeft(distributeOrOverAnd(new OrConstraint(left, rightAnd.getLeft()),d));
+                rightAnd.setRight(distributeOrOverAnd(new OrConstraint(left, rightAnd.getRight()),d));
+                return rightAnd;
+                /*
                 return new AndConstraint(
                         distributeOrOverAnd(new OrConstraint(left, rightAnd.getLeft())),
                         distributeOrOverAnd(new OrConstraint(left, rightAnd.getRight()))
                 );
-            }
-            return new OrConstraint(left, right);
-        } else if (constraint instanceof AndConstraint) {
 
+                 */
+            }
+            //
+            or.setLeft(left);
+            or.setRight(right);
+            return constraint;
+            //return new OrConstraint(left, right);
+        } else if (constraint instanceof AndConstraint) {
+            //
             AndConstraint and = (AndConstraint) constraint;
+            Constraint left = distributeOrOverAnd(and.getLeft(),d);
+            Constraint right = distributeOrOverAnd(and.getRight(),d);
+            and.setLeft(left);
+            and.setRight(right);
+            return  and;
+            /*
             return new AndConstraint(
                     distributeOrOverAnd(and.getLeft()),
                     distributeOrOverAnd(and.getRight())
             );
+
+             */
         }
 
         return constraint;
