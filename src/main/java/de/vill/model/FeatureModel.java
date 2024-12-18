@@ -1,47 +1,16 @@
 package de.vill.model;
 
-import java.io.*;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import de.ovgu.featureide.fm.core.ExtensionManager;
-import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
-import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.analysis.cnf.Nodes;
-import de.ovgu.featureide.fm.core.analysis.cnf.Variables;
-import de.ovgu.featureide.fm.core.base.FeatureUtils;
-import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
-import de.ovgu.featureide.fm.core.base.impl.FMFormatManager;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
-import de.ovgu.featureide.fm.core.init.FMCoreLibrary;
-import de.ovgu.featureide.fm.core.init.LibraryManager;
-import de.ovgu.featureide.fm.core.io.manager.FileHandler;
-import de.ovgu.featureide.fm.core.io.uvl.UVLFeatureModelFormat;
 import de.vill.config.Configuration;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.constraint.LiteralConstraint;
-import de.vill.model.constraint.NotConstraint;
 import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
-import de.vill.model.pbc.OPBResult;
-import de.vill.model.pbc.PBConstraint;
-import de.vill.util.SubstitutionVariableIndex;
 import de.vill.util.Util;
-import org.prop4j.And;
-import org.prop4j.Literal;
-import org.prop4j.Node;
-import org.prop4j.Or;
 
-import static de.vill.util.Util.*;
+import java.util.*;
+
+import static de.vill.util.Util.addNecessaryQuotes;
 
 /**
  * This class represents a feature model and all its sub feature models if the
@@ -278,126 +247,7 @@ public class FeatureModel {
         return toString(false, "");
     }
 
-    public StringBuilder toOPBString(){
-        OPBResult result = new OPBResult();
-        result.numberVariables++;
-        result.opbString.append(getRootFeature().getQuotedFeatureName());
-        result.opbString.append(" >= 1;\n");
-        result.numberConstraints++;
-        getRootFeature().toOPBString(result);
 
-        List<Constraint> constraints = getConstraints();
-        constraints.addAll(getFeatureConstraints());
-
-        for(Constraint constraint : constraints){
-            //constraintDistributiveToOPB(constraint,result);
-            encodeConstraintTseitinStyle(constraint, result);
-        }
-
-        SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
-        result.numberVariables += substitutionVariableIndex.peekIndex();
-        String header = "#variable= " + result.numberVariables + " #constraint= " + result.numberConstraints + "\n";
-        result.opbString.insert(0,header);
-
-        return result.opbString;
-    }
-
-    public void writeOPBStringToFile(File fmFile, File opbFile, Writer writer) throws IOException {
-        OPBResult result = new OPBResult();
-        result.numberVariables++;
-        result.opbString.append(getRootFeature().getQuotedFeatureName());
-        result.opbString.append(" >= 1;\n");
-        result.numberConstraints++;
-        getRootFeature().toOPBString(result);
-
-        SubstitutionVariableIndex substitutionVariableIndex = SubstitutionVariableIndex.getInstance();
-        result.numberVariables += substitutionVariableIndex.peekIndex();
-        String header = "#variable= " + result.numberVariables + " #constraint= " + result.numberConstraints + "\n";
-        result.opbString.insert(0,header);
-
-        List<Constraint> constraints = getConstraints();
-        constraints.addAll(getFeatureConstraints());
-
-        for (Constraint constraint : constraints){
-            var cnfConstraint = substituteExpressions(constraint, result).getNode().toCNF();
-            List<Node> clauses = new LinkedList<>();
-            if (cnfConstraint instanceof And) {
-                for(Node andChild : cnfConstraint.getChildren()){
-                    if (!(andChild instanceof Or)){
-                        clauses.add(new Or(andChild));
-                    }else{
-                        clauses.add(andChild);
-                    }
-                }
-            }else{
-                if (!(cnfConstraint instanceof Or)){
-                    clauses.add(new Or(cnfConstraint));
-                }else{
-                    clauses.add(cnfConstraint);
-                }
-            }
-            for (Node clause : clauses){
-                int negationCount = 0;
-                for (Literal literal : clause.getLiterals()) {
-                    String variableName = (String)literal.var;
-                    if (literal.positive){
-                        result.opbString.append(" +1 * ");
-                    }else{
-                        result.opbString.append(" -1 * ");
-                        negationCount++;
-                    }
-
-                    result.opbString.append("\"");
-                    result.opbString.append(variableName);
-                    result.opbString.append("\"");
-                }
-                result.opbString.append(" >= ");
-                result.opbString.append(String.valueOf(1 - negationCount));
-                result.opbString.append(";\n");
-            }
-        }
-
-        writer.append(result.opbString);
-
-    }
-
-    private IFeatureModel getFeatureIdeFMFromString(Path path, String content) throws IOException {
-        final FileHandler<IFeatureModel> fileHandler = new FileHandler<>(path, null, null);
-        final UVLFeatureModelFormat format = new UVLFeatureModelFormat();
-        try {
-            final IFeatureModel fm = FMFactoryManager.getInstance().getFactory(path, format).create();
-            fileHandler.setObject(fm);
-            fileHandler.setFormat(format);
-            format.getInstance().read(fm, content, path);
-
-        }catch (ExtensionManager.NoSuchExtensionException e) {
-            throw new IOException("Error while parsing UVL model");
-        }
-        return fileHandler.getObject();
-    }
-
-    public StringBuilder toSMT2string() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("(set-logic QF_UF)\n");
-        for (String name : this.getFeatureMap().keySet()) {
-            builder.append("(declare-const ");
-            builder.append(name);
-            builder.append(" Bool)\n");
-        }
-        builder.append("(assert \n");
-        builder.append(rootFeature.getFeatureName());
-        builder.append(")\n");
-        for (Group group : rootFeature.getChildren()){
-            builder.append(group.toSMT2string());
-        }
-        for (Constraint constraint : this.getConstraints()) {
-            builder.append("(assert \n");
-            builder.append(constraint.toSMT2string());
-            builder.append(")\n");
-        }
-        builder.append("(apply tseitin-cnf)");
-        return builder;
-    }
 
     /**
      * Returns a single uvl feature model composed out of all submodels. To avoid

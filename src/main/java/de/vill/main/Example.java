@@ -1,83 +1,84 @@
 package de.vill.main;
 
-import de.vill.model.*;
+import de.vill.config.Configuration;
+import de.vill.model.Attribute;
+import de.vill.model.Feature;
+import de.vill.model.FeatureModel;
+import de.vill.model.Group;
 import de.vill.model.constraint.Constraint;
-import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBConstraint;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class Example {
     public static void main(String[] args) throws IOException {
-
         FeatureModel featureModel = loadUVLFeatureModelFromFile("test.uvl");
-        UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        //System.out.println(featureModel.toOPBString());
 
+        //traverse all features depth first search
+        traverseAllFeatures(featureModel.getRootFeature());
 
+        //get constraints of feature model from constraints section (no constraints from submodels or attribtues)
+        List<Constraint> ownConstraint = featureModel.getOwnConstraints();
 
-        Set<LanguageLevel> levels = new HashSet<>();
-        levels.add(LanguageLevel.BOOLEAN_LEVEL);
-        levels.add( LanguageLevel.TYPE_LEVEL);
-        uvlModelFactory.convertExceptAcceptedLanguageLevel(featureModel, levels);
-        System.out.println(featureModel.composedModelToString());
+        //traverse a constraint depth first search
+        if (ownConstraint.size() > 0) {
+            traverseConstraint(ownConstraint.get(0));
+        }
 
+        //get all constraints of feature model and submodels and attributes
+        List<Constraint> allConstraint = featureModel.getConstraints();
 
-
-
-
-
-
-        /*
-        var c = featureModel.getConstraints().get(0);
-        HashMap<Integer, Constraint> subMap = new HashMap<>();
-        int n = 1;
-        c.extractTseitinSubConstraints(subMap, n);
-        var map = transformSubFormulas(subMap);
-        List<PBCConstraint> pbcList = transformImplicationMap(map);
-        System.out.println(pbcList.toString());
-
-         */
-//dimacsToOPB("/home/stefan/stefan-vill-master/tmp_eval/tmp5.dimacs");
-
-    }
-
-    private static void dimacsToOPB(String path) throws IOException {
-        String[] lines = new String(Files.readAllBytes(Paths.get(path))).split("\n");
-        List<PBConstraint> constraintList = new LinkedList<>();
-
-        for(String line : lines){
-            if(!line.startsWith("c") && !line.startsWith("p")){
-                PBConstraint PBConstraint = new PBConstraint();
-                PBConstraint.literalList = new LinkedList<>();
-                PBConstraint.k = 1;
-                for(String l : line.split(" ")){
-                    int v = Integer.parseInt(l);
-                    if(v > 0){
-                        Literal literal = new Literal();
-                        literal.name = "x_" + v;
-                        literal.factor = 1;
-                        PBConstraint.literalList.add(literal);
-                    }else if(v < 0){
-                        Literal literal = new Literal();
-                        literal.name = "x_" + (-1 * v);
-                        literal.factor = -1;
-                        PBConstraint.literalList.add(literal);
-                        PBConstraint.k = PBConstraint.k -1;
-                    }
-                }
-                constraintList.add(PBConstraint);
+        //get attribute from feature
+        String featureName = "featureName";
+        String attributeName = "attributeName";
+        Feature feature = featureModel.getFeatureMap().get(featureName);
+        if (feature != null) {
+            Attribute<?> attribute = feature.getAttributes().get(attributeName);
+            if (attribute != null) {
+                Object value = attribute.getValue();
+                System.out.println("Attribute " + attributeName + " of feature " + featureName + " is: " + value.toString());
+            } else {
+                System.err.println("Attribute " + attributeName + " in feature " + featureName + " not found!");
             }
+        } else {
+            System.err.println("Feature " + featureName + " not found!");
         }
 
-        for(PBConstraint PBConstraint : constraintList){
-            System.out.println(PBConstraint.toString() + ";");
+        //make feature abstract
+        featureName = "featureName";
+        feature = featureModel.getFeatureMap().get(featureName);
+        if (feature != null) {
+            feature.getAttributes().put("abstract", new Attribute<>("abstract", true, feature));
+        } else {
+            System.err.println("Feature " + featureName + " not found!");
         }
 
+        //change newline and tabulator symbol for printing
+        Configuration.setTabulatorSymbol("        ");
+        Configuration.setNewlineSymbol("\n");
+
+        //safe a single uvl model (this ignores any submodels)
+        String uvlModel = featureModel.toString();
+        Path filePath = Paths.get("test_singleModel.uvl");
+        Files.write(filePath, uvlModel.getBytes());
+
+        //safe a decomposed uvl model with all its submodels to individual files
+        Map<String, String> modelList = featureModel.decomposedModelToString();
+        for (Map.Entry<String, String> uvlSubModel : modelList.entrySet()) {
+            //safe submodel in sub directory directory with namespace as name
+            Files.createDirectories(Paths.get("./subModels/"));
+            filePath = Paths.get("./subModels/" + uvlSubModel.getKey() + ".uvl");
+            Files.write(filePath, uvlSubModel.getValue().getBytes());
+        }
+
+        //create a single uvl representation from a decomposed model and safe it to a single file
+        uvlModel = featureModel.composedModelToString();
+        filePath = Paths.get("test_composedModel.uvl");
+        Files.write(filePath, uvlModel.getBytes());
     }
 
     /**

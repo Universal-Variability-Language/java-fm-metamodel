@@ -1,20 +1,12 @@
 package de.vill.model;
 
-import static de.vill.util.Util.addNecessaryQuotes;
-
-import java.io.BufferedWriter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Objects;
-
 import de.vill.config.Configuration;
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.OPBResult;
 import de.vill.util.Util;
+
+import java.util.*;
+
+import static de.vill.util.Util.addNecessaryQuotes;
 
 /**
  * This class represents a feature of any kind (normal, numeric, abstract, ...).
@@ -373,103 +365,6 @@ public class Feature implements VariableReference {
 
     public String getQuotedFeatureName(){
         return  "\"" + getFeatureName() + "\"";
-    }
-    public void toOPBString(OPBResult result) {
-        List<Group> childGroups = getChildren();
-        for (Group group : childGroups){
-            switch (group.GROUPTYPE) {
-                case OPTIONAL:
-                    result.opbString.append(group.getFeatures().size());
-                    result.opbString.append(" * ");
-                    result.opbString.append(getQuotedFeatureName());
-                    for (Feature child : group.getFeatures()){
-                        result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getQuotedFeatureName());
-                    }
-                    result.opbString.append(" >= 0;\n");
-                    result.numberConstraints++;
-                    break;
-                case MANDATORY:
-                    result.opbString.append(group.getFeatures().size());
-                    result.opbString.append(" * ");
-                    result.opbString.append(getQuotedFeatureName());
-                    for (Feature child : group.getFeatures()){
-                        result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getQuotedFeatureName());
-                    }
-                    result.opbString.append(" = 0;\n");
-                    result.numberConstraints += 2;
-                    break;
-                case OR:
-                    result.opbString.append("-1 * ");
-                    result.opbString.append(getQuotedFeatureName());
-                    for (Feature child : group.getFeatures()){
-                        result.opbString.append(" + ");
-                        result.opbString.append(child.getQuotedFeatureName());
-                    }
-                    result.opbString.append(" >= 0;\n");
-                    result.numberConstraints++;
-                    result.opbString.append(group.getFeatures().size());
-                    result.opbString.append(" * ");
-                    result.opbString.append(getQuotedFeatureName());
-                    for (Feature child : group.getFeatures()){
-                        result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getQuotedFeatureName());
-                    }
-                    result.opbString.append(" >= 0;\n");
-                    result.numberConstraints++;
-                    break;
-                case ALTERNATIVE:
-                    result.opbString.append(getQuotedFeatureName());
-                    for (Feature child : group.getFeatures()){
-                        result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getQuotedFeatureName());
-                    }
-                    result.opbString.append(" = 0;\n");
-                    result.numberConstraints += 2;
-                    break;
-                case GROUP_CARDINALITY:
-                    result.opbString.append(group.getFeatures().size());
-                    result.opbString.append(" * ");
-                    result.opbString.append(getQuotedFeatureName());
-                    for (Feature child : group.getFeatures()){
-                        result.opbString.append(" -1 * ");
-                        result.opbString.append(child.getQuotedFeatureName());
-                    }
-                    result.opbString.append(" >= 0;\n");
-                    result.numberConstraints++;
-
-
-                    result.opbString.append("-");
-                    result.opbString.append(group.getCardinality().lower);
-                    result.opbString.append(" * ");
-                    result.opbString.append(getQuotedFeatureName());
-                    for (Feature child : group.getFeatures()){
-                        result.opbString.append(" +1 * ");
-                        result.opbString.append(child.getQuotedFeatureName());
-                    }
-                    result.opbString.append(" >= ");
-                    result.opbString.append(0);
-                    result.opbString.append(";\n");
-
-
-                    result.numberConstraints++;
-                    result.opbString.append(getQuotedFeatureName());
-                    for (Feature child : group.getFeatures()){
-                        result.opbString.append(" +1 * ");
-                        result.opbString.append(child.getQuotedFeatureName());
-                    }
-                    result.opbString.append(" <= ");
-                    result.opbString.append(group.getCardinality().upper + 1);
-                    result.opbString.append(";\n");
-            }
-            for (Feature child : group.getFeatures()){
-                result.numberVariables++;
-                if(child.getChildren().size() > 0) {
-                    child.toOPBString(result);
-                }
-            }
-        }
     }
 
     /**

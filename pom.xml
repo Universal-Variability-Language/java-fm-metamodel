@@ -93,11 +93,6 @@
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>de.ovgu.featureide</groupId>
-            <artifactId>featureide</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr</artifactId>
             <version>3.4.0</version>
@@ -116,7 +111,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>de.vill.main.Eval</mainClass>
+                            <mainClass>de.vill.main.Example</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

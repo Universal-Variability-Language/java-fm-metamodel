@@ -1,13 +1,10 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.PBCLiteralConstraint;
-import org.prop4j.And;
-import org.prop4j.Node;
-import org.prop4j.Not;
-import org.prop4j.Or;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class NotConstraint extends Constraint {
     private Constraint content;
@@ -73,39 +70,6 @@ public class NotConstraint extends Constraint {
         return content.getReferences();
     }
 
-    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
-        PBCLiteralConstraint subContent = content.extractTseitinSubConstraints(substitutionMapping);
-        //int substitutionIndex = SubstitutionVariableIndex.getInstance().getIndex();
-        //substitutionMapping.put(substitutionIndex, new NotConstraint(subContent));
-/*
-        PBCLiteralConstraint result = new PBCLiteralConstraint(
-            new LiteralConstraint(new VariableReference() {
-                @Override
-                public String getIdentifier() {
-                    return "x_" + substitutionIndex;
-                }
-            })
-        );
-        result.toggleSign();
 
- */
-        subContent.toggleSign();
-        return subContent;
-    }
 
-    @Override
-    public StringBuilder toSMT2string() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("(not\n");
-        builder.append(content.toSMT2string());
-        builder.append("\n");
-        builder.append(")");
-        return builder;
-    }
-
-    @Override
-    public Node getNode() {
-        var node = new Not(content.getNode());
-        return node;
-    }
 }

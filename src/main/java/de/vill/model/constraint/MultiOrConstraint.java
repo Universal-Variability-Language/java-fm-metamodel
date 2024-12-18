@@ -1,10 +1,10 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.PBCLiteralConstraint;
-import org.prop4j.Node;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class MultiOrConstraint extends Constraint{
 
@@ -12,11 +12,6 @@ public class MultiOrConstraint extends Constraint{
 
     public MultiOrConstraint() {
         sub_parts = new LinkedList<>();
-    }
-
-    @Override
-    public Node getNode() {
-        return null;
     }
 
     @Override
@@ -99,24 +94,4 @@ public class MultiOrConstraint extends Constraint{
         }
         return references;
     }
-
-    @Override
-    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
-        //TODO
-        return null;
-    }
-
-    @Override
-    public StringBuilder toSMT2string() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("(or\n");
-        for (Constraint constraint : sub_parts) {
-            builder.append(constraint.toSMT2string());
-            builder.append("\n");
-        }
-        builder.append(")");
-        return builder;
-    }
-
-
 }

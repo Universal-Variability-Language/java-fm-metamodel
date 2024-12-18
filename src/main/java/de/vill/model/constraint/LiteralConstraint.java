@@ -1,16 +1,9 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.PBCLiteralConstraint;
-import de.vill.util.SubstitutionVariableIndex;
 import de.vill.util.Util;
-import org.prop4j.And;
-import org.prop4j.Literal;
-import org.prop4j.Node;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class LiteralConstraint extends Constraint {
@@ -67,23 +60,5 @@ public class LiteralConstraint extends Constraint {
     @Override
     public List<VariableReference> getReferences() {
         return List.of(reference);
-    }
-
-    @Override
-    public StringBuilder toSMT2string() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(reference.getIdentifier());
-        return builder;
-    }
-
-    @Override
-    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
-        return new PBCLiteralConstraint(this);
-    }
-
-    @Override
-    public Node getNode() {
-        var node = new Literal(reference.getIdentifier(), true);
-        return node;
     }
 }

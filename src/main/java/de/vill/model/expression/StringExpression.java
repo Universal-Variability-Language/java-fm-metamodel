@@ -2,8 +2,6 @@ package de.vill.model.expression;
 
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBConstraint;
 import de.vill.util.Constants;
 
 import java.util.*;
@@ -79,11 +77,6 @@ public class StringExpression extends Expression {
     @Override
     public List<VariableReference> getReferences() {
         return new ArrayList<>();
-    }
-
-    @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
-        throw new UnsupportedOperationException("All AggregateFunctions must be removed before method is called.");
     }
 
     @Override

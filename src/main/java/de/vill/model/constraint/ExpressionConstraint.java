@@ -2,14 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
-import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
-import de.vill.model.expression.LiteralExpression;
-import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBCLiteralConstraint;
-import de.vill.util.SubstitutionVariableIndex;
-import org.prop4j.And;
-import org.prop4j.Node;
 
 import java.util.*;
 
@@ -126,31 +119,5 @@ public abstract class ExpressionConstraint extends Constraint {
         references.addAll(left.getReferences());
         references.addAll(right.getReferences());
         return references;
-    }
-
-    @Override
-    public List<ExpressionConstraint> collectExpressions(){
-        List<ExpressionConstraint> expressions = new LinkedList<>();
-        expressions.add(this);
-        return expressions;
-    }
-
-    @Override
-    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
-        int substitutionIndex = SubstitutionVariableIndex.getInstance().getIndex();
-        substitutionMapping.put(substitutionIndex, this);
-        return new PBCLiteralConstraint(
-                new LiteralConstraint(new VariableReference() {
-                    @Override
-                    public String getIdentifier() {
-                        return "x_" + substitutionIndex;
-                    }
-                })
-        );
-    }
-
-    @Override
-    public Node getNode() {
-        return null;
     }
 }

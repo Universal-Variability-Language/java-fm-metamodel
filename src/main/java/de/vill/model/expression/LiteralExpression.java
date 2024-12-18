@@ -4,12 +4,13 @@ import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.FeatureType;
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.Literal;
-import de.vill.model.pbc.PBConstraint;
 import de.vill.util.Constants;
 import de.vill.util.Util;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class LiteralExpression extends Expression {
     private VariableReference content;
@@ -122,17 +123,6 @@ public class LiteralExpression extends Expression {
     @Override
     public List<VariableReference> getReferences() {
         return List.of(content);
-    }
-
-    @Override
-    public List<Literal> getAsSum(List<PBConstraint> additionalSubstitution) {
-        Literal l = new Literal();
-        var attribute = (Attribute<?>)getContent();
-        l.name = attribute.getFeature().getFeatureName();
-        l.factor = attribute.getValue() instanceof Long ? ((Long) attribute.getValue()).doubleValue() : (double) attribute.getValue();
-        List<Literal> result = new LinkedList<>();
-        result.add(l);
-        return result;
     }
 
     @Override

@@ -1,15 +1,11 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.PBCLiteralConstraint;
-import de.vill.util.SubstitutionVariableIndex;
-import org.prop4j.And;
-import org.prop4j.Node;
 
-import java.util.*;
-
-import static de.vill.util.Util.getMaxAndConstraint;
-import static de.vill.util.Util.isJustAnd;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class AndConstraint extends Constraint {
     private Constraint left;
@@ -34,13 +30,6 @@ public class AndConstraint extends Constraint {
 
     public void setRight(Constraint right){
         this.right = right;
-    }
-
-    @Override
-    public Node getNode() {
-        var node = new And();
-        node.setChildren(left.getNode(), right.getNode());
-        return node;
     }
 
     @Override
@@ -96,36 +85,4 @@ public class AndConstraint extends Constraint {
         references.addAll(right.getReferences());
         return references;
     }
-
-    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
-        Constraint leftSub = getMaxAndConstraint(left, substitutionMapping);
-        Constraint rightSub = getMaxAndConstraint(right, substitutionMapping);
-        int substitutionIndex = SubstitutionVariableIndex.getInstance().getIndex();
-        substitutionMapping.put(substitutionIndex, new AndConstraint(leftSub, rightSub));
-
-        return new PBCLiteralConstraint(
-                new LiteralConstraint(new VariableReference() {
-                    @Override
-                    public String getIdentifier() {
-                        return "x_" + substitutionIndex;
-                    }
-                })
-        );
-    }
-
-    @Override
-    public StringBuilder toSMT2string() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("(and\n");
-        builder.append(left.toSMT2string());
-        builder.append("\n");
-        if (right.toSMT2string().length() == 0) {
-            System.out.println("test");
-        }
-        builder.append(right.toSMT2string());
-        builder.append(")");
-        return builder;
-    }
-
-    ;
 }

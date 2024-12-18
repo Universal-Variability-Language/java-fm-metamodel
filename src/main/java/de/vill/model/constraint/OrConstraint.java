@@ -1,15 +1,11 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.PBCLiteralConstraint;
-import de.vill.util.SubstitutionVariableIndex;
-import org.prop4j.And;
-import org.prop4j.Node;
-import org.prop4j.Or;
 
-import java.util.*;
-
-import static de.vill.util.Util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class OrConstraint extends Constraint {
 
@@ -89,40 +85,5 @@ public class OrConstraint extends Constraint {
         references.addAll(left.getReferences());
         references.addAll(right.getReferences());
         return references;
-    }
-
-    @Override
-    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
-        Constraint leftSub = getMaxOrConstraint(left, substitutionMapping);
-        Constraint rightSub = getMaxOrConstraint(right, substitutionMapping);
-        int substitutionIndex = SubstitutionVariableIndex.getInstance().getIndex();
-        substitutionMapping.put(substitutionIndex, new OrConstraint(leftSub, rightSub));
-
-        return new PBCLiteralConstraint(
-                new LiteralConstraint(new VariableReference() {
-                    @Override
-                    public String getIdentifier() {
-                        return "x_" + substitutionIndex;
-                    }
-                })
-        );
-    }
-
-    @Override
-    public StringBuilder toSMT2string() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("(or\n");
-        builder.append(left.toSMT2string());
-        builder.append("\n");
-        builder.append(right.toSMT2string());
-        builder.append(")");
-        return builder;
-    }
-
-    @Override
-    public Node getNode() {
-        var node = new Or();
-        node.setChildren(left.getNode(), right.getNode());
-        return node;
     }
 }

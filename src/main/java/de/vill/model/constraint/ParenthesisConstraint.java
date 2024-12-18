@@ -1,11 +1,10 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
-import de.vill.model.pbc.PBCLiteralConstraint;
-import org.prop4j.And;
-import org.prop4j.Node;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class ParenthesisConstraint extends Constraint {
     private Constraint content;
@@ -62,21 +61,5 @@ public class ParenthesisConstraint extends Constraint {
     @Override
     public List<VariableReference> getReferences() {
         return content.getReferences();
-    }
-
-    public PBCLiteralConstraint extractTseitinSubConstraints(Map<Integer, Constraint> substitutionMapping) {
-        return content.extractTseitinSubConstraints(substitutionMapping);
-    };
-
-    @Override
-    public StringBuilder toSMT2string() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(content.toSMT2string());
-        return builder;
-    }
-
-    @Override
-    public Node getNode() {
-        return content.getNode();
     }
 }
