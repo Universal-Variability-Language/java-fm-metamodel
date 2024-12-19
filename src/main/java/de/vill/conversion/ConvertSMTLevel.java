@@ -138,6 +138,11 @@ public class ConvertSMTLevel implements IConversionStrategy {
     }
 
     private Constraint createDisjunction(Set<Constraint> constraints) {
+        MultiOrConstraint orConstraint = new MultiOrConstraint();
+        for (Constraint constraint : constraints) {
+            orConstraint.add_sub_part(constraint);
+        }
+        /*
         Constraint orConstraint;
         if (constraints.size() == 1) {
             Constraint constraint = constraints.iterator().next();
@@ -148,6 +153,8 @@ public class ConvertSMTLevel implements IConversionStrategy {
             constraints.remove(constraint);
             orConstraint = new OrConstraint(constraint, createDisjunction(constraints));
         }
+
+         */
 
         return orConstraint;
     }
