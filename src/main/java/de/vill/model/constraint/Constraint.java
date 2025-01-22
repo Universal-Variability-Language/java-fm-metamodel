@@ -1,5 +1,7 @@
 package de.vill.model.constraint;
 
+import de.vill.model.building.VariableReference;
+
 import java.util.List;
 
 public abstract class Constraint {
@@ -36,4 +38,6 @@ public abstract class Constraint {
 
     @Override
     public abstract boolean equals(Object obj);
+
+    public abstract List<VariableReference> getReferences();
 }

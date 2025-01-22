@@ -11,6 +11,7 @@ public class Constants {
     // Default attributes
     public static final String TYPE_LEVEL_VALUE = "type_level_value";
     public static final String TYPE_LEVEL_LENGTH = "type_level_value_length";
+    public static final String FEATURE_TYPE = "feature_type";
 
 
     // Language Levels

@@ -1,68 +1,33 @@
 package de.vill.model.constraint;
 
-import de.vill.model.Feature;
-import de.vill.model.Import;
+import de.vill.model.building.VariableReference;
+import de.vill.util.Util;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static de.vill.util.Util.addNecessaryQuotes;
-
 public class LiteralConstraint extends Constraint {
-    private String literal;
 
-    private Import relatedImport;
-    private String nameSpace;
+    private VariableReference reference;
 
-    public String getNameSpace() {
-        return nameSpace;
+    public LiteralConstraint(final VariableReference reference) {
+        this.reference = Objects.requireNonNull(reference);
     }
 
-    public void setNameSpace(String nameSpace) {
-        this.nameSpace = nameSpace;
+    public VariableReference getReference() {
+        return reference;
     }
 
-    public Import getRelatedImport() {
-        return relatedImport;
-    }
-
-    public void setRelatedImport(Import relatedImport) {
-        this.relatedImport = relatedImport;
-    }
-
-    private Feature feature;
-
-    public Feature getFeature() {
-        return feature;
-    }
-
-    public void setFeature(Feature feature) {
-        this.feature = feature;
-    }
-
-    public LiteralConstraint(String literal) {
-        this.literal = literal;
-    }
-
-    public String getLiteral() {
-        return literal;
-    }
+    public void setReference(final VariableReference reference) {this.reference = reference;}
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        if (getFeature() == null) {
-            return addNecessaryQuotes(getLiteral());
-        }
-        if (withSubmodels) {
-            return addNecessaryQuotes(getFeature().getFullReference());
-        }
-        return addNecessaryQuotes(feature.getReferenceFromSpecificSubmodel(currentAlias));
+        return Util.addNecessaryQuotes(reference.getIdentifier());
     }
 
     @Override
     public List<Constraint> getConstraintSubParts() {
-        return Arrays.asList();
+        return List.of();
     }
 
     @Override
@@ -72,16 +37,12 @@ public class LiteralConstraint extends Constraint {
 
     @Override
     public Constraint clone() {
-        LiteralConstraint newConstraint = new LiteralConstraint(getLiteral());
-        newConstraint.setFeature(getFeature());
-        newConstraint.setNameSpace(getNameSpace());
-        newConstraint.setRelatedImport(getRelatedImport());
-        return newConstraint;
+        return new LiteralConstraint(reference);
     }
 
     @Override
     public int hashCode(int level) {
-        return 31 * level + (feature == null ? 0 : literal.hashCode());
+        return 31 * level + (reference == null ? 0 : reference.hashCode());
     }
 
     @Override
@@ -93,6 +54,11 @@ public class LiteralConstraint extends Constraint {
             return false;
         }
         LiteralConstraint other = (LiteralConstraint) obj;
-        return Objects.equals(literal, other.literal);
+        return Objects.equals(reference, other.reference);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        return List.of(reference);
     }
 }

@@ -21,7 +21,7 @@ public class DropSMTLevel implements IConversionStrategy {
 
     @Override
     public void convertFeatureModel(final FeatureModel rootFeatureModel, final FeatureModel featureModel) {
-        featureModel.getOwnConstraints().removeIf(x -> this.constraintContainsEquation(x));
+        featureModel.getOwnConstraints().removeIf(this::constraintContainsEquation);
     }
 
     private boolean constraintContainsEquation(final Constraint constraint) {

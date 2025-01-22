@@ -66,7 +66,7 @@ public class ConvertStringConstraints implements IConversionStrategy {
             for (final Expression expression : ((ExpressionConstraint) constraint).getExpressionSubParts()) {
                 if (expression instanceof LengthAggregateFunctionExpression) {
                     this.replaceStringAggregateFunctionInExpressionConstraint((ExpressionConstraint) constraint,
-                        (AggregateFunctionExpression) expression);
+                        (LengthAggregateFunctionExpression) expression);
                 } else {
                     this.convertStringAggregateFunctionInExpression(expression);
                 }
@@ -89,24 +89,24 @@ public class ConvertStringConstraints implements IConversionStrategy {
     }
 
     private void replaceStringAggregateFunctionInExpression(final Expression parentExpression,
-                                                            final AggregateFunctionExpression aggregateFunctionExpression) {
+                                                            final LengthAggregateFunctionExpression aggregateFunctionExpression) {
         this.addAttribute(aggregateFunctionExpression);
-        Feature relevantFeature = rootFeatureModel.getFeatureMap().get(aggregateFunctionExpression.getRootFeatureName());
-        final Expression newExpression = new LiteralExpression(relevantFeature, Constants.TYPE_LEVEL_LENGTH);
+        Feature relevantFeature = aggregateFunctionExpression.getReference() instanceof Feature ? (Feature) aggregateFunctionExpression.getReference() : ((Attribute<?>) aggregateFunctionExpression.getReference()).getFeature();
+        final Expression newExpression = new LiteralExpression(new Attribute<Long>(Constants.TYPE_LEVEL_LENGTH, 0L, relevantFeature));
         parentExpression.replaceExpressionSubPart(aggregateFunctionExpression, newExpression);
     }
 
     private void replaceStringAggregateFunctionInExpressionConstraint(final ExpressionConstraint parentExpression,
-                                                                      final AggregateFunctionExpression aggregateFunctionExpression) {
+                                                                      final LengthAggregateFunctionExpression aggregateFunctionExpression) {
         this.addAttribute(aggregateFunctionExpression);
-        Feature relevantFeature = rootFeatureModel.getFeatureMap().get(aggregateFunctionExpression.getRootFeatureName());
-        final Expression newExpression = new LiteralExpression(relevantFeature, Constants.TYPE_LEVEL_LENGTH);
+        Feature relevantFeature = aggregateFunctionExpression.getReference() instanceof Feature ? (Feature) aggregateFunctionExpression.getReference() : ((Attribute<?>) aggregateFunctionExpression.getReference()).getFeature();
+        final Expression newExpression = new LiteralExpression(new Attribute<Long>(Constants.TYPE_LEVEL_LENGTH, 0L, relevantFeature));
         parentExpression.replaceExpressionSubPart(aggregateFunctionExpression, newExpression);
     }
 
     private void traverseFeatures(final Feature feature) {
         if (this.featuresToBeUpdated.containsKey(feature.getFeatureName())) {
-            feature.getAttributes().putAll(this.featuresToBeUpdated.get(feature.getFeatureName()));
+            feature.getAttributes().putAll(this.featuresToBeUpdated.get(feature.getIdentifier()));
         }
 
         for (final Group group : feature.getChildren()) {
@@ -116,18 +116,19 @@ public class ConvertStringConstraints implements IConversionStrategy {
         }
     }
 
-    private void addAttribute(final AggregateFunctionExpression aggregateFunctionExpression) {
-        final Map<String, Attribute<?>> currentAttributes =
-            this.rootFeatureModel.getFeatureMap().get(aggregateFunctionExpression.getRootFeatureName()).getAttributes();
+    private void addAttribute(final LengthAggregateFunctionExpression aggregateFunctionExpression) {
+        Feature relevantFeature = aggregateFunctionExpression.getReference() instanceof Feature ? (Feature) aggregateFunctionExpression.getReference() : ((Attribute<?>) aggregateFunctionExpression.getReference()).getFeature();
+        final Map<String, Attribute<?>> currentAttributes = relevantFeature.getAttributes();
         currentAttributes.put(
             Constants.TYPE_LEVEL_LENGTH,
             new Attribute<Long>(
                 Constants.TYPE_LEVEL_LENGTH,
                 this.computeStringLength(
-                    this.rootFeatureModel.getFeatureMap().get(aggregateFunctionExpression.getRootFeatureName()))
+                    relevantFeature),
+                    relevantFeature
             )
         );
-        this.featuresToBeUpdated.put(aggregateFunctionExpression.getRootFeatureName(), currentAttributes);
+        this.featuresToBeUpdated.put(relevantFeature.getIdentifier(), currentAttributes);
     }
 
     private Long computeStringLength(final Feature feature) {

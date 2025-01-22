@@ -15,6 +15,7 @@ import de.vill.config.Configuration;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.constraint.LiteralConstraint;
 import de.vill.model.expression.AggregateFunctionExpression;
+import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
 import de.vill.util.Util;
 
@@ -44,7 +45,7 @@ public class FeatureModel {
      */
     private final List<LiteralConstraint> literalConstraints = new LinkedList<>();
     private final List<LiteralExpression> literalExpressions = new LinkedList<>();
-    private final List<AggregateFunctionExpression> aggregateFunctionsWithRootFeature = new LinkedList<>();
+    private final List<Expression> aggregateFunctionsWithRootFeature = new LinkedList<>();
 
     /**
      * Be very careful when creating your own featuremodel to set all information in
@@ -401,7 +402,7 @@ public class FeatureModel {
      * @return a list with all {@link AggregateFunctionExpression} objects in the
      *         constraints of this feature model.
      */
-    public List<AggregateFunctionExpression> getAggregateFunctionsWithRootFeature() {
+    public List<Expression> getAggregateFunctionsWithRootFeature() {
         return aggregateFunctionsWithRootFeature;
     }
 

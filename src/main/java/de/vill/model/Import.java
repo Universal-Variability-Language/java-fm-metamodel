@@ -8,6 +8,7 @@ import java.util.Objects;
  */
 public class Import {
 
+    private String relativeImportPath; // Only for nested imports
 	private final String namespace;
     private final String alias;
     private FeatureModel featureModel;
@@ -40,6 +41,9 @@ public class Import {
      * @return namespace of the import.
      */
     public String getNamespace() {
+        if (relativeImportPath != null) {
+            return relativeImportPath + "." + namespace;
+        }
         return namespace;
     }
 
@@ -52,8 +56,11 @@ public class Import {
      */
     public String getAlias() {
         if (alias == null || "".equals(alias)) {
-            return namespace;
+            return getNamespace();
         }
+         if (relativeImportPath != null) {
+             return relativeImportPath + "." + alias;
+         }
         return alias;
     }
 
@@ -113,4 +120,12 @@ public class Import {
 				&& Objects.equals(namespace, other.namespace)
 				&& Objects.equals(featureModel, other.featureModel);
 	}
+
+    public String getRelativeImportPath() {
+        return relativeImportPath;
+    }
+
+    public void setRelativeImportPath(String relativeImportPath) {
+        this.relativeImportPath = relativeImportPath;
+    }
 }

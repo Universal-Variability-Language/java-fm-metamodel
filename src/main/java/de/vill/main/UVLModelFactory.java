@@ -1,5 +1,9 @@
 package de.vill.main;
 
+import de.vill.model.*;
+import de.vill.model.building.VariableReference;
+import de.vill.model.constraint.*;
+import de.vill.model.expression.*;
 import de.vill.util.Util;
 import uvl.UVLJavaLexer;
 import uvl.UVLJavaParser;
@@ -7,31 +11,18 @@ import uvl.UVLJavaParser;
 import de.vill.conversion.ConvertAggregateFunction;
 import de.vill.conversion.ConvertFeatureCardinality;
 import de.vill.conversion.ConvertGroupCardinality;
-import de.vill.conversion.ConvertNumericConstraints;
 import de.vill.conversion.ConvertSMTLevel;
 import de.vill.conversion.ConvertStringConstraints;
 import de.vill.conversion.ConvertTypeLevel;
 import de.vill.conversion.DropAggregateFunction;
 import de.vill.conversion.DropFeatureCardinality;
 import de.vill.conversion.DropGroupCardinality;
-import de.vill.conversion.DropNumericConstraints;
 import de.vill.conversion.DropStringConstraints;
 import de.vill.conversion.DropSMTLevel;
 import de.vill.conversion.DropTypeLevel;
 import de.vill.conversion.IConversionStrategy;
 import de.vill.exception.ParseError;
 import de.vill.exception.ParseErrorList;
-import de.vill.model.Feature;
-import de.vill.model.FeatureModel;
-import de.vill.model.Group;
-import de.vill.model.Import;
-import de.vill.model.LanguageLevel;
-import de.vill.model.constraint.Constraint;
-import de.vill.model.constraint.ExpressionConstraint;
-import de.vill.model.constraint.LiteralConstraint;
-import de.vill.model.expression.AggregateFunctionExpression;
-import de.vill.model.expression.Expression;
-import de.vill.model.expression.LiteralExpression;
 import de.vill.util.Constants;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -42,16 +33,11 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public class UVLModelFactory {
@@ -69,7 +55,6 @@ public class UVLModelFactory {
         this.conversionStrategiesDrop.put(LanguageLevel.ARITHMETIC_LEVEL, DropSMTLevel.class);
         this.conversionStrategiesDrop.put(LanguageLevel.TYPE_LEVEL, DropTypeLevel.class);
         this.conversionStrategiesDrop.put(LanguageLevel.STRING_CONSTRAINTS, DropStringConstraints.class);
-        this.conversionStrategiesDrop.put(LanguageLevel.NUMERIC_CONSTRAINTS, DropNumericConstraints.class);
         this.conversionStrategiesConvert = new HashMap<>();
         this.conversionStrategiesConvert.put(LanguageLevel.GROUP_CARDINALITY, ConvertGroupCardinality.class);
         this.conversionStrategiesConvert.put(LanguageLevel.FEATURE_CARDINALITY, ConvertFeatureCardinality.class);
@@ -77,20 +62,6 @@ public class UVLModelFactory {
         this.conversionStrategiesConvert.put(LanguageLevel.ARITHMETIC_LEVEL, ConvertSMTLevel.class);
         this.conversionStrategiesConvert.put(LanguageLevel.TYPE_LEVEL, ConvertTypeLevel.class);
         this.conversionStrategiesConvert.put(LanguageLevel.STRING_CONSTRAINTS, ConvertStringConstraints.class);
-        this.conversionStrategiesConvert.put(LanguageLevel.NUMERIC_CONSTRAINTS, ConvertNumericConstraints.class);
-    }
-
-    /**
-     * This method parses the givel text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
-     *
-     * @param text       A String that describes a feature model in UVL notation.
-     * @param fileLoader A Map, that maps every imported feature model from its namespace to a path, where the acutal model is
-     * @return A {@link FeatureModel} based on the uvl text
-     * @throws ParseError If there is an error during parsing or the construction of the feature model
-     */
-    public FeatureModel parse(String text, Map<String, String> fileLoader) throws ParseError {
-        Function<String, String> fileloaderFunction = x -> fileLoader.get(x);
-        return parse(text, fileloaderFunction);
     }
 
     /**
@@ -110,14 +81,15 @@ public class UVLModelFactory {
      * This method parses the given text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
      *
      * @param text A String that describes a feature model in UVL notation.
-     * @param path Path to the directory where all submodels are stored.
+     * @param rootPath Path to the directory where all submodels are stored.
      * @return A {@link FeatureModel} based on the uvl text
      * @throws ParseError If there is an error during parsing or the construction of the feature model
      */
-    public FeatureModel parse(String text, String path) throws ParseError {
-
-        Function<String, String> fileloaderFunction = x -> path + System.getProperty("file.separator") + x.replace(".", System.getProperty("file.separator")) + ".uvl";
-        return parse(text, fileloaderFunction);
+    public FeatureModel parse(String text, String rootPath) throws ParseError {
+        FeatureModel featureModel = parseFeatureModelWithImports(text, rootPath, new HashMap<>());
+        composeFeatureModelFromImports(featureModel);
+        validateTypeLevelConstraints(featureModel);
+        return featureModel;
     }
 
     /**
@@ -129,26 +101,7 @@ public class UVLModelFactory {
      * @throws ParseError If there is an error during parsing or the construction of the feature model
      */
     public FeatureModel parse(String text) throws ParseError {
-        Function<String, String> fileloaderFunction = x -> System.getProperty("user.dir") + System.getProperty("file.separator") + x.replace(".", System.getProperty("file.separator")) + ".uvl";
-        return parse(text, fileloaderFunction);
-    }
-
-    /**
-     * This method parses the givel text and returns a {@link FeatureModel} if everything is fine or throws a {@link ParseError} if something went wrong.
-     *
-     * @param text       A String that describes a feature model in UVL notation.
-     * @param fileLoader A {@link Function}, that maps every imported feature model from its namespace to a path, where the acutal model is
-     * @return A {@link FeatureModel} based on the uvl text
-     * @throws ParseError If there is an error during parsing or the construction of the feature model
-     */
-    public FeatureModel parse(String text, Function<String, String> fileLoader) throws ParseError {
-        FeatureModel featureModel = parseFeatureModelWithImports(text, fileLoader, new HashMap<>());
-        composeFeatureModelFromImports(featureModel);
-        referenceFeaturesInConstraints(featureModel);
-        referenceAttributesInConstraints(featureModel);
-        referenceRootFeaturesInAggregateFunctions(featureModel);
-        validateTypeLevelConstraints(featureModel);
-        return featureModel;
+        return parse(text, System.getProperty("user.dir"));
     }
 
     public Constraint parseConstraint(String constraintString) throws ParseError {
@@ -332,7 +285,11 @@ public class UVLModelFactory {
         return completeOrderedLevelsToRemove;
     }
 
-    private FeatureModel parseFeatureModelWithImports(String text, Function<String, String> fileLoader, Map<String, Import> visitedImports) {
+    private String getPath(String rootPath, Import referencedImport) {
+        return rootPath + FileSystems.getDefault().getSeparator() + referencedImport.getNamespace().replace(".", FileSystems.getDefault().getSeparator()) + ".uvl";
+    }
+
+    private FeatureModel parseFeatureModelWithImports(String text, String rootPath, Map<String, Import> visitedImports) {
         //remove leading and trailing spaces (to be more robust)
         text = text.trim();
         UVLJavaLexer UVLJavaLexer = new UVLJavaLexer(CharStreams.fromString(text));
@@ -383,10 +340,10 @@ public class UVLModelFactory {
                     throw new ParseError("Cyclic import detected! " + "The import of " + importLine.getNamespace() + " in " + featureModel.getNamespace() + " creates a cycle", importLine.getLineNumber());
                 } else {
                     try {
-                        String path = fileLoader.apply(importLine.getNamespace());
+                        String path = getPath(rootPath, importLine);
                         Path filePath = Paths.get(path);
                         String content = new String(Files.readAllBytes(filePath));
-                        FeatureModel subModel = parseFeatureModelWithImports(content, fileLoader, visitedImports);
+                        FeatureModel subModel = parseFeatureModelWithImports(content, filePath.getParent().toString(), visitedImports);
                         importLine.setFeatureModel(subModel);
                         subModel.getRootFeature().setRelatedImport(importLine);
                         visitedImports.put(importLine.getNamespace(), importLine);
@@ -401,7 +358,7 @@ public class UVLModelFactory {
                             }
                         }
 
-                        //check if submodel is acutally used
+                        //check if submodel is actually used
                         if (featureModel.getFeatureMap().containsKey(subModel.getRootFeature().getReferenceFromSpecificSubmodel(""))) {
                             importLine.setReferenced(true);
                         }
@@ -424,8 +381,108 @@ public class UVLModelFactory {
                 }
             }
         }
-
+        for (Constraint constraint : featureModel.getOwnConstraints()) {
+            resolveImportPlaceholders(constraint, featureModel);
+        }
         return featureModel;
+    }
+
+    private void resolveImportPlaceholders(Constraint constraint, FeatureModel featureModel) {
+        if (constraint instanceof AndConstraint || constraint instanceof OrConstraint || constraint instanceof NotConstraint || constraint instanceof ImplicationConstraint || constraint instanceof ParenthesisConstraint || constraint instanceof EquivalenceConstraint) {
+            for (Constraint subPart : constraint.getConstraintSubParts()) {
+                resolveImportPlaceholders(subPart, featureModel);
+            }
+        }  else if (constraint instanceof ExpressionConstraint) {
+            ExpressionConstraint expressionConstraint = (ExpressionConstraint) constraint;
+            resolveImportPlaceholders(expressionConstraint.getLeft(), featureModel);
+            resolveImportPlaceholders(expressionConstraint.getRight(), featureModel);
+        } else if (constraint instanceof LiteralConstraint) {
+            LiteralConstraint literalConstraint = (LiteralConstraint) constraint;
+            if (literalConstraint.getReference() instanceof ImportedVariablePlaceholder) {
+                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalConstraint.getReference();
+                literalConstraint.setReference(resolvePlaceholder(placeholder, featureModel));
+            }
+        }
+    }
+
+    private void resolveImportPlaceholders(Expression expression, FeatureModel featureModel) {
+        if (expression instanceof BinaryExpression) {
+            BinaryExpression binaryExpression = (BinaryExpression) expression;
+            resolveImportPlaceholders(binaryExpression.getLeft(), featureModel);
+            resolveImportPlaceholders(binaryExpression.getRight(), featureModel);
+        } else if (expression instanceof ParenthesisExpression) {
+            ParenthesisExpression parenthesisExpression = (ParenthesisExpression) expression;
+            resolveImportPlaceholders(parenthesisExpression.getContent(), featureModel);
+        } else if (expression instanceof LengthAggregateFunctionExpression) {
+            LengthAggregateFunctionExpression lengthAggregateFunctionExpression = (LengthAggregateFunctionExpression) expression;
+            if (lengthAggregateFunctionExpression.getReference() instanceof ImportedVariablePlaceholder) {
+                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) lengthAggregateFunctionExpression.getReference();
+                lengthAggregateFunctionExpression.setReference(resolvePlaceholder(placeholder, featureModel));
+            }
+        } else if (expression instanceof LiteralExpression) {
+            LiteralExpression literalExpression = (LiteralExpression) expression;
+            if (literalExpression.getContent() instanceof ImportedVariablePlaceholder) {
+                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalExpression.getContent();
+                literalExpression.setContent(resolvePlaceholder(placeholder, featureModel));
+            }
+        }
+    }
+
+    /**
+     * Very whacky code currently
+     * @param placeholder
+     * @param featureModel
+     * @return
+     */
+    private VariableReference resolvePlaceholder(ImportedVariablePlaceholder placeholder, FeatureModel featureModel) {
+        boolean isCurrentPartAnImport;
+        int currentIndex = 0;
+        Import lastImport = placeholder.mainImport;
+        List<String> relativeNamespaces = new ArrayList<>();
+        do {
+            if (currentIndex == placeholder.unidentifiedImportParts.size() - 1) { // Last part should never be an import
+                break;
+            }
+            if (lastImport.getFeatureModel().getImports().isEmpty()) { // If current part has no further import we can stop looking
+                break;
+            } else {
+                isCurrentPartAnImport = false;
+                for (Import currentLevelImport : lastImport.getFeatureModel().getImports()) {
+                    if (currentLevelImport.getAlias().equals(placeholder.unidentifiedImportParts.get(currentIndex))) { // next part is one of the available imports
+                        isCurrentPartAnImport = true;
+                        lastImport = currentLevelImport;
+                        relativeNamespaces.add(currentLevelImport.getAlias());
+                    }
+                }
+            }
+            currentIndex++;
+        } while(isCurrentPartAnImport);
+
+        if (currentIndex == placeholder.unidentifiedImportParts.size() - 1) { // Feature
+            Feature feat = lastImport.getFeatureModel().getFeatureMap().get(placeholder.unidentifiedImportParts.get(currentIndex));
+            if (!relativeNamespaces.isEmpty()) {
+                lastImport.setRelativeImportPath(String.join(".", relativeNamespaces));
+            }
+            feat.setRelatedImport(lastImport);
+            return feat;
+        } else if (currentIndex == placeholder.unidentifiedImportParts.size() - 2) { // Attribute
+            Feature feat = lastImport.getFeatureModel().getFeatureMap().get(placeholder.unidentifiedImportParts.get(currentIndex));
+            if (!relativeNamespaces.isEmpty()) {
+                lastImport.setRelativeImportPath(String.join(".", relativeNamespaces));
+            }
+            feat.setRelatedImport(lastImport);
+            return feat.getAttributes().get(placeholder.unidentifiedImportParts.get(currentIndex + 1));
+        } else { // Should never happen for a valid reference
+            return null;
+        }
+    }
+
+    private boolean isPlaceholderFeature(String fullReference, FeatureModel featureModel) {
+        return featureModel.getFeatureMap().containsKey(fullReference);
+    }
+
+    private boolean isPlaceholderAttribute(String fullReference, FeatureModel featureModel) {
+        return featureModel.getFeatureMap().containsKey(fullReference.substring(0, fullReference.lastIndexOf(".")));
     }
 
     private void composeFeatureModelFromImports(FeatureModel featureModel) {
@@ -453,77 +510,6 @@ public class UVLModelFactory {
         return subModelList;
     }
 
-    private void referenceFeaturesInConstraints(FeatureModel featureModel) {
-        List<FeatureModel> subModelList = createSubModelList(featureModel);
-        List<LiteralConstraint> literalConstraints = featureModel.getLiteralConstraints();
-        for (LiteralConstraint constraint : literalConstraints) {
-            Feature referencedFeature = featureModel.getFeatureMap().get(constraint.getLiteral().replace("\'", ""));
-            if (referencedFeature == null) {
-                throw new ParseError("Feature " + constraint + " is referenced in a constraint in " + featureModel.getNamespace() + " but does not exist as feature in the tree!", constraint.getLineNumber());
-            } else {
-                constraint.setFeature(referencedFeature);
-            }
-        }
-        for (FeatureModel subModel : subModelList) {
-            literalConstraints = subModel.getLiteralConstraints();
-            for (LiteralConstraint constraint : literalConstraints) {
-                Feature referencedFeature = subModel.getFeatureMap().get(constraint.getLiteral().replace("\'", ""));
-                if (referencedFeature == null) {
-                    throw new ParseError("Feature " + constraint + " is referenced in a constraint in " + subModel.getNamespace() + " but does not exist as feature in the tree!", constraint.getLineNumber());
-                } else {
-                    constraint.setFeature(referencedFeature);
-                }
-            }
-        }
-    }
-
-    private void referenceAttributesInConstraints(final FeatureModel featureModel) {
-        final List<FeatureModel> subModelList = createSubModelList(featureModel);
-        List<LiteralExpression> literalExpressions = featureModel.getLiteralExpressions();
-        for (final LiteralExpression expression : literalExpressions) {
-            final Feature referencedFeature = featureModel.getFeatureMap().get(expression.getFeatureName());
-            if (referencedFeature == null || (expression.getAttributeName() != null && referencedFeature.getAttributes().get(expression.getAttributeName()) == null)) {
-                throw new ParseError("Attribute " + expression.getFeatureName() + "." + expression.getAttributeName() + " is referenced in a constraint in " + featureModel.getNamespace() + " but does not exist as feature in the tree!", expression.getLineNumber());
-            } else {
-                expression.setFeature(referencedFeature);
-            }
-        }
-        for (final FeatureModel subModel : subModelList) {
-            literalExpressions = subModel.getLiteralExpressions();
-            for (final LiteralExpression expression : literalExpressions) {
-                final Feature referencedFeature = subModel.getFeatureMap().get(expression.getFeatureName());
-                if (referencedFeature == null || referencedFeature.getAttributes().get(expression.getAttributeName()) == null) {
-                    throw new ParseError("Attribute " + expression.getFeatureName() + "." + expression.getAttributeName() + " is referenced in a constraint in " + subModel.getNamespace() + " but does not exist as feature in the tree!", expression.getLineNumber());
-                } else {
-                    expression.setFeature(referencedFeature);
-                }
-            }
-        }
-    }
-
-    private void referenceRootFeaturesInAggregateFunctions(FeatureModel featureModel) {
-        final List<FeatureModel> subModelList = createSubModelList(featureModel);
-        List<AggregateFunctionExpression> aggregateFunctionExpressions = featureModel.getAggregateFunctionsWithRootFeature();
-        for (final AggregateFunctionExpression expression : aggregateFunctionExpressions) {
-            final Feature referencedFeature = featureModel.getFeatureMap().get(expression.getRootFeatureName().replace("\"", ""));
-            if (referencedFeature == null) {
-                throw new ParseError("Feature " + expression.getRootFeatureName() + " is used in aggregate function " + expression.toString() + " but does not exist as feature in the tree!", expression.getLineNumber());
-            } else {
-                expression.setRootFeature(referencedFeature);
-            }
-        }
-        for (FeatureModel subModel : subModelList) {
-            aggregateFunctionExpressions = subModel.getAggregateFunctionsWithRootFeature();
-            for (final AggregateFunctionExpression expression : aggregateFunctionExpressions) {
-                final Feature referencedFeature = subModel.getFeatureMap().get(expression.getRootFeatureName().replace("\"", ""));
-                if (referencedFeature == null) {
-                    throw new ParseError("Feature " + expression.getRootFeatureName() + " is used in aggregate function " + expression.toString() + " but does not exist as feature in the tree!", expression.getLineNumber());
-                } else {
-                    expression.setRootFeature(referencedFeature);
-                }
-            }
-        }
-    }
 
     private void validateTypeLevelConstraints(final FeatureModel featureModel) {
         final List<Constraint> constraints = featureModel.getOwnConstraints();

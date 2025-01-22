@@ -1,19 +1,28 @@
 package de.vill.model.expression;
 
 import de.vill.model.Feature;
+import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
-public class MulExpression extends Expression {
+import java.util.*;
+
+public class MulExpression extends BinaryExpression {
     private Expression left;
     private Expression right;
 
     public MulExpression(Expression left, Expression right) {
         this.left = left;
         this.right = right;
+    }
+
+    @Override
+    public Expression getLeft() {
+        return left;
+    }
+
+    @Override
+    public Expression getRight() {
+        return right;
     }
 
     @Override
@@ -40,14 +49,15 @@ public class MulExpression extends Expression {
     @Override
     public double evaluate(Set<Feature> selectedFeatures) {
         double leftResult;
-        if (left instanceof LiteralExpression && !selectedFeatures.contains(((LiteralExpression) left).getFeature())) {
+        if (left instanceof LiteralExpression
+                && ((LiteralExpression) left).getContent() instanceof Feature && !selectedFeatures.contains((Feature)((LiteralExpression) left).getContent())) {
             leftResult = 1;
         } else {
             leftResult = left.evaluate(selectedFeatures);
         }
         double rightResult;
         if (right instanceof LiteralExpression
-            && !selectedFeatures.contains(((LiteralExpression) right).getFeature())) {
+            && ((LiteralExpression) right).getContent() instanceof Feature && !selectedFeatures.contains((Feature)((LiteralExpression) right).getContent())) {
             rightResult = 1;
         } else {
             rightResult = right.evaluate(selectedFeatures);
@@ -73,6 +83,14 @@ public class MulExpression extends Expression {
         }
         MulExpression other = (MulExpression) obj;
         return Objects.equals(left, other.left) && Objects.equals(right, other.right);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        List<VariableReference> references = new ArrayList<>();
+        references.addAll(left.getReferences());
+        references.addAll(right.getReferences());
+        return references;
     }
 
     @Override

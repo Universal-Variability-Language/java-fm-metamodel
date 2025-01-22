@@ -52,7 +52,7 @@ public class Example {
         featureName = "featureName";
         feature = featureModel.getFeatureMap().get(featureName);
         if (feature != null) {
-            feature.getAttributes().put("abstract", new Attribute<>("abstract", true));
+            feature.getAttributes().put("abstract", new Attribute<>("abstract", true, feature));
         } else {
             System.err.println("Feature " + featureName + " not found!");
         }
@@ -112,21 +112,6 @@ public class Example {
         return featureModel;
     }
 
-    /**
-     * Parse a decomposed uvl model where all submodels locations are specified in a map with namespace as key and path as value.
-     *
-     * @param rootModelPath Path to the uvl root model file
-     * @param subModelPaths Map with submodels with namespace as key and path as value
-     * @return the uvl model described in the file
-     * @throws IOException for io exceptions while loading the file content
-     */
-    private static FeatureModel loadUVLFeatureModelWithSpecificPaths(String rootModelPath, Map<String, String> subModelPaths) throws IOException {
-        Path filePath = Paths.get(rootModelPath);
-        String content = new String(Files.readAllBytes(filePath));
-        UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        FeatureModel featureModel = uvlModelFactory.parse(content, subModelPaths);
-        return featureModel;
-    }
 
     private static void traverseConstraint(Constraint constraint) {
         for (Constraint subConstraint : constraint.getConstraintSubParts()) {

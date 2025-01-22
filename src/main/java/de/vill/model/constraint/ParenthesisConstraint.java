@@ -1,5 +1,7 @@
 package de.vill.model.constraint;
 
+import de.vill.model.building.VariableReference;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -17,11 +19,9 @@ public class ParenthesisConstraint extends Constraint {
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        StringBuilder result = new StringBuilder();
-        result.append("(");
-        result.append(content.toString(withSubmodels, currentAlias));
-        result.append(")");
-        return result.toString();
+        return "(" +
+                content.toString(withSubmodels, currentAlias) +
+                ")";
     }
 
     @Override
@@ -56,5 +56,10 @@ public class ParenthesisConstraint extends Constraint {
         }
         ParenthesisConstraint other = (ParenthesisConstraint) obj;
         return Objects.equals(content, other.content);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        return content.getReferences();
     }
 }

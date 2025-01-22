@@ -1,14 +1,12 @@
 package de.vill.model.constraint;
 
 import de.vill.model.Feature;
+import de.vill.model.building.VariableReference;
 import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+
+import java.util.*;
 
 public abstract class ExpressionConstraint extends Constraint {
     private Expression left;
@@ -51,7 +49,7 @@ public abstract class ExpressionConstraint extends Constraint {
         return Arrays.asList(left, right);
     }
 
-    public void replaceExpressionSubPart(AggregateFunctionExpression oldSubExpression, Expression newSubExpression) {
+    public void replaceExpressionSubPart(Expression oldSubExpression, Expression newSubExpression) {
         if (left == oldSubExpression) {
             left = newSubExpression;
         } else if (right == oldSubExpression) {
@@ -65,19 +63,8 @@ public abstract class ExpressionConstraint extends Constraint {
     }
 
     public boolean evaluate(Set<Feature> selectedFeatures) {
-        double leftResult;
-        if (left instanceof LiteralExpression && !selectedFeatures.contains(((LiteralExpression) left).getFeature())) {
-            leftResult = 0;
-        } else {
-            leftResult = left.evaluate(selectedFeatures);
-        }
-        double rightResult;
-        if (right instanceof LiteralExpression
-            && !selectedFeatures.contains(((LiteralExpression) right).getFeature())) {
-            rightResult = 0;
-        } else {
-            rightResult = right.evaluate(selectedFeatures);
-        }
+        double leftResult = left.evaluate(selectedFeatures);
+        double rightResult = right.evaluate(selectedFeatures);
 
         if ("==".equals(expressionSymbol)) {
             return leftResult == rightResult;
@@ -115,5 +102,13 @@ public abstract class ExpressionConstraint extends Constraint {
         ExpressionConstraint other = (ExpressionConstraint) obj;
         return Objects.equals(expressionSymbol, other.expressionSymbol) && Objects.equals(left, other.left)
             && Objects.equals(right, other.right);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        List<VariableReference> references = new ArrayList<>();
+        references.addAll(left.getReferences());
+        references.addAll(right.getReferences());
+        return references;
     }
 }

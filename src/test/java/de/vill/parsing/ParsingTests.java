@@ -65,6 +65,11 @@ public class ParsingTests {
 
     private static final String NESTED_SUB_COMPOSITION_ROOT = NESTED_MODEL_PREFIX  + "nested_sub.uvl";
 
+
+    // Generated models
+
+    private static final String GENERATED_DIRECTORY = TEST_MODEL_PREFIX + "generated";
+
     @Test
     void testBooleanModel() throws Exception {
         testModelParsing(SIMPLE_BOOLEAN);
@@ -122,6 +127,11 @@ public class ParsingTests {
     @Test
     void checkComplexModels() throws Exception {
         checkAllModelsInDirectory(COMPLEX_MODEL_PREFIX);
+    }
+
+    @Test
+    void checkGeneratedModels() throws Exception {
+        checkAllModelsInDirectory(GENERATED_DIRECTORY);
     }
 
     @Test

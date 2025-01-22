@@ -1,5 +1,8 @@
 package de.vill.model.constraint;
 
+import de.vill.model.building.VariableReference;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -67,5 +70,13 @@ public class ImplicationConstraint extends Constraint {
         }
         ImplicationConstraint other = (ImplicationConstraint) obj;
         return Objects.equals(left, other.left) && Objects.equals(right, other.right);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        List<VariableReference> references = new ArrayList<>();
+        references.addAll(left.getReferences());
+        references.addAll(right.getReferences());
+        return references;
     }
 }

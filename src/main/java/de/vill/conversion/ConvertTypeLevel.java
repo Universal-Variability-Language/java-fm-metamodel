@@ -49,9 +49,9 @@ public class ConvertTypeLevel implements IConversionStrategy {
 
     private void replaceFeatureInExpression(final Expression expression) {
         if (expression instanceof LiteralExpression) {
-            if (((LiteralExpression) expression).getAttributeName() == null) {
-                Feature relevantFeature = rootFeatureModel.getFeatureMap().get(((LiteralExpression) expression).getFeatureName());
-                expression.replaceExpressionSubPart(expression, new LiteralExpression(relevantFeature, Constants.TYPE_LEVEL_VALUE)
+            if (((LiteralExpression) expression).getContent() instanceof Attribute<?>) {
+                Feature relevantFeature = (Feature) ((Attribute<?>) ((LiteralExpression) expression).getContent()).getFeature();
+                expression.replaceExpressionSubPart(expression, new LiteralExpression(new Attribute<Long>(Constants.TYPE_LEVEL_VALUE, 0L, relevantFeature))
                 );
             }
         }
@@ -63,8 +63,8 @@ public class ConvertTypeLevel implements IConversionStrategy {
     private void traverseFeatures(final Feature feature) {
         if (feature.getFeatureType() != null) {
             feature.getAttributes().put(
-                "feature_type",
-                new Attribute<>("feature_type", feature.getFeatureType().getName())
+                Constants.FEATURE_TYPE,
+                new Attribute<>(Constants.FEATURE_TYPE, feature.getFeatureType().getName(), feature)
             );
             feature.setFeatureType(null);
         }

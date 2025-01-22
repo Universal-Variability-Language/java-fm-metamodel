@@ -1,16 +1,22 @@
 package de.vill.model.expression;
 
+import de.vill.model.Attribute;
+import de.vill.model.Feature;
+import de.vill.model.GlobalAttribute;
+import de.vill.model.building.VariableReference;
+import org.w3c.dom.Attr;
+
 import java.util.Arrays;
 import java.util.List;
 
 public class MinAggregateFunctionExpression extends AggregateFunctionExpression {
 
-    public MinAggregateFunctionExpression(String attributeName) {
-        super(attributeName);
+    public MinAggregateFunctionExpression(GlobalAttribute attribute) {
+        super(attribute);
     }
 
-    public MinAggregateFunctionExpression(String rootFeatureName, String attributeName) {
-        super(rootFeatureName, attributeName);
+    public MinAggregateFunctionExpression(GlobalAttribute attribute, Feature rootFeature) {
+        super(attribute, rootFeature);
     }
 
     @Override

@@ -11,12 +11,13 @@ import java.util.Map;
 import java.util.Objects;
 
 import de.vill.config.Configuration;
+import de.vill.model.building.VariableReference;
 import de.vill.util.Util;
 
 /**
  * This class represents a feature of any kind (normal, numeric, abstract, ...).
  */
-public class Feature {
+public class Feature implements VariableReference {
     public void setFeatureName(String featureName) {
         this.featureName = featureName;
     }
@@ -24,8 +25,7 @@ public class Feature {
     private String featureName;
     private String nameSpace = "";
     private Import relatedImport;
-    private String lowerBound;
-    private String upperBound;
+    private Cardinality cardinality;
     private final List<Group> children;
     private final Map<String, Attribute<?>> attributes;
     private FeatureType featureType;
@@ -222,47 +222,12 @@ public class Feature {
         children.add(group);
     }
 
-    /**
-     * This method only returns a value if the feature is a numeric feature / has a
-     * feature cardinality. If not, this method returns null.
-     *
-     * @return null or the lower bound of a feature cardinality as string
-     */
-    public String getLowerBound() {
-        return lowerBound;
+    public Cardinality getCardinality() {
+        return cardinality;
     }
 
-    /**
-     * This method only returns a value if the feature is a numeric feature / has a
-     * feature cardinality. If not, this method returns null. If there is no upper
-     * bound in the cardinality, this method returns the lower bound. The returned
-     * value might also be the * symbol, if the upper bound is unlimited.
-     *
-     * @return the upper bound as string
-     */
-    public String getUpperBound() {
-        return upperBound;
-    }
-
-    /**
-     * Sets the lower bound of a feature cardinality. Setting this value results in
-     * this feature becoming a numeric feature.
-     *
-     * @param lowerBound lower bound as string (must be a positive integer or zero)
-     */
-    public void setLowerBound(String lowerBound) {
-        this.lowerBound = lowerBound;
-    }
-
-    /**
-     * Sets the upper bound of a feature cardinality. Setting this value results in
-     * this feature becoming a numeric feature.
-     *
-     * @param upperBound upper bound as string (must be a positive integer or zero
-     *                   or the * symbol)
-     */
-    public void setUpperBound(String upperBound) {
-        this.upperBound = upperBound;
+    public void setCardinality(Cardinality cardinality) {
+        this.cardinality = cardinality;
     }
 
     /**
@@ -452,7 +417,7 @@ public class Feature {
             result.append(featureType.getName()).append(" ");
         }
         if (withSubmodels) {
-            result.append(addNecessaryQuotes(getFullReference()));
+            result.append(addNecessaryQuotes(getIdentifier()));
         } else {
             result.append(addNecessaryQuotes(getReferenceFromSpecificSubmodel(currentAlias)));
         }
@@ -532,17 +497,8 @@ public class Feature {
     }
 
     private String cardinalityToString() {
-        StringBuilder result = new StringBuilder();
-        if (!(upperBound == null && lowerBound == null)) {
-            result.append(" cardinality [");
-            result.append(getLowerBound());
-            if (!getLowerBound().equals(getUpperBound())) {
-                result.append("..");
-                result.append(getUpperBound());
-            }
-            result.append("] ");
-        }
-        return result.toString();
+        if (cardinality == null) return "";
+        return String.format(" cardinality %s", cardinality.toString());
     }
 
     private String attributesToString(boolean withSubmodels, String currentAlias) {
@@ -565,8 +521,7 @@ public class Feature {
     public Feature clone() {
         Feature feature = new Feature(getFeatureName());
         feature.setNameSpace(getNameSpace());
-        feature.setLowerBound(getLowerBound());
-        feature.setUpperBound(getUpperBound());
+        feature.setCardinality(cardinality.clone());
         feature.setSubmodelRoot(isSubmodelRoot);
         feature.setRelatedImport(getRelatedImport());
         feature.setFeatureType(this.getFeatureType());
@@ -582,8 +537,7 @@ public class Feature {
 
     @Override
 	public int hashCode() {
-		return Objects.hash(attributes, featureName, featureType, isSubmodelRoot, lowerBound, nameSpace,
-				upperBound);
+		return Objects.hash(attributes, featureName, featureType, isSubmodelRoot, cardinality, nameSpace);
 	}
 
 	@Override
@@ -595,11 +549,18 @@ public class Feature {
 		Feature other = (Feature) obj;
 		return featureType == other.featureType
 				&& isSubmodelRoot == other.isSubmodelRoot
-				&& Objects.equals(upperBound, other.upperBound)
-				&& Objects.equals(lowerBound, other.lowerBound)
+				&& Objects.equals(cardinality, other.cardinality)
 				&& Objects.equals(featureName, other.featureName)
 				&& Objects.equals(nameSpace, other.nameSpace)
 				&& Objects.equals(attributes, other.attributes);
 	}
 
+    @Override
+    public String getIdentifier() {
+        if (relatedImport != null) {
+            return relatedImport.getAlias() + "." + getFeatureName();
+        } else {
+            return getFeatureName();
+        }
+    }
 }

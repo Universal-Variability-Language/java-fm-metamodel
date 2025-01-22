@@ -46,14 +46,8 @@ public class ConvertGroupCardinality implements IConversionStrategy {
 
         Set<Feature> groupMembers = new HashSet<>(group.getFeatures());
 
-        int lowerBound = Integer.parseInt(group.getLowerBound());
-        int upperBound = 0;
-        if (group.getUpperBound().equals("*")) {
-            upperBound = groupMembers.size();
-        } else {
-            upperBound = Integer.parseInt(group.getUpperBound());
-        }
-
+        int lowerBound = group.getCardinality().lower;
+        int upperBound = Math.max(group.getCardinality().upper, groupMembers.size());
         Set<Set<Feature>> featureCombinations = new HashSet<>();
         for (int i = lowerBound; i <= upperBound; i++) {
             featureCombinations.addAll(Sets.combinations(groupMembers, i));
@@ -63,18 +57,17 @@ public class ConvertGroupCardinality implements IConversionStrategy {
             disjunction.add(createConjunction(configuration, new HashSet<>(groupMembers)));
         }
 
-        featureModel.getOwnConstraints().add(new ImplicationConstraint(new LiteralConstraint(group.getParentFeature().getFeatureName()), new ParenthesisConstraint(createDisjunction(disjunction))));
+        featureModel.getOwnConstraints().add(new ImplicationConstraint(new LiteralConstraint(group.getParentFeature()), new ParenthesisConstraint(createDisjunction(disjunction))));
     }
 
     private Constraint createConjunction(Set<Feature> selectedFeatures, Set<Feature> allFeatures) {
         Constraint constraint;
         Feature feature = null;
-        if (allFeatures.size() >= 1) {
+        if (!allFeatures.isEmpty()) {
             feature = allFeatures.iterator().next();
             allFeatures.remove(feature);
         }
-        Constraint literalConstraint = new LiteralConstraint(feature.getFeatureName());
-        ((LiteralConstraint) literalConstraint).setFeature(feature);
+        Constraint literalConstraint = new LiteralConstraint(feature);
         if (!selectedFeatures.contains(feature)) {
             literalConstraint = new NotConstraint(literalConstraint);
         }

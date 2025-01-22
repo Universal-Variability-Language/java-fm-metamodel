@@ -2,7 +2,10 @@ package de.vill.model.expression;
 
 import static de.vill.util.Util.addNecessaryQuotes;
 
+import de.vill.model.Attribute;
 import de.vill.model.Feature;
+import de.vill.model.GlobalAttribute;
+import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
 import java.util.Arrays;
 import java.util.List;
@@ -10,39 +13,17 @@ import java.util.Objects;
 import java.util.Set;
 
 public class AggregateFunctionExpression extends Expression {
-    public String getRootFeatureName() {
-        return rootFeatureName;
+
+    protected GlobalAttribute attribute;
+    protected Feature rootFeature;
+
+    public AggregateFunctionExpression(GlobalAttribute attribute) {
+        this.attribute = attribute;
     }
 
-    public String getAttributeName() {
-        return attributeName;
-    }
-
-    private String rootFeatureName;
-
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
-    }
-
-    private String attributeName;
-
-    public Feature getRootFeature() {
-        return rootFeature;
-    }
-
-    public void setRootFeature(Feature rootFeature) {
+    public AggregateFunctionExpression(GlobalAttribute attribute, Feature rootFeature) {
+        this(attribute);
         this.rootFeature = rootFeature;
-    }
-
-    private Feature rootFeature;
-
-    public AggregateFunctionExpression(String attributeName) {
-        this.attributeName = attributeName;
-    }
-
-    public AggregateFunctionExpression(String rootFeatureName, String attributeName) {
-        this(attributeName);
-        this.rootFeatureName = rootFeatureName;
     }
 
     @Override
@@ -66,6 +47,16 @@ public class AggregateFunctionExpression extends Expression {
 
     }
 
+    public Feature getRootFeature() {
+        return rootFeature;
+    }
+
+    public GlobalAttribute getAttribute() {
+        return attribute;
+    }
+
+
+
     @Override
     public double evaluate(Set<Feature> selectedFeatures) {
         // TODO not necessary for now
@@ -76,19 +67,19 @@ public class AggregateFunctionExpression extends Expression {
         final StringBuilder result = new StringBuilder();
         result.append(functionName).append("(");
 
-        if (getRootFeature() != null) {
+        if (rootFeature != null) {
             if (withSubmodels) {
-                result.append(addNecessaryQuotes(getRootFeature().getFullReference()));
+                result.append(addNecessaryQuotes(rootFeature.getIdentifier()));
             } else {
-                result.append(addNecessaryQuotes(getRootFeatureName()));
+                result.append(addNecessaryQuotes(rootFeature.getFeatureName()));
             }
         }
 
-        if (getAttributeName() != null) {
-            if (getRootFeature() != null) {
+        if (attribute != null) {
+            if (rootFeature!= null) {
                 result.append(", ");
             }
-            result.append(addNecessaryQuotes(getAttributeName()));
+            result.append(addNecessaryQuotes(attribute.getIdentifier()));
         }
         result.append(")");
         return result.toString();
@@ -98,13 +89,13 @@ public class AggregateFunctionExpression extends Expression {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + Objects.hash(attributeName);
+        result = prime * result + Objects.hash(attribute);
         return result;
     }
 
     @Override
     public int hashCode(int level) {
-        return 31 * level + (attributeName == null ? 0 : attributeName.hashCode());
+        return 31 * level + (attribute == null ? 0 : attribute.getIdentifier().hashCode());
     }
 
     @Override
@@ -116,6 +107,11 @@ public class AggregateFunctionExpression extends Expression {
             return false;
         }
         AggregateFunctionExpression other = (AggregateFunctionExpression) obj;
-        return Objects.equals(attributeName, other.attributeName);
+        return Objects.equals(attribute, other.attribute);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        return List.of(attribute);
     }
 }

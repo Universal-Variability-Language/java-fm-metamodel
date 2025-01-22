@@ -26,7 +26,7 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
 
     private void traverseFeatures(Feature feature, FeatureModel featureModel) {
         if (!feature.isSubmodelRoot()) {
-            if (feature.getLowerBound() != null) {
+            if (feature.getCardinality() != null) {
                 List<Feature> subTreeFeatures = new LinkedList<>();
                 for (Group group : feature.getChildren()) {
                     subTreeFeatures.addAll(getFeatureFromSubTree(group));
@@ -44,16 +44,15 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
     }
 
     private void removeFeatureCardinality(Feature feature, FeatureModel featureModel, List<Constraint> constraintsToClone) {
-        int min = Integer.parseInt(feature.getLowerBound());
-        int max = Integer.parseInt(feature.getUpperBound());
+        int min = feature.getCardinality().lower;
+        int max = feature.getCardinality().upper;
         Group newChildren = new Group(Group.GroupType.ALTERNATIVE);
 
-        feature.setLowerBound(null);
-        feature.setUpperBound(null);
+        feature.setCardinality(null);
 
         for (int i = min; i <= max; i++) {
             Feature newChild = new Feature(feature.getFeatureName() + "-" + i);
-            newChild.getAttributes().put("abstract", new Attribute<Boolean>("abstract", true));
+            newChild.getAttributes().put("abstract", new Attribute<Boolean>("abstract", true, feature));
             newChildren.getFeatures().add(newChild);
             newChild.setParentGroup(newChildren);
             Group mandatoryGroup = new Group(Group.GroupType.MANDATORY);
@@ -120,8 +119,8 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
     private boolean constraintContains(Constraint constraint, List<Feature> subTreeFeatures) {
         List<Constraint> subParts = constraint.getConstraintSubParts();
         for (Constraint subPart : subParts) {
-            if (subPart instanceof LiteralConstraint) {
-                Feature feature = ((LiteralConstraint) subPart).getFeature();
+            if (subPart instanceof LiteralConstraint && ((LiteralConstraint) subPart).getReference() instanceof Feature) {
+                Feature feature = (Feature) ((LiteralConstraint) subPart).getReference();
                 if (subTreeFeatures.contains(feature)) {
                     return true;
                 }
@@ -148,12 +147,10 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
         List<Constraint> subParts = constraint.getConstraintSubParts();
         for (Constraint subPart : subParts) {
             if (subPart instanceof LiteralConstraint) {
-                String toReplace = ((LiteralConstraint) subPart).getLiteral();
+                String toReplace = ((LiteralConstraint) subPart).getReference().getIdentifier();
                 if (featureReplacementMap.containsKey(toReplace)) {
-                    LiteralConstraint subTreeRootConstraint = new LiteralConstraint(subTreeRoot.getFeatureName());
-                    subTreeRootConstraint.setFeature(subTreeRoot);
-                    LiteralConstraint newLiteral = new LiteralConstraint(featureReplacementMap.get(toReplace).getFeatureName());
-                    newLiteral.setFeature(featureReplacementMap.get(toReplace));
+                    LiteralConstraint subTreeRootConstraint = new LiteralConstraint(subTreeRoot);
+                    LiteralConstraint newLiteral = new LiteralConstraint(featureReplacementMap.get(toReplace));
                     constraint.replaceConstraintSubPart(subPart, new ParenthesisConstraint(new ImplicationConstraint(subTreeRootConstraint, newLiteral)));
                 }
             } else {

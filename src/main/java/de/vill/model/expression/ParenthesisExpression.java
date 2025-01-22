@@ -1,6 +1,8 @@
 package de.vill.model.expression;
 
 import de.vill.model.Feature;
+import de.vill.model.building.VariableReference;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +13,10 @@ public class ParenthesisExpression extends Expression {
 
     public ParenthesisExpression(Expression content) {
         this.content = content;
+    }
+
+    public Expression getContent() {
+        return content;
     }
 
     @Override
@@ -60,6 +66,11 @@ public class ParenthesisExpression extends Expression {
         }
         ParenthesisExpression other = (ParenthesisExpression) obj;
         return Objects.equals(content, other.content);
+    }
+
+    @Override
+    public List<VariableReference> getReferences() {
+        return List.of();
     }
 
     @Override
