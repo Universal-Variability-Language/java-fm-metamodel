@@ -48,8 +48,8 @@
         <connection>scm:git:git@github.com:Universal-Variability-Language/java-fm-metamodel.git</connection>
         <developerConnection>scm:git:git@github.com:Universal-Variability-Language/java-fm-metamodel.git</developerConnection>
         <url>https://github.com/Universal-Variability-Language/java-fm-metamodel</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <distributionManagement>
         <snapshotRepository>
@@ -77,6 +77,11 @@
             <version>4.13.1</version>
         </dependency>
         <dependency>
+            <groupId>io.github.universal-variability-language</groupId>
+            <artifactId>uvl-parser</artifactId>
+            <version>0.3</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.8.2</version>
@@ -86,16 +91,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>31.0.1-jre</version>
-        </dependency>
-        <dependency>
-            <groupId>uvl</groupId>
-            <artifactId>uvl</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr</artifactId>
-            <version>3.4.0</version>
         </dependency>
     </dependencies>
 
@@ -111,7 +106,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>de.vill.main.Example</mainClass>
+                            <mainClass>fully.qualified.MainClass</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
