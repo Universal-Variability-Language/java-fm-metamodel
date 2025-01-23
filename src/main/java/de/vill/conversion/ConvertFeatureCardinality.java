@@ -78,9 +78,9 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
                         if (constraintReplacementMap.containsKey(toReplace)) {
                             LiteralConstraint newLiteral = new LiteralConstraint(constraintReplacementMap.get(toReplace));
                             LiteralConstraint subTreeRootConstraint = new LiteralConstraint(newChild);
-                            newConstraint = new ImplicationConstraint(subTreeRootConstraint, new ParenthesisConstraint(newLiteral));;
+                            newConstraint = new ImplicationConstraint(subTreeRootConstraint, new ParenthesisConstraint(newLiteral));
                         }
-                    }else{
+                    } else {
                         adaptConstraint(subTreeClone, newConstraint, constraintReplacementMap);
                         LiteralConstraint subTreeRootConstraint = new LiteralConstraint(newChild);
                         newConstraint = new ImplicationConstraint(subTreeRootConstraint, new ParenthesisConstraint(newConstraint));
@@ -111,7 +111,7 @@ additional constraint with all cloned versions ored
         for (Constraint subPart : constraint.getConstraintSubParts()) {
             if (subPart instanceof LiteralConstraint) {
                 String toReplace = ((LiteralConstraint) subPart).getReference().getIdentifier();
-                if (featuresToReplace.contains(toReplace)){
+                if (featuresToReplace.contains(toReplace)) {
                     Feature f = featureModel.getFeatureMap().get(toReplace + "-" + (min == 0 ? 1 : min) + "-1");
                     Constraint newOr = new LiteralConstraint(f);
                     for (int i = min + 1; i <= max; i++) {
@@ -121,7 +121,7 @@ additional constraint with all cloned versions ored
                     }
                     constraint.replaceConstraintSubPart(subPart, new ParenthesisConstraint(newOr));
                 }
-            }else {
+            } else {
                 orAdaptedConstraint(subPart, featuresToReplace, min, max, featureModel);
             }
         }
@@ -130,7 +130,7 @@ additional constraint with all cloned versions ored
     private void getAllSubFeatureNamesRecursively(Feature feature, Set<String> names) {
         names.add(feature.getFeatureName());
         for (Group child : feature.getChildren()) {
-            for(Feature childFeature : child.getFeatures()){
+            for (Feature childFeature : child.getFeatures()) {
                 getAllSubFeatureNamesRecursively(childFeature, names);
             }
         }
@@ -180,10 +180,10 @@ additional constraint with all cloned versions ored
             if (subTreeFeatures.contains(feature)) {
                 return true;
             }
-        }else if (constraint instanceof  ExpressionConstraint) {
+        } else if (constraint instanceof ExpressionConstraint) {
             Expression left = ((ExpressionConstraint) constraint).getLeft();
             Expression right = ((ExpressionConstraint) constraint).getRight();
-            return expressionContains(left,subTreeFeatures) || expressionContains(right,subTreeFeatures);
+            return expressionContains(left, subTreeFeatures) || expressionContains(right, subTreeFeatures);
         }
 
         for (Constraint subPart : subParts) {
@@ -192,7 +192,7 @@ additional constraint with all cloned versions ored
                 if (subTreeFeatures.contains(feature)) {
                     return true;
                 }
-            } else if (constraintContains(subPart, subTreeFeatures)){
+            } else if (constraintContains(subPart, subTreeFeatures)) {
                 return true;
             }
         }
@@ -213,7 +213,7 @@ additional constraint with all cloned versions ored
                 if (subTreeFeatures.contains(feature)) {
                     return true;
                 }
-            }else if(expressionContains(subExpression, subTreeFeatures)){
+            } else if (expressionContains(subExpression, subTreeFeatures)) {
                 return true;
             }
         }
@@ -236,7 +236,7 @@ additional constraint with all cloned versions ored
         if (constraint instanceof ExpressionConstraint) {
             adaptExpression(((ExpressionConstraint) constraint).getLeft(), featureReplacementMap);
             adaptExpression(((ExpressionConstraint) constraint).getRight(), featureReplacementMap);
-        }else{
+        } else {
             List<Constraint> subParts = constraint.getConstraintSubParts();
             for (Constraint subPart : subParts) {
                 if (subPart instanceof LiteralConstraint) {
@@ -262,7 +262,7 @@ additional constraint with all cloned versions ored
                 literalExpression.setContent(newAttribute);
             }
 
-        }else{
+        } else {
             for (Expression subExpression : expression.getExpressionSubParts()) {
                 adaptExpression(subExpression, featureReplacementMap);
             }
