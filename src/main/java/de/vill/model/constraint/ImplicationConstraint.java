@@ -79,4 +79,5 @@ public class ImplicationConstraint extends Constraint {
         references.addAll(right.getReferences());
         return references;
     }
+
 }

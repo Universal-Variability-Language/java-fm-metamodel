@@ -41,3 +41,4 @@ public abstract class Constraint {
 
     public abstract List<VariableReference> getReferences();
 }
+

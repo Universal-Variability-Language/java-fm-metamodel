@@ -83,4 +83,10 @@ public class AddExpression extends BinaryExpression {
         references.addAll(right.getReferences());
         return references;
     }
+
+    @Override
+    public Expression clone(){
+        return new AddExpression(left.clone(), right.clone());
+    }
+
 }

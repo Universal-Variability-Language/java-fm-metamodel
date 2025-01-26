@@ -1,16 +1,16 @@
 package de.vill.model.expression;
 
-import static de.vill.util.Util.addNecessaryQuotes;
-
-import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.GlobalAttribute;
 import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import static de.vill.util.Util.addNecessaryQuotes;
 
 public class AggregateFunctionExpression extends Expression {
 
@@ -113,5 +113,10 @@ public class AggregateFunctionExpression extends Expression {
     @Override
     public List<VariableReference> getReferences() {
         return List.of(attribute);
+    }
+
+    @Override
+    public Expression clone(){
+        return new AggregateFunctionExpression(attribute, rootFeature);
     }
 }

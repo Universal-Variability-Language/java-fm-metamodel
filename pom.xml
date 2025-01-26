@@ -48,8 +48,8 @@
         <connection>scm:git:git@github.com:Universal-Variability-Language/java-fm-metamodel.git</connection>
         <developerConnection>scm:git:git@github.com:Universal-Variability-Language/java-fm-metamodel.git</developerConnection>
         <url>https://github.com/Universal-Variability-Language/java-fm-metamodel</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <distributionManagement>
         <snapshotRepository>

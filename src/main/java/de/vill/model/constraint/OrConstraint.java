@@ -25,6 +25,14 @@ public class OrConstraint extends Constraint {
         return right;
     }
 
+    public void setLeft(Constraint left) {
+        this.left = left;
+    }
+
+    public void setRight(Constraint right){
+        this.right = right;
+    }
+
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return left.toString(withSubmodels, currentAlias) +

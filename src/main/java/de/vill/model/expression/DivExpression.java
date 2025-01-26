@@ -83,4 +83,9 @@ public class DivExpression extends BinaryExpression {
         references.addAll(right.getReferences());
         return references;
     }
+
+    @Override
+    public Expression clone(){
+        return new DivExpression(left.clone(), right.clone());
+    }
 }

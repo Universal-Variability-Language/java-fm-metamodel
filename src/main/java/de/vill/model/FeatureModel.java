@@ -1,16 +1,5 @@
 package de.vill.model;
 
-import static de.vill.util.Util.addNecessaryQuotes;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 import de.vill.config.Configuration;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.constraint.LiteralConstraint;
@@ -18,6 +7,10 @@ import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
 import de.vill.util.Util;
+
+import java.util.*;
+
+import static de.vill.util.Util.addNecessaryQuotes;
 
 /**
  * This class represents a feature model and all its sub feature models if the
@@ -253,6 +246,8 @@ public class FeatureModel {
     public String toString() {
         return toString(false, "");
     }
+
+
 
     /**
      * Returns a single uvl feature model composed out of all submodels. To avoid

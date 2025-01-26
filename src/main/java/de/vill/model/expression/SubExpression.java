@@ -80,4 +80,9 @@ public class SubExpression extends BinaryExpression {
     public String getReturnType() {
         return Constants.NUMBER;
     }
+
+    @Override
+    public Expression clone(){
+        return new SubExpression(left.clone(), right.clone());
+    }
 }

@@ -79,5 +79,4 @@ public class EquivalenceConstraint extends Constraint {
         references.addAll(right.getReferences());
         return references;
     }
-
 }
