@@ -1,5 +1,6 @@
 package de.vill.model.constraint;
 
+import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
 
 import java.util.ArrayList;
@@ -35,9 +36,9 @@ public class OrConstraint extends Constraint {
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        return left.toString(withSubmodels, currentAlias) +
+        return AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, left, withSubmodels, currentAlias) +
                 " | " +
-                right.toString(withSubmodels, currentAlias);
+                AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, right, withSubmodels, currentAlias);
     }
 
     @Override

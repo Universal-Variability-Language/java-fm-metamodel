@@ -1,6 +1,7 @@
 package de.vill.model.expression;
 
 import de.vill.model.Feature;
+import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
 
@@ -27,9 +28,9 @@ public class AddExpression extends BinaryExpression {
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        return left.toString(withSubmodels, currentAlias) +
+        return AutomaticBrackets.enforceExpressionBracketsIfNecessary(this, left, withSubmodels, currentAlias) +
             " + " +
-            right.toString(withSubmodels, currentAlias);
+            AutomaticBrackets.enforceExpressionBracketsIfNecessary(this, right, withSubmodels, currentAlias);
     }
 
     @Override

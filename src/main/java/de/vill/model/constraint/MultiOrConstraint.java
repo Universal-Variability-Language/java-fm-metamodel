@@ -1,5 +1,6 @@
 package de.vill.model.constraint;
 
+import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class MultiOrConstraint extends Constraint{
     public String toString(boolean withSubmodels, String currentAlias) {
         StringBuilder result = new StringBuilder();
         for (Constraint part : sub_parts) {
-            result.append(part.toString(withSubmodels, currentAlias));
+            result.append(AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, part, withSubmodels, currentAlias));
             result.append(" | ");
         }
         result.delete(result.length() -3, result.length());
