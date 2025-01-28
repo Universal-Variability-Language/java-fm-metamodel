@@ -29,7 +29,7 @@ public class EquivalenceConstraint extends Constraint {
     public String toString(boolean withSubmodels, String currentAlias) {
         return AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, left, withSubmodels, currentAlias) +
                 " <=> " +
-                AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, left, withSubmodels, currentAlias);
+                AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, right, withSubmodels, currentAlias);
     }
 
     @Override
