@@ -3,7 +3,10 @@ package de.vill.model.building;
 import de.vill.exception.ParseError;
 import de.vill.model.*;
 import de.vill.model.constraint.Constraint;
+import de.vill.model.constraint.ExpressionConstraint;
 import de.vill.model.constraint.LiteralConstraint;
+import de.vill.model.expression.AggregateFunctionExpression;
+import de.vill.model.expression.Expression;
 
 import java.util.List;
 import java.util.Map;
@@ -102,7 +105,7 @@ public class FeatureModelBuilder {
      */
     public boolean renameFeature(String oldName, String newName) {
         Map<String, Feature> featureMap = fmInConstruction.getFeatureMap();
-        if (featureMap.containsKey(oldName)) {
+        if (!featureMap.containsKey(oldName)) {
             return false;
         }
         Feature featureToUpdate = featureMap.get(oldName);
@@ -114,6 +117,49 @@ public class FeatureModelBuilder {
 
         // TODO: Does this need an explicit update of constraints, I assume not
         return true;
+    }
+
+    public void renameAttribute(Attribute<?> attribute, String newName) {
+        String oldName = attribute.getName();
+        attribute.setName(newName);
+        attribute.getFeature().getAttributes().remove(oldName);
+        attribute.getFeature().getAttributes().put(newName, attribute);
+    }
+
+    public void renameAttributeGlobally(String oldName, String newName) {
+        for (Feature feature : fmInConstruction.getFeatureMap().values()) {
+            if (feature.getAttributes().containsKey(oldName)) {
+                Attribute<?> attribute = feature.getAttributes().get(oldName);
+                renameAttribute(attribute, newName);
+            }
+        }
+        for (Constraint constraint : fmInConstruction.getConstraints()) {
+            crawlConstraintsToRenameGlobalAttribute(constraint, oldName, newName);
+        }
+    }
+    private void crawlConstraintsToRenameGlobalAttribute(Constraint constraint, String attributeName, String replace) {
+        if (constraint instanceof ExpressionConstraint) {
+            for (Expression exp : ((ExpressionConstraint) constraint).getExpressionSubParts()) {
+                crawlExpressionsToRenameGlobalAttribute(exp, attributeName, replace);
+            }
+        } else {
+            for (Constraint child : constraint.getConstraintSubParts()) {
+                crawlConstraintsToRenameGlobalAttribute(child, attributeName, replace);
+            }
+        }
+    }
+
+    private void crawlExpressionsToRenameGlobalAttribute(Expression expression, String attributeName, String replace) {
+        if (expression instanceof AggregateFunctionExpression) {
+            AggregateFunctionExpression aggregateFunctionExpression = (AggregateFunctionExpression) expression;
+            if (aggregateFunctionExpression.getAttribute().getIdentifier().equals(attributeName)) {
+                aggregateFunctionExpression.getAttribute().renameGlobalAttribute(replace);
+            };
+        } else {
+            for (Expression exp : expression.getExpressionSubParts()) {
+                crawlExpressionsToRenameGlobalAttribute(exp, attributeName, replace);
+            }
+        }
     }
 
     public void addConstraint(Constraint constraint) {

@@ -20,8 +20,8 @@ import de.vill.util.Constants;
 public class Attribute<T> implements VariableReference {
 
     private int line;
-    private final String name;
-    private final T value;
+    private String name;
+    private T value;
     private Feature feature;
 
     /**
@@ -53,6 +53,8 @@ public class Attribute<T> implements VariableReference {
         return value;
     }
 
+    public void setValue(T value) { this.value = value; }
+
     /**
      * Returns the name of the attribute.
      *
@@ -61,6 +63,9 @@ public class Attribute<T> implements VariableReference {
     public String getName() {
         return name;
     }
+
+    public void setName(String name) { this.name = name; }
+
 
     /**
      * Returns the type of the attribute
