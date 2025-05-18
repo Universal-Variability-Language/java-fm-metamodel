@@ -62,7 +62,7 @@ public class MulExpression extends BinaryExpression {
         } else {
             rightResult = right.evaluate(selectedFeatures);
         }
-        return leftResult + rightResult;
+        return leftResult * rightResult;
     }
 
     @Override
