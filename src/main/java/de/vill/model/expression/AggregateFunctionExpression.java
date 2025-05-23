@@ -2,7 +2,6 @@ package de.vill.model.expression;
 
 import static de.vill.util.Util.addNecessaryQuotes;
 
-import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.GlobalAttribute;
 import de.vill.model.building.VariableReference;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class AggregateFunctionExpression extends Expression {
+public abstract class AggregateFunctionExpression extends Expression {
 
     protected GlobalAttribute attribute;
     protected Feature rootFeature;
@@ -58,10 +57,7 @@ public class AggregateFunctionExpression extends Expression {
 
 
     @Override
-    public double evaluate(Set<Feature> selectedFeatures) {
-        // TODO not necessary for now
-        return 0;
-    }
+    abstract public double evaluate(Set<Feature> selectedFeatures);
 
     protected String toString(boolean withSubmodels, String functionName, String currentAlias) {
         final StringBuilder result = new StringBuilder();
