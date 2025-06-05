@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,7 @@ public class ParsingTests {
 
     // Boolean level models
     private static final String SIMPLE_BOOLEAN = CONCEPTS_MODEL_PREFIX + "boolean.uvl";
-    private static final String NAMESPACE = CONCEPTS_MODEL_PREFIX + "namespace.uvl";
+    private static final String NAMESPACE = CONCEPTS_MODEL_PREFIX + "namespace.uvl"; //ODO is this model twice in here?
     private static final String ATTRIBUTES = CONCEPTS_MODEL_PREFIX + "namespace.uvl";
     private static final String GROUP_CARDINALITY = CONCEPTS_MODEL_PREFIX + "cardinality.uvl";
 
@@ -52,24 +51,25 @@ public class ParsingTests {
     private static final String BOOLEAN_LEVEL = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "boolean.uvl";
     private static final String TYPE_LEVEL = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "type.uvl";
 
+    // Comments
+    private static final String COMMENTS = TEST_MODEL_PREFIX + "comments.uvl";
+
     // Faulty UVL models
     private static final String ILLEGAL_NAME = FAULTY_MODEL_PREFIX + "illegalname.uvl";
     private static final String MISSING_REFRENCE = FAULTY_MODEL_PREFIX + "missingreference.uvl";
     private static final String WRONG_INDENT = FAULTY_MODEL_PREFIX + "wrongindent.uvl";
 
     // Composition uvl models
-
     private static final String COMPOSITION_ROOT = COMPOSITION_MODEL_PREFIX +  "composition_root.uvl";
-
     private static final String NESTED_COMPOSITION_ROOT = COMPOSITION_MODEL_PREFIX + "nested_main.uvl";
-
     private static final String NESTED_SUB_COMPOSITION_ROOT = NESTED_MODEL_PREFIX  + "nested_sub.uvl";
 
-
     // Generated models
-
     private static final String GENERATED_DIRECTORY = TEST_MODEL_PREFIX + "generated";
 
+    
+
+    // -------------------------------------------  Boolean level models  -------------------------------------------
     @Test
     void testBooleanModel() throws Exception {
         testModelParsing(SIMPLE_BOOLEAN);
@@ -90,6 +90,8 @@ public class ParsingTests {
         testModelParsing(GROUP_CARDINALITY);
     }
 
+    // ------------------------------------------ Arithmetic level models --------------------------------------------
+
     @Test
     void testArithmethicSimpleConstraints() throws Exception {
         testModelParsing(ARITHMETIC_SIMPLE_CONSTRAINTS);
@@ -105,6 +107,8 @@ public class ParsingTests {
         testModelParsing(FEATURE_CARDINALITY);
     }
 
+    // ------------------------------------------- Type level models ------------------------------------------------
+
     @Test
     void testType() throws Exception {
         testModelParsing(TYPE);
@@ -115,6 +119,8 @@ public class ParsingTests {
         testModelParsing(STING_CONSTRAINTS);
     }
 
+    // ------------------------------------------- Language level models --------------------------------------------
+
     @Test
     void checkLanguageLevelInclude() throws Exception {
         testModelParsing(ALL);
@@ -124,23 +130,36 @@ public class ParsingTests {
 
     }
 
-    @Test
-    void checkComplexModels() throws Exception {
-        checkAllModelsInDirectory(COMPLEX_MODEL_PREFIX);
-    }
+    // ------------------------------------------- Comments ----------------------------------------------------------
 
     @Test
-    void checkGeneratedModels() throws Exception {
-        checkAllModelsInDirectory(GENERATED_DIRECTORY);
+    void checkComments() throws Exception {
+        testModelParsing(COMMENTS);
     }
+
+    // ------------------------------------------- Faulty models -----------------------------------------------------
 
     @Test
     void checkFaultyModels() throws Exception {
         testModelParsing(ILLEGAL_NAME, false);
         testModelParsing(MISSING_REFRENCE, false);
         testModelParsing(WRONG_INDENT, false);
-
     }
+
+    // ------------------------------------------- Complex models -----------------------------------------------------
+    @Test
+    void checkComplexModels() throws Exception {
+        checkAllModelsInDirectory(COMPLEX_MODEL_PREFIX);
+    }
+
+    // -------------------------------------------- Generated models -------------------------------------------------
+
+    @Test
+    void checkGeneratedModels() throws Exception {
+        checkAllModelsInDirectory(GENERATED_DIRECTORY);
+    }
+
+    // ------------------------------------------- Composition models ------------------------------------------------
 
     @Test
     void checkCompositionModels() throws  Exception {
@@ -155,7 +174,6 @@ public class ParsingTests {
 
     public static FeatureModel testModelParsing(String path, boolean expectSuccess) {
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        String content;
         FeatureModel result = null;
         boolean error = false;
         try {
