@@ -15,29 +15,27 @@ import de.vill.model.FeatureModel;
 
 public class ParsingTests {
 
-    private static final String TEST_MODEL_PREFIX = "src" + File.separator + "test" + File.separator + "resources"
-            + File.separator + "parsing" + File.separator;
+    // root directory
+    private static final String TEST_MODEL_PREFIX = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "parsing" + File.separator;
 
-    private static final String CONCEPTS_MODEL_PREFIX = TEST_MODEL_PREFIX + "concepts"
-            + File.separator;
-    private static final String FAULTY_MODEL_PREFIX = TEST_MODEL_PREFIX + File.separator + "faulty" + File.separator;
-    private static final String EXPLICIT_LANGUAGE_LEVELS_PREFIX = TEST_MODEL_PREFIX + File.separator + "language-levels"
-            + File.separator;
-    private static final String COMPLEX_MODEL_PREFIX = TEST_MODEL_PREFIX + File.separator + "complex" + File.separator;
-
+    // sub directories
+    private static final String CONCEPTS_MODEL_PREFIX = TEST_MODEL_PREFIX + "concepts" + File.separator;
+    private static final String FAULTY_MODEL_PREFIX = TEST_MODEL_PREFIX + "faulty" + File.separator;
+    private static final String EXPLICIT_LANGUAGE_LEVELS_PREFIX = TEST_MODEL_PREFIX + File.separator + "language-levels" + File.separator;
+    private static final String COMPLEX_MODEL_PREFIX = TEST_MODEL_PREFIX + "complex" + File.separator;
     private static final String COMPOSITION_MODEL_PREFIX = TEST_MODEL_PREFIX + "composition" + File.separator;
-
+    
+    // sub sub directories
     private static final String NESTED_MODEL_PREFIX = COMPOSITION_MODEL_PREFIX + "nested" + File.separator;
 
     // Boolean level models
     private static final String SIMPLE_BOOLEAN = CONCEPTS_MODEL_PREFIX + "boolean.uvl";
-    private static final String NAMESPACE = CONCEPTS_MODEL_PREFIX + "namespace.uvl"; //ODO is this model twice in here?
-    private static final String ATTRIBUTES = CONCEPTS_MODEL_PREFIX + "namespace.uvl";
+    private static final String NAMESPACE = CONCEPTS_MODEL_PREFIX + "namespace.uvl"; 
+    private static final String ATTRIBUTES = CONCEPTS_MODEL_PREFIX + "attributes.uvl";
     private static final String GROUP_CARDINALITY = CONCEPTS_MODEL_PREFIX + "cardinality.uvl";
 
     // Arithmetic level models
-    private static final String ARITHMETIC_SIMPLE_CONSTRAINTS = CONCEPTS_MODEL_PREFIX
-            + "arithmetic-simpleconstraints.uvl";
+    private static final String ARITHMETIC_SIMPLE_CONSTRAINTS = CONCEPTS_MODEL_PREFIX + "arithmetic-simpleconstraints.uvl";
     private static final String AGGREGATE = CONCEPTS_MODEL_PREFIX + "aggregate.uvl";
     private static final String FEATURE_CARDINALITY = CONCEPTS_MODEL_PREFIX + "feature-cardinality.uvl";
     private static final String MATHEMATICAL_EXPRESSION = TEST_MODEL_PREFIX + "expressions.uvl";
