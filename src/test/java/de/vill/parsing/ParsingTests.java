@@ -18,7 +18,7 @@ public class ParsingTests {
     private static final String TEST_MODEL_PREFIX = "src" + File.separator + "test" + File.separator + "resources"
             + File.separator + "parsing" + File.separator;
 
-    private static final String CONCEPTS_MODEL_PREFIX = TEST_MODEL_PREFIX + File.separator + "concepts"
+    private static final String CONCEPTS_MODEL_PREFIX = TEST_MODEL_PREFIX + "concepts"
             + File.separator;
     private static final String FAULTY_MODEL_PREFIX = TEST_MODEL_PREFIX + File.separator + "faulty" + File.separator;
     private static final String EXPLICIT_LANGUAGE_LEVELS_PREFIX = TEST_MODEL_PREFIX + File.separator + "language-levels"
@@ -40,10 +40,12 @@ public class ParsingTests {
             + "arithmetic-simpleconstraints.uvl";
     private static final String AGGREGATE = CONCEPTS_MODEL_PREFIX + "aggregate.uvl";
     private static final String FEATURE_CARDINALITY = CONCEPTS_MODEL_PREFIX + "feature-cardinality.uvl";
+    private static final String MATHEMATICAL_EXPRESSION = TEST_MODEL_PREFIX + "expressions.uvl";
 
     // Type level models
     private static final String TYPE = CONCEPTS_MODEL_PREFIX + "arithmetic-simpleconstraints.uvl";
-    private static final String STING_CONSTRAINTS = CONCEPTS_MODEL_PREFIX + "string-constraints.uvl";
+    private static final String STRING_CONSTRAINTS = CONCEPTS_MODEL_PREFIX + "string-constraints.uvl";
+    private static final String STRING_ATTRIBUTES = CONCEPTS_MODEL_PREFIX + "string-attributes.uvl";
 
     // Language level models
     private static final String ALL = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "all.uvl";
@@ -51,13 +53,16 @@ public class ParsingTests {
     private static final String BOOLEAN_LEVEL = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "boolean.uvl";
     private static final String TYPE_LEVEL = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "type.uvl";
 
-    // Comments
+    // Comments and Syntax
     private static final String COMMENTS = TEST_MODEL_PREFIX + "comments.uvl";
+    private static final String DASH_MODEL = TEST_MODEL_PREFIX + "dash.uvl";
 
     // Faulty UVL models
     private static final String ILLEGAL_NAME = FAULTY_MODEL_PREFIX + "illegalname.uvl";
     private static final String MISSING_REFRENCE = FAULTY_MODEL_PREFIX + "missingreference.uvl";
     private static final String WRONG_INDENT = FAULTY_MODEL_PREFIX + "wrongindent.uvl";
+    private static final String SAME_FEATURE_NAMES = FAULTY_MODEL_PREFIX + "same_feature_names.uvl";
+    private static final String WRONG_ATTRIBUTE_NAME = FAULTY_MODEL_PREFIX + "wrong_attribute_name.uvl";
 
     // Composition uvl models
     private static final String COMPOSITION_ROOT = COMPOSITION_MODEL_PREFIX +  "composition_root.uvl";
@@ -66,7 +71,6 @@ public class ParsingTests {
 
     // Generated models
     private static final String GENERATED_DIRECTORY = TEST_MODEL_PREFIX + "generated";
-
     
 
     // -------------------------------------------  Boolean level models  -------------------------------------------
@@ -107,6 +111,11 @@ public class ParsingTests {
         testModelParsing(FEATURE_CARDINALITY);
     }
 
+    @Test
+    void testMathematicalExpression() throws Exception {
+        testModelParsing(MATHEMATICAL_EXPRESSION);
+    }
+
     // ------------------------------------------- Type level models ------------------------------------------------
 
     @Test
@@ -116,7 +125,12 @@ public class ParsingTests {
 
     @Test
     void testStringConstraints() throws Exception {
-        testModelParsing(STING_CONSTRAINTS);
+        testModelParsing(STRING_CONSTRAINTS);
+    }
+
+    @Test
+    void testStringAttributes() throws Exception {
+        testModelParsing(STRING_ATTRIBUTES);
     }
 
     // ------------------------------------------- Language level models --------------------------------------------
@@ -130,11 +144,16 @@ public class ParsingTests {
 
     }
 
-    // ------------------------------------------- Comments ----------------------------------------------------------
+    // --------------------------------------- Comments and Syntax ----------------------------------------------------
 
     @Test
     void checkComments() throws Exception {
         testModelParsing(COMMENTS);
+    }
+
+    @Test
+    void testDashModel() throws Exception {
+        testModelParsing(DASH_MODEL);
     }
 
     // ------------------------------------------- Faulty models -----------------------------------------------------
@@ -144,6 +163,8 @@ public class ParsingTests {
         testModelParsing(ILLEGAL_NAME, false);
         testModelParsing(MISSING_REFRENCE, false);
         testModelParsing(WRONG_INDENT, false);
+        testModelParsing(SAME_FEATURE_NAMES, false);
+        testModelParsing(WRONG_ATTRIBUTE_NAME, false);
     }
 
     // ------------------------------------------- Complex models -----------------------------------------------------
@@ -167,6 +188,13 @@ public class ParsingTests {
         testModelParsing(NESTED_COMPOSITION_ROOT);
         testModelParsing(NESTED_SUB_COMPOSITION_ROOT);
     }
+
+
+
+
+
+
+    // ------------------------------------------- Helper methods ----------------------------------------------------
 
     private void testModelParsing(String path) {
         testModelParsing(path, true);
