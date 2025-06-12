@@ -54,6 +54,7 @@ public class ParsingTests {
     // Comments and Syntax
     private static final String COMMENTS = TEST_MODEL_PREFIX + "comments.uvl";
     private static final String DASH_MODEL = TEST_MODEL_PREFIX + "dash.uvl";
+    private static final String BRACKETS = TEST_MODEL_PREFIX + "brackets.uvl";
 
     // Faulty UVL models
     private static final String ILLEGAL_NAME = FAULTY_MODEL_PREFIX + "illegalname.uvl";
@@ -152,6 +153,11 @@ public class ParsingTests {
     @Test
     void testDashModel() throws Exception {
         testModelParsing(DASH_MODEL);
+    }
+
+    @Test
+    void testBracketsModel() throws Exception {
+        testModelParsing(BRACKETS);
     }
 
     // ------------------------------------------- Faulty models -----------------------------------------------------
