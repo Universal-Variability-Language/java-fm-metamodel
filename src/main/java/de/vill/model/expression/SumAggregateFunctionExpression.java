@@ -6,8 +6,27 @@ import de.vill.model.GlobalAttribute;
 import de.vill.util.Constants;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class SumAggregateFunctionExpression extends AggregateFunctionExpression {
+
+    /**
+     * Evaluates the sum of the values of the selected features.
+     *
+     * @param selectedFeatures The set of selected features.
+     * @return The sum of the values of the selected features.
+     */
+    @Override
+    public double evaluate(Set<Feature> selectedFeatures) {
+        double sum = 0;
+        for (Feature feature : selectedFeatures) {
+            Attribute<?> attribute = feature.getAttributes().get(getAttribute().getIdentifier());
+            if (attribute != null && attribute.getValue() instanceof Number) {
+                sum += ((Number) attribute.getValue()).doubleValue();
+            }
+        }
+        return sum;
+    }
     public SumAggregateFunctionExpression(GlobalAttribute attribute) {
         super(attribute);
     }

@@ -1,7 +1,5 @@
 package de.vill.model.expression;
 
-import com.google.errorprone.annotations.Var;
-import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
