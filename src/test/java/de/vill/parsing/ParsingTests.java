@@ -16,45 +16,48 @@ import de.vill.model.FeatureModel;
 public class ParsingTests {
 
     // root directory
-    private static final String TEST_MODEL_PREFIX = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "parsing" + File.separator;
+    private static final String TEST_MODEL_PREFIX = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "test_resources" + File.separator + "parsing" + File.separator;
 
     // sub directories
-    private static final String CONCEPTS_MODEL_PREFIX = TEST_MODEL_PREFIX + "concepts" + File.separator;
+    private static final String ARITHMETIC_MODEL_PREFIX = TEST_MODEL_PREFIX + "arithmetic_level" + File.separator;
+    private static final String BOOLEAN_MODEL_PREFIX = TEST_MODEL_PREFIX + "boolean_level" + File.separator;
+    private static final String TYPE_MODEL_PREFIX = TEST_MODEL_PREFIX + "type_level" + File.separator;
+    private static final String LANGUAGE_MODEL_PREFIX = TEST_MODEL_PREFIX  + "language_level" + File.separator;
+    private static final String SYNTAX_MODEL_PREFIX = TEST_MODEL_PREFIX + "syntax" + File.separator;
     private static final String FAULTY_MODEL_PREFIX = TEST_MODEL_PREFIX + "faulty" + File.separator;
-    private static final String EXPLICIT_LANGUAGE_LEVELS_PREFIX = TEST_MODEL_PREFIX + File.separator + "language-levels" + File.separator;
-    private static final String COMPLEX_MODEL_PREFIX = TEST_MODEL_PREFIX + "complex" + File.separator;
     private static final String COMPOSITION_MODEL_PREFIX = TEST_MODEL_PREFIX + "composition" + File.separator;
+    private static final String COMPLEX_MODEL_PREFIX = TEST_MODEL_PREFIX + "complex" + File.separator;
     
     // sub sub directories
     private static final String NESTED_MODEL_PREFIX = COMPOSITION_MODEL_PREFIX + "nested" + File.separator;
+    private static final String AGGREGATE_MODEL_PREFIX = ARITHMETIC_MODEL_PREFIX + "aggregate_functions" + File.separator;
 
     // Boolean level models
-    private static final String SIMPLE_BOOLEAN = CONCEPTS_MODEL_PREFIX + "boolean.uvl";
-    private static final String NAMESPACE = CONCEPTS_MODEL_PREFIX + "namespace.uvl"; 
-    private static final String ATTRIBUTES = CONCEPTS_MODEL_PREFIX + "attributes.uvl";
-    private static final String GROUP_CARDINALITY = CONCEPTS_MODEL_PREFIX + "cardinality.uvl";
+    private static final String SIMPLE_BOOLEAN = BOOLEAN_MODEL_PREFIX + "boolean.uvl";
+    private static final String NAMESPACE = BOOLEAN_MODEL_PREFIX + "namespace.uvl"; 
+    private static final String ATTRIBUTES = BOOLEAN_MODEL_PREFIX + "attributes.uvl";
+    private static final String GROUP_CARDINALITY = BOOLEAN_MODEL_PREFIX + "cardinality.uvl";
 
     // Arithmetic level models
-    private static final String ARITHMETIC_SIMPLE_CONSTRAINTS = CONCEPTS_MODEL_PREFIX + "arithmetic-simpleconstraints.uvl";
-    private static final String AGGREGATE = CONCEPTS_MODEL_PREFIX + "aggregate.uvl";
-    private static final String FEATURE_CARDINALITY = CONCEPTS_MODEL_PREFIX + "feature-cardinality.uvl";
-    private static final String MATHEMATICAL_EXPRESSION = TEST_MODEL_PREFIX + "expressions.uvl";
+    private static final String ARITHMETIC_SIMPLE_CONSTRAINTS = ARITHMETIC_MODEL_PREFIX + "arithmetic-simpleconstraints.uvl";
+    private static final String AGGREGATE = AGGREGATE_MODEL_PREFIX + "aggregate.uvl";
+    private static final String FEATURE_CARDINALITY = ARITHMETIC_MODEL_PREFIX + "feature-cardinality.uvl";
+    private static final String MATHEMATICAL_EXPRESSION = ARITHMETIC_MODEL_PREFIX + "expressions.uvl";
 
     // Type level models
-    private static final String TYPE = CONCEPTS_MODEL_PREFIX + "arithmetic-simpleconstraints.uvl";
-    private static final String STRING_CONSTRAINTS = CONCEPTS_MODEL_PREFIX + "string-constraints.uvl";
-    private static final String STRING_ATTRIBUTES = CONCEPTS_MODEL_PREFIX + "string-attributes.uvl";
+    private static final String STRING_CONSTRAINTS = TYPE_MODEL_PREFIX + "string-constraints.uvl";
+    private static final String STRING_ATTRIBUTES = TYPE_MODEL_PREFIX + "string-attributes.uvl";
 
     // Language level models
-    private static final String ALL = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "all.uvl";
-    private static final String ARITHMETIC = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "arithmetic.uvl";
-    private static final String BOOLEAN_LEVEL = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "boolean.uvl";
-    private static final String TYPE_LEVEL = EXPLICIT_LANGUAGE_LEVELS_PREFIX + "type.uvl";
+    private static final String ALL = LANGUAGE_MODEL_PREFIX + "all.uvl";
+    private static final String ARITHMETIC = LANGUAGE_MODEL_PREFIX + "arithmetic.uvl";
+    private static final String BOOLEAN_LEVEL = LANGUAGE_MODEL_PREFIX + "boolean.uvl";
+    private static final String TYPE_LEVEL = LANGUAGE_MODEL_PREFIX + "type.uvl";
 
     // Comments and Syntax
-    private static final String COMMENTS = TEST_MODEL_PREFIX + "comments.uvl";
-    private static final String DASH_MODEL = TEST_MODEL_PREFIX + "dash.uvl";
-    private static final String BRACKETS = TEST_MODEL_PREFIX + "brackets.uvl";
+    private static final String COMMENTS = SYNTAX_MODEL_PREFIX + "comments.uvl";
+    private static final String DASH_MODEL = SYNTAX_MODEL_PREFIX + "dash.uvl";
+    private static final String BRACKETS = SYNTAX_MODEL_PREFIX + "brackets.uvl";
 
     // Faulty UVL models
     private static final String ILLEGAL_NAME = FAULTY_MODEL_PREFIX + "illegalname.uvl";
@@ -70,6 +73,7 @@ public class ParsingTests {
 
     // Generated models
     private static final String GENERATED_DIRECTORY = TEST_MODEL_PREFIX + "generated";
+
     
 
     // -------------------------------------------  Boolean level models  -------------------------------------------
@@ -116,11 +120,6 @@ public class ParsingTests {
     }
 
     // ------------------------------------------- Type level models ------------------------------------------------
-
-    @Test
-    void testType() throws Exception {
-        testModelParsing(TYPE);
-    }
 
     @Test
     void testStringConstraints() throws Exception {
@@ -192,9 +191,6 @@ public class ParsingTests {
         testModelParsing(NESTED_COMPOSITION_ROOT);
         testModelParsing(NESTED_SUB_COMPOSITION_ROOT);
     }
-
-
-
 
 
 
