@@ -215,7 +215,11 @@ public class UVLListener extends UVLJavaBaseListener {
         if (feature == null) {
             errorList.add(new ParseError("Feature " + featureReference + " is imported, but there is import with that name."));
             return;
+        } else if (importedFeatures.containsKey(featureReference)) {
+            errorList.add(new ParseError("Duplicate feature name: " + featureReference + " (line: " + ctx.getStart().getLine() + ")"));
+            return;
         }
+        importedFeatures.put(featureReference, feature);
         featureStack.push(feature);
         Group parentGroup = groupStack.peek();
         fmBuilder.addFeature(feature, parentGroup);
@@ -475,7 +479,6 @@ public class UVLListener extends UVLJavaBaseListener {
         Expression expression = new StringExpression(ctx.STRING().getText().replace("'", ""));
         expressionStack.push(expression);
         if (expressionStack.peek() instanceof LiteralExpression) {
-            LiteralExpression literalExpression = (LiteralExpression) expressionStack.peek();
             fmBuilder.addLanguageLevel(LanguageLevel.TYPE_LEVEL);
             fmBuilder.addLanguageLevel(LanguageLevel.STRING_CONSTRAINTS);
         }
