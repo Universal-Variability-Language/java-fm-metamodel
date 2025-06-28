@@ -160,3 +160,9 @@ buildNumber.properties
 .classpath
 
 # End of https://www.toptal.com/developers/gitignore/api/maven,intellij,java
+
+# local changes
+/src/main/java/uvl
+/.vscode
+/src/main/java/de/vill/main/modified_files/*
+!/src/main/java/de/vill/main/modified_files/.gitkeep
