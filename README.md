@@ -11,15 +11,58 @@ This is a small default library used to manipulate UVL metamodels in JAVA. It us
 - convert between different language levels
 - direct access to feature model components like features, groups and attributes
 
-## 💡 Usages/Examples
+## ⚙️ Setup
 
-To use the Java-fm-metamodel it needs to be built with [Maven](https://maven.apache.org/):
+To clone this repository **with all submodules**, use:
+
+```bash
+git clone --recurse-submodules https://github.com/Universal-Variability-Language/java-fm-metamodel.git
+```
+
+If you have already cloned the repository **without** submodules, you can initialize and update them afterwards with:
+
+```bash
+git submodule update --init --recursive
+```
+
+This ensures that all required submodules (e.g., test resources) are available and the project will build and test correctly
+
+## 💡 Usage
+
+### 📦 Getting Started
+
+First, **clone this repository** to your local machine as explained in `⚙️ Setup`.
+To use the Java-fm-metamodel, make sure you are in the project directory before running any further commands. Build the project with [Maven](https://maven.apache.org/):
 
 ```bash
 mvn clean compile
 ```
 
-More usage examples that also show how to use the acquired UVLModel object can be found in [src/main/java/de/vill/main/Example.java](https://github.com/Universal-Variability-Language/java-fm-metamodel/blob/main/src/main/java/de/vill/main/Example.java)
+This will compile all sources and ensure all dependencies (including submodules) are available.  
+Now you can execute code for manipulating UVL feature models as shown in the `Examples` below
+
+### 🧩 Using as a Maven Dependency
+
+You can also use the Java-fm-metamodel as a dependency in your own Maven project.  
+Add the following to your `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>io.github.universal-variability-language</groupId>
+  <artifactId>fm-metamodel</artifactId>
+  <version>1.1</version>
+</dependency>
+```
+
+Make sure that the version matches the latest release.
+
+---
+
+Now you can use the classes from this library in your own Java code!
+
+## Examples
+
+Some usage examples that show how to use the acquired UVLModel object can be found in [src/main/java/de/vill/main/Example.java](https://github.com/Universal-Variability-Language/java-fm-metamodel/blob/main/src/main/java/de/vill/main/Example.java)
 
 ### Parsing
 
@@ -66,7 +109,7 @@ Files.write(filePath, uvlModel.getBytes());
 A model can be printed with the `toString()` method of the `de.vill.model.FeatureModel` object.
 The following snippet shows a minimal example to read and write UVL models using the jar.
 
-## ⚙️ Running Tests
+## 🧪 Running Tests
 
 The Java-fm-metamodel can be tested by running:
 
