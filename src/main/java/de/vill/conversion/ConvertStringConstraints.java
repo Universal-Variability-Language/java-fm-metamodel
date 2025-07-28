@@ -8,7 +8,6 @@ import de.vill.model.LanguageLevel;
 import de.vill.model.constraint.Constraint;
 import de.vill.model.constraint.EqualEquationConstraint;
 import de.vill.model.constraint.ExpressionConstraint;
-import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LengthAggregateFunctionExpression;
 import de.vill.model.expression.LiteralExpression;
@@ -23,7 +22,6 @@ import java.util.Set;
 
 public class ConvertStringConstraints implements IConversionStrategy {
     private final Map<String, Map<String, Attribute<?>>> featuresToBeUpdated = new HashMap<>();
-    private FeatureModel rootFeatureModel;
 
     @Override
     public Set<LanguageLevel> getLevelsToBeRemoved() {
@@ -35,9 +33,10 @@ public class ConvertStringConstraints implements IConversionStrategy {
         return new HashSet<>(Collections.singletonList(LanguageLevel.TYPE_LEVEL));
     }
 
+
+    // TODO is not matching with the Interface definition, should be fixed
     @Override
     public void convertFeatureModel(final FeatureModel rootFeatureModel, final FeatureModel featureModel) {
-        this.rootFeatureModel = rootFeatureModel;
         rootFeatureModel.getOwnConstraints().forEach(this::convertStringAggregateFunctionInExpressionConstraint);
         rootFeatureModel.getOwnConstraints().removeIf(x -> containsStringEqualityExpression(x));
         this.traverseFeatures(rootFeatureModel.getRootFeature());

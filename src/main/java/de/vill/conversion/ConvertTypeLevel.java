@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ConvertTypeLevel implements IConversionStrategy {
-    FeatureModel rootFeatureModel;
+    private FeatureModel rootFeatureModel;
 
     @Override
     public Set<LanguageLevel> getLevelsToBeRemoved() {
