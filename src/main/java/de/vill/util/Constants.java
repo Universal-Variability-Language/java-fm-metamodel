@@ -2,7 +2,9 @@ package de.vill.util;
 
 public class Constants {
     // Literal Types
-    public static final String NUMBER = "number";
+    public static final String INTEGER = "integer";
+    public static final String FLOAT = "float";
+    public static final String ATTRIBUTE_LIST = "attribute_list";
     public static final String STRING = "string";
     public static final String BOOLEAN = "boolean";
     public static final String TRUE = "true";

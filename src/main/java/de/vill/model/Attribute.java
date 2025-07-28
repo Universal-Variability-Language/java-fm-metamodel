@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.management.AttributeList;
+
 import de.vill.model.building.VariableReference;
 import de.vill.model.constraint.Constraint;
 import de.vill.util.Constants;
@@ -65,13 +67,17 @@ public class Attribute<T> implements VariableReference {
      * @return Name of the attribute (never null)
      */
     public String getType() {
-        if (value instanceof Number) {
-            return Constants.NUMBER;
+        if (value instanceof Integer) {
+            return Constants.INTEGER; 
         } else if (value instanceof Boolean) {
             return Constants.BOOLEAN;
         } else if (value instanceof String) {
-            return Constants.STRING;
-        } else {
+            return Constants.STRING;   
+        } else if (value instanceof AttributeList) {
+            return Constants.ATTRIBUTE_LIST;
+        } else if (value instanceof Float) {
+            return Constants.FLOAT;
+        }else {
             return Constants.UNDEF;
         }
     }
