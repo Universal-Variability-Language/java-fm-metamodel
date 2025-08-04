@@ -67,18 +67,16 @@ public class Attribute<T> implements VariableReference {
      * @return Name of the attribute (never null)
      */
     public String getType() {
-        if (value instanceof Integer) {
-            return Constants.INTEGER; 
-        } else if (value instanceof Boolean) {
+        if (value instanceof Boolean) {
             return Constants.BOOLEAN;
         } else if (value instanceof String) {
             return Constants.STRING;   
         } else if (value instanceof AttributeList) {
             return Constants.ATTRIBUTE_LIST;
-        } else if (value instanceof Float) {
-            return Constants.FLOAT;
-        }else {
-            return Constants.UNDEF;
+        } else if (value instanceof Number) {
+            return Constants.NUMBER;
+        } else {
+            return Constants.UNDEF; 
         }
     }
 

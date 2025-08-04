@@ -3,6 +3,7 @@ package de.vill.model.expression;
 import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.GlobalAttribute;
+import de.vill.util.Constants;
 
 
 import java.util.Arrays;
@@ -40,6 +41,11 @@ public class MinAggregateFunctionExpression extends AggregateFunctionExpression 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return super.toString(withSubmodels, "min", currentAlias);
+    }
+
+    @Override
+    public String getReturnType() {
+        return Constants.NUMBER;
     }
 
     @Override

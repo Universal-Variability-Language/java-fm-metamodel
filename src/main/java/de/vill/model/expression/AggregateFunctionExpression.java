@@ -5,7 +5,6 @@ import static de.vill.util.Util.addNecessaryQuotes;
 import de.vill.model.Feature;
 import de.vill.model.GlobalAttribute;
 import de.vill.model.building.VariableReference;
-import de.vill.util.Constants;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -30,11 +29,7 @@ public abstract class AggregateFunctionExpression extends Expression {
         return toString(withSubmodels, "aggregateFunction", currentAlias);
     }
 
-    @Override
-    public String getReturnType() {
-        // implement in children
-        return Constants.NUMBER;
-    }
+    abstract public String getReturnType();
 
     @Override
     public List<Expression> getExpressionSubParts() {
