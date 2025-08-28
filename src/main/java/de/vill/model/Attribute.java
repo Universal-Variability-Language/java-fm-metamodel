@@ -76,7 +76,7 @@ public class Attribute<T> implements VariableReference {
         } else if (value instanceof Number) {
             return Constants.NUMBER;
         } else {
-            return Constants.UNDEF; 
+            return Constants.UNDEF;
         }
     }
 
