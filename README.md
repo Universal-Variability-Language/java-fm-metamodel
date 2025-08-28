@@ -7,7 +7,7 @@ This is a small default library used to manipulate UVL metamodels in JAVA. It us
 
 ## ✨ Key Features
 
-- full support of UVL-Syntax (nampaces, feature hircharcies and constraints)
+- full support of UVL-Syntax (namespaces, feature hierarchies and constraints)
 - convert between different language levels
 - direct access to feature model components like features, groups and attributes
 
@@ -80,7 +80,7 @@ FeatureModel featureModel = uvlModelFactory.parse(content);
 
 The class `de.vill.main.UVLModelFactory` exposes the static method `parse(String)` which will return an instance of a `de.vill.model.FeatureModel` class. If there is something wrong, a `de.vill.exception.ParseError` is thrown. The parser tries to parse the whole model, even if there are errors. If there are multiple errors, a `de.vill.exception.ParseErrorList` is returned which contains all errors that occurred.
 
-### Modifing
+### Modifying
 
 ```Java
 Feature feature = featureModel.getFeatureMap().get(featureName);
@@ -107,7 +107,6 @@ Files.write(filePath, uvlModel.getBytes());
 ```
 
 A model can be printed with the `toString()` method of the `de.vill.model.FeatureModel` object.
-The following snippet shows a minimal example to read and write UVL models using the jar.
 
 ## 🧪 Running Tests
 
@@ -154,3 +153,4 @@ Other parsers:
 Usage of UVL:
 
 - https://github.com/FeatureIDE/FeatureIDE _Feature modelling tool_
+- https://github.com/SECPS/TraVarT _Transformation Tool for Variability Artifacts_
