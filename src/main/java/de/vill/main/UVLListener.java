@@ -5,7 +5,7 @@ import de.vill.model.building.FeatureModelBuilder;
 import de.vill.model.building.ParsingUtilities;
 import de.vill.model.building.VariableReference;
 import uvl.UVLJavaParser;
-import uvl.UVLJavaBaseListener;
+import uvl.UVLJavaParserBaseListener;
 
 import de.vill.exception.ParseError;
 import de.vill.exception.ParseErrorList;
@@ -48,7 +48,7 @@ import java.util.Set;
 import java.util.Stack;
 import org.antlr.v4.runtime.Token;
 
-public class UVLListener extends UVLJavaBaseListener {
+public class UVLListener extends UVLJavaParserBaseListener {
     public FeatureModelBuilder fmBuilder = new FeatureModelBuilder();
     private Set<LanguageLevel> importedLanguageLevels = new HashSet<>(Arrays.asList(LanguageLevel.BOOLEAN_LEVEL));
     private Stack<Feature> featureStack = new Stack<>();
