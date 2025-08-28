@@ -1,6 +1,5 @@
 package de.vill.main;
 
-import de.vill.config.Configuration;
 import de.vill.model.Attribute;
 import de.vill.model.Feature;
 import de.vill.model.FeatureModel;
@@ -16,25 +15,31 @@ import java.util.Map;
 
 public class Example {
     public static void main(String[] args) throws IOException {
-        FeatureModel featureModel = loadUVLFeatureModelFromFile("test.uvl");
+        // Load a UVL feature model from a file
+        FeatureModel featureModel = loadUVLFeatureModelFromFile("src/test/resources/test_resources/parsing/complex/bike.uvl");
+        System.out.println("Loaded feature model from file:" + featureModel.toString());
 
-        //traverse all features depth first search
+        // Traverse all features in the model using depth-first search
+        System.out.println("Traversing all features:");
         traverseAllFeatures(featureModel.getRootFeature());
 
-        //get constraints of feature model from constraints section (no constraints from submodels or attribtues)
-        List<Constraint> ownConstraint = featureModel.getOwnConstraints();
+        // Retrieve constraints defined directly in the feature model (excluding submodels and attributes)
+        List<Constraint> ownConstraints = featureModel.getOwnConstraints();
+        System.out.println("Number of own constraints: " + ownConstraints.size());
 
-        //traverse a constraint depth first search
-        if (ownConstraint.size() > 0) {
-            traverseConstraint(ownConstraint.get(0));
+        // If there are constraints, traverse the first one
+        if (!ownConstraints.isEmpty()) {
+            System.out.println("Traversing first own constraint:");
+            traverseConstraint(ownConstraints.get(0));
         }
 
-        //get all constraints of feature model and submodels and attributes
-        List<Constraint> allConstraint = featureModel.getConstraints();
+        // Retrieve all constraints, including those from submodels and attributes
+        List<Constraint> allConstraints = featureModel.getConstraints();
+        System.out.println("Total constraints (including submodels/attributes): " + allConstraints.size());
 
-        //get attribute from feature
-        String featureName = "featureName";
-        String attributeName = "attributeName";
+        // Access a specific attribute of a feature
+        String featureName = "Brake";
+        String attributeName = "Weight";
         Feature feature = featureModel.getFeatureMap().get(featureName);
         if (feature != null) {
             Attribute<?> attribute = feature.getAttributes().get(attributeName);
@@ -48,83 +53,80 @@ public class Example {
             System.err.println("Feature " + featureName + " not found!");
         }
 
-        //make feature abstract
-        featureName = "featureName";
+        // Make a feature abstract by adding an "abstract" attribute
+        featureName = "Inch";
         feature = featureModel.getFeatureMap().get(featureName);
         if (feature != null) {
             feature.getAttributes().put("abstract", new Attribute<>("abstract", true, feature));
+            System.out.println("Feature " + featureName + " set to abstract.");
         } else {
             System.err.println("Feature " + featureName + " not found!");
         }
 
-        //change newline and tabulator symbol for printing
-        Configuration.setTabulatorSymbol("        ");
-        Configuration.setNewlineSymbol("\n");
-
-        //safe a single uvl model (this ignores any submodels)
+        // Save the feature model as a single UVL file (ignoring submodels)
         String uvlModel = featureModel.toString();
-        Path filePath = Paths.get("test_singleModel.uvl");
-        Files.write(filePath, uvlModel.getBytes());
+        Path filePath = Paths.get("src/main/java/de/vill/main/modified_files/test_singleModel.uvl");
+        try {
+            Files.write(filePath, uvlModel.getBytes());
+        } catch (IOException e) {
+            System.err.println("Error saving single UVL model: " + e.getMessage());
+            return;
+        }
+        System.out.println("Saved single UVL model to test_singleModel.uvl");
 
-        //safe a decomposed uvl model with all its submodels to individual files
+        // Save a decomposed UVL model with all submodels to individual files
         Map<String, String> modelList = featureModel.decomposedModelToString();
         for (Map.Entry<String, String> uvlSubModel : modelList.entrySet()) {
-            //safe submodel in sub directory directory with namespace as name
-            Files.createDirectories(Paths.get("./subModels/"));
-            filePath = Paths.get("./subModels/" + uvlSubModel.getKey() + ".uvl");
+            Files.createDirectories(Paths.get("./src/main/java/de/vill/main/modified_files/subModels/"));
+            filePath = Paths.get("./src/main/java/de/vill/main/modified_files/subModels/" + uvlSubModel.getKey() + ".uvl");
             Files.write(filePath, uvlSubModel.getValue().getBytes());
+            System.out.println("Saved submodel: " + uvlSubModel.getKey());
         }
 
-        //create a single uvl representation from a decomposed model and safe it to a single file
+        // Compose a single UVL representation from a decomposed model and save it
         uvlModel = featureModel.composedModelToString();
-        filePath = Paths.get("test_composedModel.uvl");
+        filePath = Paths.get("src/main/java/de/vill/main/modified_files/test_composedModel.uvl");
         Files.write(filePath, uvlModel.getBytes());
+        System.out.println("Saved composed UVL model to test_composedModel.uvl");
     }
 
+    // TODO: Add conversion example methods for converting between different formats (e.g., JSON, XML, etc.)
+
+    // ----------------------------------- Utility Methods -----------------------------------
+
     /**
-     * Parse uvl model from file (if decomposed all submodels must be in the current working directory)
-     *
-     * @param path path to the file with uvl model
-     * @return the uvl model described in the file
-     * @throws IOException for io exceptions while loading the file content
+     * Loads a UVL feature model from a single file.
+     * If the model is decomposed, all submodels must be present in the current working directory.
+     * @param path The path to the UVL model file.
+     * @return The loaded feature model.
+     * @throws IOException If an I/O error occurs while reading the file.
      */
     private static FeatureModel loadUVLFeatureModelFromFile(String path) throws IOException {
-        Path filePath = Paths.get(path);
-        String content = new String(Files.readAllBytes(filePath));
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        FeatureModel featureModel = uvlModelFactory.parse(content);
+        FeatureModel featureModel = uvlModelFactory.parse(Paths.get(path));
         return featureModel;
     }
 
     /**
-     * Parse a decomposed uvl model where all submodels are in a directory and named according to their namespaces.
-     *
-     * @param rootModelPath Path to the uvl root model file
-     * @param subModelDir   Path to the directory with all submodels
-     * @return the uvl model described in the file
-     * @throws IOException for io exceptions while loading the file content
+     * Traverses a constraint and all its sub-parts using depth-first search.
+     * @param constraint The constraint to traverse.
      */
-    private static FeatureModel loadUVLFeatureModelFromDirectory(String rootModelPath, String subModelDir) throws IOException {
-        Path filePath = Paths.get(rootModelPath);
-        String content = new String(Files.readAllBytes(filePath));
-        UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        FeatureModel featureModel = uvlModelFactory.parse(content, subModelDir);
-        return featureModel;
-    }
-
-
     private static void traverseConstraint(Constraint constraint) {
+        System.out.println("\tVisiting constraint: " + constraint);
         for (Constraint subConstraint : constraint.getConstraintSubParts()) {
-            //... do something with constraint
             traverseConstraint(subConstraint);
         }
     }
 
+    /**
+     * Traverses all features in the feature tree using depth-first search.
+     * @param feature The root feature to start traversal from.
+     */
     public static void traverseAllFeatures(Feature feature) {
+        System.out.println("\tVisiting feature: " + feature.getFeatureName());
         for (Group group : feature.getChildren()) {
             for (Feature childFeature : group.getFeatures()) {
-                //... do something with feature
-                //or stop at submodel with if(!childfeature.isSubmodelroot())
+                // Optionally, skip submodel roots: if (!childFeature.isSubmodelroot()) { ... }
                 traverseAllFeatures(childFeature);
             }
         }

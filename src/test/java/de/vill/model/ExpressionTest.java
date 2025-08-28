@@ -18,7 +18,7 @@ class ExpressionTest {
     void testMathExpressionsModel() {
         // get the feature model and parse it using the UVLModelFactory
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        FeatureModel featureModel = uvlModelFactory.parse(Paths.get("src/test/resources/parsing/expressions.uvl"));
+        FeatureModel featureModel = uvlModelFactory.parse(Paths.get("src/test/resources/test_resources/parsing/arithmetic_level/expressions.uvl"));
         // select features for evaluation
         Map<String, Feature> featureMap = featureModel.getFeatureMap();
         Set<Feature> selectedFeatures = Set.of(
@@ -43,7 +43,7 @@ class ExpressionTest {
     void testAggregateFunctions() {
         // get the feature model and parse it using the UVLModelFactory
         UVLModelFactory uvlModelFactory = new UVLModelFactory();
-        FeatureModel featureModel = uvlModelFactory.parse(Paths.get("src/test/resources/parsing/aggregateFunctions.uvl"));
+        FeatureModel featureModel = uvlModelFactory.parse(Paths.get("src/test/resources/test_resources/parsing/arithmetic_level/aggregate_functions/aggregateFunctions.uvl"));
         // select features for evaluation
         Map<String, Feature> featureMap = featureModel.getFeatureMap();
         Set<Feature> selectedFeatures = Set.of(

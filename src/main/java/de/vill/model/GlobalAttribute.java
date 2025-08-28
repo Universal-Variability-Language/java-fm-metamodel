@@ -3,9 +3,7 @@ package de.vill.model;
 import de.vill.model.building.VariableReference;
 import de.vill.util.Constants;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -14,10 +12,10 @@ import java.util.Set;
 public class GlobalAttribute implements VariableReference {
 
     public enum AttributeType {
+        BOOLEAN(Constants.BOOLEAN),
         STRING(Constants.STRING),
-        NUMBER(Constants.NUMBER),
-        BOOLEAN(Constants.BOOLEAN);
-
+        ATTRIBUTE_LIST(Constants.ATTRIBUTE_LIST),
+        NUMBER(Constants.NUMBER);
         private final String name;
 
         AttributeType(String name) {

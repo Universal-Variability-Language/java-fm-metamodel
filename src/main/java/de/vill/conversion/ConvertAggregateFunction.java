@@ -56,7 +56,6 @@ public class ConvertAggregateFunction implements IConversionStrategy {
 
     private void replaceAggregateFunctionInExpression(Expression parentExpression, AggregateFunctionExpression aggregateFunctionExpression) {
         Feature rootFeature;
-        Expression aggregateFunctionReplacement;
         if (aggregateFunctionExpression.getRootFeature() == null) {
             rootFeature = rootFeatureModel.getRootFeature();
         } else {
@@ -74,7 +73,6 @@ public class ConvertAggregateFunction implements IConversionStrategy {
 
     private void replaceAggregateFunctionInExpressionConstraint(ExpressionConstraint parentExpression, AggregateFunctionExpression aggregateFunctionExpression) {
         Feature rootFeature;
-        Expression aggregateFunctionReplacement;
         if (aggregateFunctionExpression.getRootFeature() == null) {
             rootFeature = rootFeatureModel.getRootFeature();
         } else {
@@ -155,7 +153,6 @@ public class ConvertAggregateFunction implements IConversionStrategy {
             }
         }
         if (attributeConstraintList != null && attributeConstraintList.getValue() instanceof List<?>) {
-            List<Object> newConstraintList = new LinkedList<>();
             for (Object constraint : (List<?>) attributeConstraintList.getValue()) {
                 if (constraint instanceof Constraint) {
                     searchAggregateFunctionInConstraint((Constraint) constraint);
