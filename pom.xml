@@ -76,7 +76,7 @@
             <artifactId>antlr4-runtime</artifactId>
             <version>${antlr4.version}</version>
         </dependency>
-        <dependency><!-- TODO: Test when new version online, isn't working at the moment-->
+        <dependency>
             <groupId>io.github.universal-variability-language</groupId>
             <artifactId>uvl-parser</artifactId>
             <version>0.3</version>
