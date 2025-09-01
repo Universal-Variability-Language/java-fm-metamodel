@@ -9,18 +9,18 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Import GPG key
-      uses: crazy-max/ghaction-import-gpg@v1
-      env:
-         GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-         PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-    
-    - name: Cache Maven packages
-      uses: actions/cache@v2
+      uses: crazy-max/ghaction-import-gpg@v6
       with:
-        path: ~/.m2
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 

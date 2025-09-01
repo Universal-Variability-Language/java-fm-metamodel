@@ -38,7 +38,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Function;
 
 public class UVLModelFactory {
 
@@ -128,7 +127,6 @@ public class UVLModelFactory {
         UVLListener uvlListener = new UVLListener();
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(uvlListener, UVLJavaParser.constraintLine());
-        Constraint constraint = null;
 
         return uvlListener.getConstraint();
     }

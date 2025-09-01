@@ -1,41 +1,28 @@
 package de.vill.model.expression;
 
+import de.vill.util.Constants;
+import static de.vill.util.Util.addNecessaryQuotes;
+
 import de.vill.model.Feature;
 import de.vill.model.GlobalAttribute;
 import de.vill.model.building.VariableReference;
-import de.vill.util.Constants;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import static de.vill.util.Util.addNecessaryQuotes;
-
-public class AggregateFunctionExpression extends Expression {
+public abstract class AggregateFunctionExpression extends Expression {
 
     protected GlobalAttribute attribute;
     protected Feature rootFeature;
-
-    public AggregateFunctionExpression(GlobalAttribute attribute) {
-        this.attribute = attribute;
-    }
-
-    public AggregateFunctionExpression(GlobalAttribute attribute, Feature rootFeature) {
-        this(attribute);
-        this.rootFeature = rootFeature;
-    }
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return toString(withSubmodels, "aggregateFunction", currentAlias);
     }
 
-    @Override
-    public String getReturnType() {
-        // implement in children
-        return Constants.NUMBER;
-    }
+    abstract public String getReturnType();
 
     @Override
     public List<Expression> getExpressionSubParts() {
@@ -58,10 +45,7 @@ public class AggregateFunctionExpression extends Expression {
 
 
     @Override
-    public double evaluate(Set<Feature> selectedFeatures) {
-        // TODO not necessary for now
-        return 0;
-    }
+    abstract public double evaluate(Set<Feature> selectedFeatures);
 
     protected String toString(boolean withSubmodels, String functionName, String currentAlias) {
         final StringBuilder result = new StringBuilder();

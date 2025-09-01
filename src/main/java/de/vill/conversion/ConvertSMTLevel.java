@@ -3,8 +3,6 @@ package de.vill.conversion;
 import com.google.common.collect.Sets;
 import de.vill.model.*;
 import de.vill.model.constraint.*;
-import de.vill.model.expression.AggregateFunctionExpression;
-import de.vill.model.expression.BinaryExpression;
 import de.vill.model.expression.Expression;
 import de.vill.model.expression.LiteralExpression;
 
