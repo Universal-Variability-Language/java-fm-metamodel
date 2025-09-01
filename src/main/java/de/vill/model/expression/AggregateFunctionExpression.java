@@ -11,12 +11,21 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static de.vill.util.Util.addNecessaryQuotes;
 public abstract class AggregateFunctionExpression extends Expression {
 
     protected GlobalAttribute attribute;
     protected Feature rootFeature;
 
+
+    public AggregateFunctionExpression(GlobalAttribute attribute) {
+        this.attribute = attribute;
+    }
+
+    public AggregateFunctionExpression(GlobalAttribute attribute, Feature rootFeature) {
+        this(attribute);
+        this.rootFeature = rootFeature;
+    }
+    
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return toString(withSubmodels, "aggregateFunction", currentAlias);
@@ -97,10 +106,5 @@ public abstract class AggregateFunctionExpression extends Expression {
     @Override
     public List<VariableReference> getReferences() {
         return List.of(attribute);
-    }
-
-    @Override
-    public Expression clone(){
-        return new AggregateFunctionExpression(attribute, rootFeature);
     }
 }

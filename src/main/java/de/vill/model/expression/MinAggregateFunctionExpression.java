@@ -52,4 +52,9 @@ public class MinAggregateFunctionExpression extends AggregateFunctionExpression 
     public List<Expression> getExpressionSubParts() {
         return Arrays.asList();
     }
+
+    @Override
+    public Expression clone() {
+        return new MinAggregateFunctionExpression(attribute, rootFeature);
+    }
 }

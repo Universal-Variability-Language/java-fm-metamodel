@@ -54,7 +54,7 @@ public class AutomaticBrackets {
         expressionPrecedenceLookup.put(MaxAggregateFunctionExpression.class, 2);
         expressionPrecedenceLookup.put(MinAggregateFunctionExpression.class, 2);
         expressionPrecedenceLookup.put(SumAggregateFunctionExpression.class, 2);
-        expressionPrecedenceLookup.put(ParenthesisConstraint.class, 2);
+        expressionPrecedenceLookup.put(ParenthesisExpression.class, 2);
 
         expressionPrecedenceLookup.put(LiteralExpression.class, 2);
         expressionPrecedenceLookup.put(NumberExpression.class, 2);
