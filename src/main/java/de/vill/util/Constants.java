@@ -20,4 +20,8 @@ public class Constants {
     public static final String ARITHMETIC_LEVEL = "Arithmetic";
     public static final String TYPE_LEVEL = "Type";
 
+    // Storing Symbol Constants
+    public static final String OR = "|";
+    public static final String AND = "&";
+
 }
