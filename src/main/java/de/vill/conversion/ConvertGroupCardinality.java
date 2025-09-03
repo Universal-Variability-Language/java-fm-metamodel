@@ -85,20 +85,6 @@ public class ConvertGroupCardinality implements IConversionStrategy {
         for (Constraint constraint : constraints) {
             orConstraint.add_sub_part(constraint);
         }
-        /*
-        Constraint orConstraint;
-        if (constraints.size() == 1) {
-            Constraint constraint = constraints.iterator().next();
-            constraints.remove(constraint);
-            orConstraint = constraint;
-        } else {
-            Constraint constraint = constraints.iterator().next();
-            constraints.remove(constraint);
-            orConstraint = new OrConstraint(constraint, createDisjunction(constraints));
-        }
-
-         */
-
         return orConstraint;
     }
 }

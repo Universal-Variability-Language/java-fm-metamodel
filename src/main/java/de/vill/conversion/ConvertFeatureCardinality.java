@@ -89,56 +89,14 @@ public class ConvertFeatureCardinality implements IConversionStrategy {
                 }
             }
         }
-/*
-additional constraint with all cloned versions ored
-        Set<String> allFeatureNamesInSubTree = new HashSet<>();
-        getAllSubFeatureNamesRecursively(feature, allFeatureNamesInSubTree);
-        for (Constraint constraint : constraintsToClone) {
-            Constraint newConstraint = constraint.clone();
-            orAdaptedConstraint(newConstraint, allFeatureNamesInSubTree, min, max, featureModel);
-            featureModel.getOwnConstraints().add(newConstraint);
-        }
-
- */
-
 
         feature.getChildren().removeAll(feature.getChildren());
         feature.getChildren().add(newChildren);
         newChildren.setParentFeature(feature);
     }
 
-    private void orAdaptedConstraint(Constraint constraint, Set<String> featuresToReplace, int min, int max, FeatureModel featureModel) {
-        for (Constraint subPart : constraint.getConstraintSubParts()) {
-            if (subPart instanceof LiteralConstraint) {
-                String toReplace = ((LiteralConstraint) subPart).getReference().getIdentifier();
-                if (featuresToReplace.contains(toReplace)) {
-                    Feature f = featureModel.getFeatureMap().get(toReplace + "-" + (min == 0 ? 1 : min) + "-1");
-                    Constraint newOr = new LiteralConstraint(f);
-                    for (int i = min + 1; i <= max; i++) {
-                        for (int j = 1; j <= i; j++) {
-                            newOr = new OrConstraint(newOr, new LiteralConstraint(featureModel.getFeatureMap().get(toReplace + "-" + i + "-" + j)));
-                        }
-                    }
-                    constraint.replaceConstraintSubPart(subPart, new ParenthesisConstraint(newOr));
-                }
-            } else {
-                orAdaptedConstraint(subPart, featuresToReplace, min, max, featureModel);
-            }
-        }
-    }
-
-    private void getAllSubFeatureNamesRecursively(Feature feature, Set<String> names) {
-        names.add(feature.getFeatureName());
-        for (Group child : feature.getChildren()) {
-            for (Feature childFeature : child.getFeatures()) {
-                getAllSubFeatureNamesRecursively(childFeature, names);
-            }
-        }
-    }
-
     private void addPrefixToNamesRecursively(Feature feature, String prefix, FeatureModel featureModel) {
         feature.setFeatureName(feature.getFeatureName() + prefix);
-        var attributes = feature.getAttributes();
         featureModel.getFeatureMap().put(feature.getFeatureName(), feature);
         if (!feature.isSubmodelRoot()) {
             for (Group group : feature.getChildren()) {
