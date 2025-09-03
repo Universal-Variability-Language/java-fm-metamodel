@@ -26,6 +26,10 @@ public class Util {
                 result.append("\"");
                 result.append(part);
                 result.append("\"");
+            } else if(part.equals("false")) {
+                result.append("\"");
+                result.append(part);
+                result.append("\"");
             } else {
                 result.append(part);
             }

@@ -8,13 +8,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class GreaterEqualsEquationConstraint extends ExpressionConstraint {
-    private final Expression left;
-    private final Expression right;
-
     public GreaterEqualsEquationConstraint(final Expression left, final Expression right) {
         super(left, right, ">=");
-        this.left = left;
-        this.right = right;
     }
 
     @Override
@@ -24,14 +19,14 @@ public class GreaterEqualsEquationConstraint extends ExpressionConstraint {
 
     @Override
     public Constraint clone() {
-        return new GreaterEqualsEquationConstraint(this.left, this.right);
+        return new GreaterEqualsEquationConstraint(getLeft().clone(), getRight().clone());
     }
 
     @Override
     public List<VariableReference> getReferences() {
         List<VariableReference> references = new ArrayList<>();
-        references.addAll(left.getReferences());
-        references.addAll(right.getReferences());
+        references.addAll(getLeft().getReferences());
+        references.addAll(getRight().getReferences());
         return references;
     }
 }

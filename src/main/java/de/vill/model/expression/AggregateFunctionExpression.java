@@ -1,5 +1,6 @@
 package de.vill.model.expression;
 
+import de.vill.util.Constants;
 import static de.vill.util.Util.addNecessaryQuotes;
 
 import de.vill.model.Feature;
@@ -15,6 +16,7 @@ public abstract class AggregateFunctionExpression extends Expression {
     protected GlobalAttribute attribute;
     protected Feature rootFeature;
 
+
     public AggregateFunctionExpression(GlobalAttribute attribute) {
         this.attribute = attribute;
     }
@@ -23,7 +25,7 @@ public abstract class AggregateFunctionExpression extends Expression {
         this(attribute);
         this.rootFeature = rootFeature;
     }
-
+    
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return toString(withSubmodels, "aggregateFunction", currentAlias);

@@ -19,33 +19,53 @@ public class ConvertSMTLevel implements IConversionStrategy {
         return new HashSet<>(Arrays.asList(LanguageLevel.BOOLEAN_LEVEL));
     }
 
+    private Constraint getFalseConstraint(FeatureModel featureModel){
+        return new NotConstraint(new LiteralConstraint(featureModel.getRootFeature()));
+    }
+
     @Override
     public void convertFeatureModel(FeatureModel rootFeatureModel, FeatureModel featureModel) {
         List<Constraint> constraints = featureModel.getFeatureConstraints();
         constraints.addAll(featureModel.getOwnConstraints());
-        constraints.stream().forEach(this::replaceEquationInConstraint);
+        for(Constraint constraint : constraints) {
+            replaceEquationInConstraint(constraint, featureModel);
+        }
         List<Constraint> replacements = new LinkedList<>();
         for (Constraint constraint : featureModel.getOwnConstraints()) {
             if (constraint instanceof ExpressionConstraint) {
-                Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) constraint);
+                Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) constraint, getFalseConstraint(featureModel));
                 replacements.add(equationReplacement);
             }
         }
         featureModel.getOwnConstraints().removeIf(x -> x instanceof ExpressionConstraint);
         featureModel.getOwnConstraints().addAll(replacements);
-        traverseFeatures(featureModel.getRootFeature());
+        for (Constraint constraint : featureModel.getOwnConstraints()) {
+            convertConstraint(constraint, featureModel);
+        }
+        traverseFeatures(featureModel.getRootFeature(), featureModel);
     }
 
-    private void replaceEquationInConstraint(Constraint constraint) {
+    private void convertConstraint(Constraint constraint, FeatureModel featureModel) {
         for (Constraint subConstraint : constraint.getConstraintSubParts()) {
             if (subConstraint instanceof ExpressionConstraint) {
-                Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) subConstraint);
+                Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) subConstraint, getFalseConstraint(featureModel));
+                constraint.replaceConstraintSubPart(subConstraint, equationReplacement);
+            }else{
+                convertConstraint(subConstraint, featureModel);
+            }
+        }
+    }
+
+    private void replaceEquationInConstraint(Constraint constraint, FeatureModel featureModel) {
+        for (Constraint subConstraint : constraint.getConstraintSubParts()) {
+            if (subConstraint instanceof ExpressionConstraint) {
+                Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) subConstraint, getFalseConstraint(featureModel));
                 constraint.replaceConstraintSubPart(subConstraint, equationReplacement);
             }
         }
     }
 
-    private Constraint convertEquationToConstraint(ExpressionConstraint equation) {
+    private Constraint convertEquationToConstraint(ExpressionConstraint equation, Constraint falseConstraint) {
         Set<Feature> featuresInEquation = getFeaturesInEquation(equation);
         Set<Set<Feature>> featureCombinations = getFeatureCombinations(featuresInEquation);
         Set<Constraint> disjunction = new HashSet<>();
@@ -55,7 +75,11 @@ public class ConvertSMTLevel implements IConversionStrategy {
                 disjunction.add(createConjunction(configuration, new HashSet<>(featuresInEquation)));
             }
         }
-        return new ParenthesisConstraint(createDisjunction(disjunction));
+        if (disjunction.isEmpty()) {
+            return falseConstraint;
+        }else{
+            return new ParenthesisConstraint(createDisjunction(disjunction));
+        }
     }
 
     private Set<Feature> getFeaturesInEquation(ExpressionConstraint equation) {
@@ -112,26 +136,19 @@ public class ConvertSMTLevel implements IConversionStrategy {
     }
 
     private Constraint createDisjunction(Set<Constraint> constraints) {
-        Constraint orConstraint;
-        if (constraints.size() == 1) {
-            Constraint constraint = constraints.iterator().next();
-            constraints.remove(constraint);
-            orConstraint = constraint;
-        } else {
-            Constraint constraint = constraints.iterator().next();
-            constraints.remove(constraint);
-            orConstraint = new OrConstraint(constraint, createDisjunction(constraints));
+        MultiOrConstraint orConstraint = new MultiOrConstraint();
+        for (Constraint constraint : constraints) {
+            orConstraint.add_sub_part(constraint);
         }
-
         return orConstraint;
     }
 
-    private void removeEquationFromAttributes(Feature feature) {
+    private void removeEquationFromAttributes(Feature feature, FeatureModel featureModel) {
         Attribute<?> attributeConstraint = feature.getAttributes().get("constraint");
         Attribute<?> attributeConstraintList = feature.getAttributes().get("constraints");
         if (attributeConstraint != null) {
             if (attributeConstraint.getValue() instanceof ExpressionConstraint) {
-                Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) attributeConstraint.getValue());
+                Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) attributeConstraint.getValue(), getFalseConstraint(featureModel));
                 feature.getAttributes().put("constraint", new Attribute<>("constraint", equationReplacement, feature));
             }
         }
@@ -139,7 +156,7 @@ public class ConvertSMTLevel implements IConversionStrategy {
             List<Object> newConstraintList = new LinkedList<>();
             for (Object constraint : (List<?>) attributeConstraintList.getValue()) {
                 if (constraint instanceof ExpressionConstraint) {
-                    Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) constraint);
+                    Constraint equationReplacement = convertEquationToConstraint((ExpressionConstraint) constraint, getFalseConstraint(featureModel));
                     newConstraintList.add(equationReplacement);
                 } else {
                     newConstraintList.add(constraint);
@@ -149,11 +166,11 @@ public class ConvertSMTLevel implements IConversionStrategy {
         }
     }
 
-    private void traverseFeatures(Feature feature) {
-        removeEquationFromAttributes(feature);
+    private void traverseFeatures(Feature feature, FeatureModel featureModel) {
+        removeEquationFromAttributes(feature, featureModel);
         for (Group group : feature.getChildren()) {
             for (Feature subFeature : group.getFeatures()) {
-                traverseFeatures(subFeature);
+                traverseFeatures(subFeature, featureModel);
             }
         }
     }

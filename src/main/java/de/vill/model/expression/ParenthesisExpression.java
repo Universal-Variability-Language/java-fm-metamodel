@@ -77,4 +77,9 @@ public class ParenthesisExpression extends Expression {
     public String getReturnType() {
         return content.getReturnType();
     }
+
+    @Override
+    public Expression clone(){
+        return new ParenthesisExpression(content.clone());
+    }
 }

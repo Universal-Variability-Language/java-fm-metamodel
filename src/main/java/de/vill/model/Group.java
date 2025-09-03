@@ -1,12 +1,9 @@
 package de.vill.model;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Objects;
+import java.util.*;
 
 import de.vill.config.Configuration;
+import de.vill.model.constraint.Constraint;
 import de.vill.util.Util;
 
 /**

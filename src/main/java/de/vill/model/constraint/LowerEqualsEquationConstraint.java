@@ -5,13 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class LowerEqualsEquationConstraint extends ExpressionConstraint {
-    private final Expression left;
-    private final Expression right;
-
     public LowerEqualsEquationConstraint(final Expression left, final Expression right) {
         super(left, right, "<=");
-        this.left = left;
-        this.right = right;
     }
 
     @Override
@@ -21,6 +16,6 @@ public class LowerEqualsEquationConstraint extends ExpressionConstraint {
 
     @Override
     public Constraint clone() {
-        return new LowerEqualsEquationConstraint(this.left, this.right);
+        return new LowerEqualsEquationConstraint(getLeft().clone(), getRight().clone());
     }
 }

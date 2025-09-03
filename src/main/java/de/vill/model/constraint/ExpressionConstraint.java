@@ -2,9 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
-import de.vill.model.expression.AggregateFunctionExpression;
 import de.vill.model.expression.Expression;
-import de.vill.model.expression.LiteralExpression;
 
 import java.util.*;
 
@@ -25,6 +23,14 @@ public abstract class ExpressionConstraint extends Constraint {
 
     public Expression getRight() {
         return right;
+    }
+
+    public void setLeft(Expression expression) {
+        left = expression;
+    }
+
+    public void setRight(Expression expression) {
+        right = expression;
     }
 
     public String getExpressionSymbol() {
@@ -65,6 +71,9 @@ public abstract class ExpressionConstraint extends Constraint {
     public boolean evaluate(Set<Feature> selectedFeatures) {
         double leftResult = left.evaluate(selectedFeatures);
         double rightResult = right.evaluate(selectedFeatures);
+        if (Double.isNaN(leftResult) || Double.isNaN(rightResult) || Double.isInfinite(leftResult) || Double.isInfinite(rightResult)){
+            return false;
+        }
 
         if ("==".equals(expressionSymbol)) {
             return leftResult == rightResult;

@@ -32,7 +32,7 @@ public class GlobalAttribute implements VariableReference {
         }
     }
 
-    private final String identifier;
+    private String identifier;
     private AttributeType type;
     private final Set<Feature> featuresContainingAttribute;
 
@@ -52,6 +52,8 @@ public class GlobalAttribute implements VariableReference {
         this.type = type;
         featuresContainingAttribute = new HashSet<>();
     }
+
+    public void renameGlobalAttribute(String newIdentifier) { this.identifier = newIdentifier;}
 
     public void addFeature(Feature feature) {
         featuresContainingAttribute.add(feature);

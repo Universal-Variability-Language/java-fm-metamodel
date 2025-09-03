@@ -5,13 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class NotEqualsEquationConstraint extends ExpressionConstraint {
-    private final Expression left;
-    private final Expression right;
-
     public NotEqualsEquationConstraint(final Expression left, final Expression right) {
         super(left, right, "!=");
-        this.left = left;
-        this.right = right;
     }
 
     @Override
@@ -21,6 +16,6 @@ public class NotEqualsEquationConstraint extends ExpressionConstraint {
 
     @Override
     public Constraint clone() {
-        return new NotEqualsEquationConstraint(this.left, this.right);
+        return new NotEqualsEquationConstraint(getLeft().clone(), getRight().clone());
     }
 }

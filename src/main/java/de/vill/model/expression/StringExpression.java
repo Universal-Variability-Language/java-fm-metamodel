@@ -83,4 +83,9 @@ public class StringExpression extends Expression {
     public String getReturnType() {
         return Constants.STRING;
     }
+
+    @Override
+    public Expression clone(){
+        return new StringExpression(getString());
+    }
 }

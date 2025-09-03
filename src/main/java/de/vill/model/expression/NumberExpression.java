@@ -86,4 +86,9 @@ public class NumberExpression extends Expression {
     public String getReturnType() {
         return Constants.NUMBER;
     }
+
+    @Override
+    public Expression clone(){
+        return new NumberExpression(getNumber());
+    }
 }
