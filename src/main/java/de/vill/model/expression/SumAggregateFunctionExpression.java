@@ -49,4 +49,8 @@ public class SumAggregateFunctionExpression extends AggregateFunctionExpression 
     public String getReturnType() {
         return Constants.NUMBER;
     }
+    @Override
+    public Expression clone() {
+        return new SumAggregateFunctionExpression(attribute, rootFeature);
+    }
 }

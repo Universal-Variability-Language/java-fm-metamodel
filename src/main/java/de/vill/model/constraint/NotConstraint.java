@@ -69,4 +69,7 @@ public class NotConstraint extends Constraint {
     public List<VariableReference> getReferences() {
         return content.getReferences();
     }
+
+
+
 }

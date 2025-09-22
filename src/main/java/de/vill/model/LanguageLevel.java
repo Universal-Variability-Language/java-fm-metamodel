@@ -13,14 +13,14 @@ public enum LanguageLevel {
     // MAJOR LEVELS (logic: val % 2 != 0)
     BOOLEAN_LEVEL(1, Constants.BOOLEAN_LEVEL),
     ARITHMETIC_LEVEL(3, Constants.ARITHMETIC_LEVEL),
-    TYPE_LEVEL(5, Constants.TYPE_LEVEL),
+    TYPE_LEVEL(7, Constants.TYPE_LEVEL),
 
     // MINOR LEVELS (logic: val % 2 == 0)
     GROUP_CARDINALITY(2, "group-cardinality"),
-    FEATURE_CARDINALITY(4, "feature-cardinality"),
+    FEATURE_CARDINALITY(6, "feature-cardinality"),
     AGGREGATE_FUNCTION(4, "aggregate-function"),
-    STRING_CONSTRAINTS(6, "string-constraints"),
-    NUMERIC_CONSTRAINTS(6, "numeric-constraints"),
+    STRING_CONSTRAINTS(8, "string-constraints"),
+    NUMERIC_CONSTRAINTS(8, "numeric-constraints"),
     ;
 
     private final int value;

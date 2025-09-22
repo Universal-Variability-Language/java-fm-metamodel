@@ -1,18 +1,12 @@
 package de.vill.model;
 
-import static de.vill.util.Util.addNecessaryQuotes;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Objects;
-
 import de.vill.config.Configuration;
 import de.vill.model.building.VariableReference;
 import de.vill.util.Util;
+
+import java.util.*;
+
+import static de.vill.util.Util.addNecessaryQuotes;
 
 /**
  * This class represents a feature of any kind (normal, numeric, abstract, ...).
@@ -369,6 +363,10 @@ public class Feature implements VariableReference {
         return toString(true, "");
     }
 
+    public String getQuotedFeatureName(){
+        return  "\"" + getFeatureName() + "\"";
+    }
+
     /**
      * This method is necessary because the uvl string representation differs
      * between the feature as imported feature another feature model or as the root
@@ -521,11 +519,15 @@ public class Feature implements VariableReference {
     public Feature clone() {
         Feature feature = new Feature(getFeatureName());
         feature.setNameSpace(getNameSpace());
-        feature.setCardinality(cardinality.clone());
+        if (cardinality != null){
+            feature.setCardinality(cardinality.clone());
+        }
         feature.setSubmodelRoot(isSubmodelRoot);
         feature.setRelatedImport(getRelatedImport());
         feature.setFeatureType(this.getFeatureType());
-        feature.getAttributes().putAll(getAttributes());
+        for (Map.Entry<String, Attribute<?>> entry : getAttributes().entrySet()){
+            feature.getAttributes().put(entry.getKey(),entry.getValue().cloneWithFeature(feature));
+        }
         for (Group group : getChildren()) {
             feature.getChildren().add(group.clone());
         }

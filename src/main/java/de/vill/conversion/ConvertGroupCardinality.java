@@ -47,7 +47,7 @@ public class ConvertGroupCardinality implements IConversionStrategy {
         Set<Feature> groupMembers = new HashSet<>(group.getFeatures());
 
         int lowerBound = group.getCardinality().lower;
-        int upperBound = Math.max(group.getCardinality().upper, groupMembers.size());
+        int upperBound = Math.min(group.getCardinality().upper, groupMembers.size());
         Set<Set<Feature>> featureCombinations = new HashSet<>();
         for (int i = lowerBound; i <= upperBound; i++) {
             featureCombinations.addAll(Sets.combinations(groupMembers, i));
@@ -81,17 +81,10 @@ public class ConvertGroupCardinality implements IConversionStrategy {
     }
 
     private Constraint createDisjunction(Set<Constraint> constraints) {
-        Constraint orConstraint;
-        if (constraints.size() == 1) {
-            Constraint constraint = constraints.iterator().next();
-            constraints.remove(constraint);
-            orConstraint = constraint;
-        } else {
-            Constraint constraint = constraints.iterator().next();
-            constraints.remove(constraint);
-            orConstraint = new OrConstraint(constraint, createDisjunction(constraints));
+        MultiOrConstraint orConstraint = new MultiOrConstraint();
+        for (Constraint constraint : constraints) {
+            orConstraint.add_sub_part(constraint);
         }
-
         return orConstraint;
     }
 }
