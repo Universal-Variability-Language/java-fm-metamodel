@@ -27,6 +27,7 @@ public class ParsingTests {
     private static final String FAULTY_MODEL_PREFIX = TEST_MODEL_PREFIX + "faulty" + File.separator;
     private static final String COMPOSITION_MODEL_PREFIX = TEST_MODEL_PREFIX + "composition" + File.separator;
     private static final String COMPLEX_MODEL_PREFIX = TEST_MODEL_PREFIX + "complex" + File.separator;
+    private static final String LEXING_MODEL_PREFIX = TEST_MODEL_PREFIX + "lexing" + File.separator;
     
     // sub sub directories
     private static final String NESTED_MODEL_PREFIX = COMPOSITION_MODEL_PREFIX + "nested" + File.separator;
@@ -73,6 +74,12 @@ public class ParsingTests {
 
     // Generated models
     private static final String GENERATED_DIRECTORY = TEST_MODEL_PREFIX + "generated";
+
+
+    // Lexing models
+    private static final String DOT_IN_FEATURE_NAME = LEXING_MODEL_PREFIX + "dotinfeaturename.uvl";
+    private static final String DOT_IN_STRING_CONSTANT = LEXING_MODEL_PREFIX + "dotinstringconstant.uvl";
+    private static final String LEGAL_NUMBERS = LEXING_MODEL_PREFIX + "legalnumbers.uvl";
 
     
 
@@ -190,6 +197,17 @@ public class ParsingTests {
         testModelParsing(COMPOSITION_ROOT);
         testModelParsing(NESTED_COMPOSITION_ROOT);
         testModelParsing(NESTED_SUB_COMPOSITION_ROOT);
+    }
+
+
+
+    // ------------------------------------------- Lexing models ------------------------------------------------
+
+    @Test
+    void checkLexingModels() throws  Exception {
+        testModelParsing(DOT_IN_FEATURE_NAME, false);
+        testModelParsing(DOT_IN_STRING_CONSTANT);
+        testModelParsing(LEGAL_NUMBERS);
     }
 
 
