@@ -6,55 +6,74 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class AndConstraint extends Constraint {
-    private Constraint left;
-    private Constraint right;
+
+    //List of children
+    private final List<Constraint> children = new ArrayList<>();
+
+    public AndConstraint(Constraint... constraints) {
+        for (Constraint c : constraints) {
+            if (c != null) {
+                children.add(c);
+            }
+        }
+    }
 
     public AndConstraint(Constraint left, Constraint right) {
-        this.left = left;
-        this.right = right;
+        this(new Constraint[]{left, right});
     }
 
-    public Constraint getLeft() {
-        return left;
-    }
-
-    public Constraint getRight() {
-        return right;
+    public List<Constraint> getChildren() {
+        return children;
     }
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        return  left.toString(withSubmodels, currentAlias) +
-                " & " +
-                right.toString(withSubmodels, currentAlias);
+        return  
+                // Constraint-Stream - jeder constraint in einen String umgewandelt und mit einem & verknüpft
+                children.stream()
+                .map(c -> c.toString(withSubmodels, currentAlias))
+                .collect(Collectors.joining(" & "));
     }
 
     @Override
     public List<Constraint> getConstraintSubParts() {
-        return Arrays.asList(left, right);
+        return new ArrayList<>(children);
     }
 
     @Override
     public void replaceConstraintSubPart(Constraint oldSubConstraint, Constraint newSubConstraint) {
-        if (left == oldSubConstraint) {
-            left = newSubConstraint;
-        } else if (right == oldSubConstraint) {
-            right = newSubConstraint;
+        for (int i = 0; i< children.size(); i++) {
+            if (children.get(i) == oldSubConstraint){
+                children.set(i, newSubConstraint);
+            }
         }
     }
 
     @Override
     public Constraint clone() {
-        return new AndConstraint(left.clone(), right.clone());
+        AndConstraint clone = new AndConstraint();
+        for (Constraint c : children) {
+            clone.addChild(c.clone());
+        }
+        return clone;
+    }
+
+    public void addChild(Constraint constraint){
+        if (constraint != null) {
+            children.add(constraint);
+        }
     }
 
     @Override
     public int hashCode(int level) {
         final int prime = 31;
-        int result = prime * level + (left == null ? 0 : left.hashCode(1 + level));
-        result = prime * result + (right == null ? 0 : right.hashCode(1 + level));
+        int result = prime * level;
+        for(Constraint c: children) {
+            result = prime * result + (c == null ? 0 : c.hashCode(1 + level));
+        }
         return result;
     }
 
@@ -67,14 +86,15 @@ public class AndConstraint extends Constraint {
             return false;
         }
         AndConstraint other = (AndConstraint) obj;
-        return Objects.equals(left, other.left) && Objects.equals(right, other.right);
+        return Objects.equals(children, other.children);
     }
 
     @Override
     public List<VariableReference> getReferences() {
         List<VariableReference> references = new ArrayList<>();
-        references.addAll(left.getReferences());
-        references.addAll(right.getReferences());
+        for(Constraint c: children){
+            references.addAll(c.getReferences());
+        }
         return references;
     }
 }
