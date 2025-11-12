@@ -1,6 +1,7 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.util.ConstantSymbols;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,9 +20,9 @@ public class ParenthesisConstraint extends Constraint {
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        return "(" +
+        return ConstantSymbols.PAREN_OPEN +
                 content.toString(withSubmodels, currentAlias) +
-                ")";
+                ConstantSymbols.PAREN_CLOSE;
     }
 
     @Override

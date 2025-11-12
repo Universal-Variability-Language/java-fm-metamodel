@@ -1,12 +1,14 @@
 package de.vill.model.constraint;
 
 import de.vill.model.expression.Expression;
+import de.vill.util.ConstantSymbols;
+
 import java.util.Collections;
 import java.util.List;
 
 public class LowerEqualsEquationConstraint extends ExpressionConstraint {
     public LowerEqualsEquationConstraint(final Expression left, final Expression right) {
-        super(left, right, "<=");
+        super(left, right, ConstantSymbols.GREATER_OR_EQUAL);
     }
 
     @Override

@@ -2,6 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
+import de.vill.util.ConstantSymbols;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -20,7 +21,7 @@ public class MultiOrConstraint extends Constraint{
         StringBuilder result = new StringBuilder();
         for (Constraint part : sub_parts) {
             result.append(AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, part, withSubmodels, currentAlias));
-            result.append(" | ");
+            result.append(" "+ ConstantSymbols.OR + " ");
         }
         result.delete(result.length() -3, result.length());
         return result.toString();

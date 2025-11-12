@@ -2,6 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
 import de.vill.model.expression.Expression;
+import de.vill.util.ConstantSymbols;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +10,7 @@ import java.util.List;
 
 public class GreaterEqualsEquationConstraint extends ExpressionConstraint {
     public GreaterEqualsEquationConstraint(final Expression left, final Expression right) {
-        super(left, right, ">=");
+        super(left, right, ConstantSymbols.LESS_OR_EQUAL);
     }
 
     @Override
