@@ -1,6 +1,7 @@
 package de.vill.model.constraint;
 
 import de.vill.model.building.VariableReference;
+import de.vill.util.ConstantSymbols;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,13 +21,13 @@ public class NotConstraint extends Constraint {
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         StringBuilder result = new StringBuilder();
-        result.append("!");
+        result.append(ConstantSymbols.NOT);
         if (content instanceof VariableReference || content instanceof ParenthesisConstraint) {
             result.append(content.toString(withSubmodels, currentAlias));
         } else {
-            result.append("(");
+            result.append(ConstantSymbols.PAREN_OPEN);
             result.append(content.toString(withSubmodels, currentAlias));
-            result.append(")");
+            result.append(ConstantSymbols.PAREN_CLOSE);
         }
         return result.toString();
     }

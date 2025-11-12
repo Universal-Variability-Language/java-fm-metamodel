@@ -2,6 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
+import de.vill.util.ConstantSymbols;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +29,7 @@ public class EquivalenceConstraint extends Constraint {
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, left, withSubmodels, currentAlias) +
-                " <=> " +
+                " " + ConstantSymbols.EQUIVALENT + " " +
                 AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, right, withSubmodels, currentAlias);
     }
 
