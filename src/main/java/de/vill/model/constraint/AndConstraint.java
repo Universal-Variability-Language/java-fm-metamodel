@@ -22,7 +22,26 @@ public class AndConstraint extends Constraint {
     }
 
     public AndConstraint(Constraint left, Constraint right) {
-        this(new Constraint[]{left, right});
+        this.children.add(left);
+        this.children.add(right);
+    }
+
+    public Constraint getLeft() {
+        if (children.isEmpty()){
+            return null;
+        }
+        else{
+            return children.get(0);
+        }
+    }
+
+    public Constraint getRight() {
+        if (children.isEmpty() || children.size() < 2){
+            return null;
+        }
+        else{
+            return children.get(children.size() - 1);
+        }
     }
 
     public List<Constraint> getChildren() {
