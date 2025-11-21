@@ -8,7 +8,7 @@ import java.util.List;
 
 public class LowerEqualsEquationConstraint extends ExpressionConstraint {
     public LowerEqualsEquationConstraint(final Expression left, final Expression right) {
-        super(left, right, ConstantSymbols.GREATER_OR_EQUAL);
+        super(left, right, ConstantSymbols.LOWER_OR_EQUAL);
     }
 
     @Override

@@ -12,10 +12,10 @@ public class ConstantSymbols {
     // Comparison
     public static final String EQUALS = "==";
     public static final String NOT_EQUALS = "!=";
-    public static final String GREATER = "<";
-    public static final String LESS = ">";
-    public static final String GREATER_OR_EQUAL = "<=";
-    public static final String LESS_OR_EQUAL = ">=";
+    public static final String GREATER = ">";
+    public static final String LOWER = "<";
+    public static final String GREATER_OR_EQUAL = ">=";
+    public static final String LOWER_OR_EQUAL = "<=";
 
     //Parenthesis
     public static final String PAREN_OPEN = "(";

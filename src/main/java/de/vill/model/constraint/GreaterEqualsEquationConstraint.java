@@ -10,7 +10,7 @@ import java.util.List;
 
 public class GreaterEqualsEquationConstraint extends ExpressionConstraint {
     public GreaterEqualsEquationConstraint(final Expression left, final Expression right) {
-        super(left, right, ConstantSymbols.LESS_OR_EQUAL);
+        super(left, right, ConstantSymbols.GREATER_OR_EQUAL);
     }
 
     @Override

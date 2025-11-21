@@ -78,13 +78,13 @@ public abstract class ExpressionConstraint extends Constraint {
 
         if (ConstantSymbols.EQUALS.equals(expressionSymbol)) {
             return leftResult == rightResult;
-        } else if (ConstantSymbols.GREATER.equals(expressionSymbol)) {
+        } else if (ConstantSymbols.LOWER.equals(expressionSymbol)) {
             return leftResult < rightResult;
-        } else if (ConstantSymbols.LESS.equals(expressionSymbol)) {
+        } else if (ConstantSymbols.GREATER.equals(expressionSymbol)) {
             return leftResult > rightResult;
-        } else if (ConstantSymbols.LESS_OR_EQUAL.equals(expressionSymbol)) {
-            return leftResult >= rightResult;
         } else if (ConstantSymbols.GREATER_OR_EQUAL.equals(expressionSymbol)) {
+            return leftResult >= rightResult;
+        } else if (ConstantSymbols.LOWER_OR_EQUAL.equals(expressionSymbol)) {
             return leftResult <= rightResult;
         } else if (ConstantSymbols.NOT_EQUALS.equals(expressionSymbol)) {
             return leftResult != rightResult;
