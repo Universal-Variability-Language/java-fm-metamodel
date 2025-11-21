@@ -11,13 +11,19 @@ import de.vill.model.expression.Expression;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  *
  */
 public class FeatureModelBuilder {
 
+    private Function<String, Feature> featureFactory = Feature::new;
     private FeatureModel fmInConstruction;
+
+    public void setFeatureFactory(Function<String, Feature> featureFactory){
+        this.featureFactory = featureFactory;
+    } 
 
     public FeatureModelBuilder() {
         fmInConstruction = new FeatureModel();
@@ -26,7 +32,6 @@ public class FeatureModelBuilder {
     public FeatureModelBuilder(FeatureModel old) {
         fmInConstruction = old;
     }
-
 
     public void addImport(Import importToAdd) {
         fmInConstruction.getImports().add(importToAdd);
@@ -49,7 +54,7 @@ public class FeatureModelBuilder {
     }
 
     public Feature addRootFeature(String featureName, FeatureType featureType, Cardinality cardinality) {
-        Feature rootFeature = new Feature(featureName);
+        Feature rootFeature = featureFactory.apply(featureName);
         rootFeature.setFeatureType(featureType);
         rootFeature.setCardinality(cardinality);
 
@@ -71,7 +76,7 @@ public class FeatureModelBuilder {
     }
 
     public Feature addFeature(String featureName, Group group, Import featureOrigin, FeatureType type, Cardinality cardinality) {
-        Feature feature = new Feature(featureName);
+        Feature feature = featureFactory.apply(featureName);
         feature.setRelatedImport(featureOrigin);
         feature.setFeatureType(type);
         feature.setCardinality(cardinality);
