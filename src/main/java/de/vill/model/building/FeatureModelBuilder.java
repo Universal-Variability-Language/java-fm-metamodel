@@ -19,14 +19,22 @@ import java.util.function.Function;
 public class FeatureModelBuilder {
 
     private Function<String, Feature> featureFactory = Feature::new;
+    
     private FeatureModel fmInConstruction;
+
+    private AbstractUVLElementFactory elementFactory;
 
     public void setFeatureFactory(Function<String, Feature> featureFactory){
         this.featureFactory = featureFactory;
     } 
 
     public FeatureModelBuilder() {
-        fmInConstruction = new FeatureModel();
+        this(new DefaultUVLElementFactory());
+    }
+
+    public FeatureModelBuilder(AbstractUVLElementFactory factory) {
+        this.elementFactory = factory;
+        this.fmInConstruction = new FeatureModel();
     }
 
     public FeatureModelBuilder(FeatureModel old) {
@@ -197,7 +205,7 @@ public class FeatureModelBuilder {
     }
 
     public GlobalAttribute createGlobalAttribute(String name) {
-        GlobalAttribute toCreate = new GlobalAttribute(name, fmInConstruction);
+        GlobalAttribute toCreate = elementFactory.createGlobalAttribute(name, fmInConstruction);
         if (toCreate.getType() == null) {
             System.err.println("Tried to reference " + name + " but attribute with that name does not exist");
             return null;

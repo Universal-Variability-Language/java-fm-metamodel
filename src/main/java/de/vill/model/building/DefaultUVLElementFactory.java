@@ -2,6 +2,7 @@ package de.vill.model.building;
 
 import de.vill.exception.ParseError;
 import de.vill.model.*;
+import de.vill.model.constraint.LiteralConstraint;
 
 public class DefaultUVLElementFactory extends AbstractUVLElementFactory{
 
@@ -19,4 +20,9 @@ public class DefaultUVLElementFactory extends AbstractUVLElementFactory{
     public GlobalAttribute createGlobalAttribute(String identifier, FeatureModel featureModel){
         return new GlobalAttribute(identifier, featureModel);
     }
+
+    // @Override
+    // public LiteralConstraint createFeatureLiteral(String name){
+    //     return new LiteralConstraint(fmInConstruction.getFeatureMap().get(name));
+    // }
 }
