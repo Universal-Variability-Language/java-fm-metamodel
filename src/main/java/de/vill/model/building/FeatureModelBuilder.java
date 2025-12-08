@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 public class FeatureModelBuilder {
-    
+
     private FeatureModel fmInConstruction;
 
     private AbstractUVLElementFactory elementFactory;
@@ -69,12 +69,13 @@ public class FeatureModelBuilder {
     public Feature addFeature(String featureName, Group group, Import featureOrigin) {
         return addFeature(featureName, group, featureOrigin, FeatureType.BOOL);
     }
-    
-    public Feature addFeature(String featureName, Group group, Import featureOrigin,  FeatureType type) {
+
+    public Feature addFeature(String featureName, Group group, Import featureOrigin, FeatureType type) {
         return addFeature(featureName, group, featureOrigin, type, Cardinality.getStandardFeatureCardinality());
     }
 
-    public Feature addFeature(String featureName, Group group, Import featureOrigin, FeatureType type, Cardinality cardinality) {
+    public Feature addFeature(String featureName, Group group, Import featureOrigin, FeatureType type,
+            Cardinality cardinality) {
         Feature feature = elementFactory.createFeature(featureName);
         feature.setRelatedImport(featureOrigin);
         feature.setFeatureType(type);
@@ -103,9 +104,11 @@ public class FeatureModelBuilder {
 
     /**
      * Renames a feature and propagates the change through the mdoel
+     * 
      * @param oldName current name of feature to be renamed in the model
      * @param newName target name
-     * @return indicator whether oldName successfully changed in the feature model; fails if oldName is not present
+     * @return indicator whether oldName successfully changed in the feature model;
+     *         fails if oldName is not present
      */
     public boolean renameFeature(String oldName, String newName) {
         Map<String, Feature> featureMap = fmInConstruction.getFeatureMap();
@@ -141,6 +144,7 @@ public class FeatureModelBuilder {
             crawlConstraintsToRenameGlobalAttribute(constraint, oldName, newName);
         }
     }
+
     private void crawlConstraintsToRenameGlobalAttribute(Constraint constraint, String attributeName, String replace) {
         if (constraint instanceof ExpressionConstraint) {
             for (Expression exp : ((ExpressionConstraint) constraint).getExpressionSubParts()) {
@@ -158,7 +162,8 @@ public class FeatureModelBuilder {
             AggregateFunctionExpression aggregateFunctionExpression = (AggregateFunctionExpression) expression;
             if (aggregateFunctionExpression.getAttribute().getIdentifier().equals(attributeName)) {
                 aggregateFunctionExpression.getAttribute().renameGlobalAttribute(replace);
-            };
+            }
+            ;
         } else {
             for (Expression exp : expression.getExpressionSubParts()) {
                 crawlExpressionsToRenameGlobalAttribute(exp, attributeName, replace);
@@ -167,15 +172,16 @@ public class FeatureModelBuilder {
     }
 
     public void addConstraint(Constraint constraint) {
-        fmInConstruction.getOwnConstraints().add(0,constraint);
+        fmInConstruction.getOwnConstraints().add(0, constraint);
     }
 
     public void addConstraintAtPosition(Constraint constraint, int position) {
-        fmInConstruction.getOwnConstraints().add(position,constraint);
+        fmInConstruction.getOwnConstraints().add(position, constraint);
     }
 
     public boolean doesFeatureModelSatisfyLanguageLevels(Set<LanguageLevel> languageLevelsToSatisfy) {
-        return fmInConstruction.isExplicitLanguageLevels() && !fmInConstruction.getUsedLanguageLevels().equals(languageLevelsToSatisfy);
+        return fmInConstruction.isExplicitLanguageLevels()
+                && !fmInConstruction.getUsedLanguageLevels().equals(languageLevelsToSatisfy);
     }
 
     public FeatureModel getFeatureModel() {
