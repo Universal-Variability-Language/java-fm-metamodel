@@ -1,5 +1,6 @@
 package de.vill.model.constraint;
 
+import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
 
 import java.util.ArrayList;
@@ -26,11 +27,9 @@ public class ImplicationConstraint extends Constraint {
 
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        StringBuilder result = new StringBuilder();
-        result.append(left.toString(withSubmodels, currentAlias));
-        result.append(" => ");
-        result.append(right.toString(withSubmodels, currentAlias));
-        return result.toString();
+        return AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, left, withSubmodels, currentAlias) +
+                " => " +
+                AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, right, withSubmodels, currentAlias);
     }
 
     @Override
@@ -79,4 +78,5 @@ public class ImplicationConstraint extends Constraint {
         references.addAll(right.getReferences());
         return references;
     }
+
 }

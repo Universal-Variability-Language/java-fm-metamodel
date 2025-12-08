@@ -51,4 +51,9 @@ public class AvgAggregateFunctionExpression extends AggregateFunctionExpression 
     public String getReturnType() {
         return Constants.NUMBER;
     }
+
+    @Override
+    public Expression clone() {
+        return new AvgAggregateFunctionExpression(attribute, rootFeature);
+    }
 }

@@ -39,7 +39,6 @@ public class AndConstraint extends Constraint {
     public Constraint getRight() {
         if (children.isEmpty() || children.size() < 2) {
             throw new ParseError("Right child can not be returned because there are less than two children.");
-            ;
         } else {
             return children.get(children.size() - 1);
         }

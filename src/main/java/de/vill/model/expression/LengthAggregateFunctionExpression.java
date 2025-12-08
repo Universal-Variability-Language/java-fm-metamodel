@@ -86,4 +86,9 @@ public class LengthAggregateFunctionExpression extends Expression {
     public List<VariableReference> getReferences() {
         return List.of();
     }
+
+    @Override
+    public Expression clone(){
+        return new LengthAggregateFunctionExpression(getReference());
+    }
 }

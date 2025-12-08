@@ -42,5 +42,8 @@ public abstract class Expression {
     @Override
     public abstract boolean equals(Object obj);
 
+    @Override
+    public abstract Expression clone();
+
     public abstract List<VariableReference> getReferences();
 }

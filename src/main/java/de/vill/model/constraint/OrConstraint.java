@@ -37,7 +37,7 @@ public class OrConstraint extends Constraint {
 
     public Constraint getRight() {
         if (children.isEmpty() || children.size() < 2) {
-            throw new ParseError("RIght child can not be returned because there are less than two children.");
+            throw new ParseError("Right child can not be returned because there are less than two children.");
         } else {
             return children.get(children.size() - 1);
         }
