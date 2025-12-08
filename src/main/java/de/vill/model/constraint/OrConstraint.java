@@ -28,19 +28,17 @@ public class OrConstraint extends Constraint {
     }
 
     public Constraint getLeft() {
-        if (children.isEmpty()){
+        if (children.isEmpty()) {
             throw new ParseError("Left child can not be returned because there are no children.");
-        }
-        else{
+        } else {
             return children.get(0);
         }
     }
 
     public Constraint getRight() {
-        if (children.isEmpty() || children.size() < 2){
+        if (children.isEmpty() || children.size() < 2) {
             throw new ParseError("RIght child can not be returned because there are less than two children.");
-        }
-        else{
+        } else {
             return children.get(children.size() - 1);
         }
     }
@@ -52,20 +50,18 @@ public class OrConstraint extends Constraint {
     public void setLeft(Constraint left) {
         if (children.isEmpty()) {
             children.add(left);
-        }
-        else {
+        } else {
             children.set(0, left);
         }
     }
 
-    public void setRight(Constraint right){
+    public void setRight(Constraint right) {
         if (children.size() < 2) {
             if (children.size() < 1) {
                 children.add(null);
             }
             children.add(right);
-        }
-        else {
+        } else {
             children.set(children.size() - 1, right);
         }
     }
@@ -73,8 +69,8 @@ public class OrConstraint extends Constraint {
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
         return children.stream()
-        .map(c -> AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, c, withSubmodels, currentAlias))
-        .collect(Collectors.joining(" | "));
+                .map(c -> AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, c, withSubmodels, currentAlias))
+                .collect(Collectors.joining(" | "));
     }
 
     @Override
@@ -84,8 +80,8 @@ public class OrConstraint extends Constraint {
 
     @Override
     public void replaceConstraintSubPart(Constraint oldSubConstraint, Constraint newSubConstraint) {
-        for (int i = 0; i< children.size(); i++) {
-            if (children.get(i) == oldSubConstraint){
+        for (int i = 0; i < children.size(); i++) {
+            if (children.get(i) == oldSubConstraint) {
                 children.set(i, newSubConstraint);
             }
         }
@@ -100,7 +96,7 @@ public class OrConstraint extends Constraint {
         return clone;
     }
 
-    public void addChild(Constraint constraint){
+    public void addChild(Constraint constraint) {
         if (constraint != null) {
             children.add(constraint);
         }
@@ -110,7 +106,7 @@ public class OrConstraint extends Constraint {
     public int hashCode(int level) {
         final int prime = 31;
         int result = prime * level;
-        for(Constraint c: children) {
+        for (Constraint c : children) {
             result = prime * result + (c == null ? 0 : c.hashCode(1 + level));
         }
         return result;
@@ -131,7 +127,7 @@ public class OrConstraint extends Constraint {
     @Override
     public List<VariableReference> getReferences() {
         List<VariableReference> references = new ArrayList<>();
-        for(Constraint c: children){
+        for (Constraint c : children) {
             references.addAll(c.getReferences());
         }
         return references;
