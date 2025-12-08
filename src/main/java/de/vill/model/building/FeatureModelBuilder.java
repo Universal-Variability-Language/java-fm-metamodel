@@ -13,20 +13,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-/**
- *
- */
 public class FeatureModelBuilder {
-
-    private Function<String, Feature> featureFactory = Feature::new;
     
     private FeatureModel fmInConstruction;
 
     private AbstractUVLElementFactory elementFactory;
-
-    public void setFeatureFactory(Function<String, Feature> featureFactory){
-        this.featureFactory = featureFactory;
-    } 
 
     public FeatureModelBuilder() {
         this(new DefaultUVLElementFactory());
@@ -62,7 +53,7 @@ public class FeatureModelBuilder {
     }
 
     public Feature addRootFeature(String featureName, FeatureType featureType, Cardinality cardinality) {
-        Feature rootFeature = featureFactory.apply(featureName);
+        Feature rootFeature = elementFactory.createFeature(featureName);
         rootFeature.setFeatureType(featureType);
         rootFeature.setCardinality(cardinality);
 
@@ -84,7 +75,7 @@ public class FeatureModelBuilder {
     }
 
     public Feature addFeature(String featureName, Group group, Import featureOrigin, FeatureType type, Cardinality cardinality) {
-        Feature feature = featureFactory.apply(featureName);
+        Feature feature = elementFactory.createFeature(featureName);
         feature.setRelatedImport(featureOrigin);
         feature.setFeatureType(type);
         feature.setCardinality(cardinality);
