@@ -1,6 +1,9 @@
 package de.vill.model.constraint;
 
+import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
+
+import de.vill.exception.ParseError;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +13,6 @@ import java.util.stream.Collectors;
 
 public class AndConstraint extends Constraint {
 
-    //List of children
     private final List<Constraint> children = new ArrayList<>();
 
     public AndConstraint(Constraint... constraints) {
@@ -28,7 +30,7 @@ public class AndConstraint extends Constraint {
 
     public Constraint getLeft() {
         if (children.isEmpty()){
-            return null;
+            throw new ParseError("Left child can not be returned because there are no children.");
         }
         else{
             return children.get(0);
@@ -37,7 +39,7 @@ public class AndConstraint extends Constraint {
 
     public Constraint getRight() {
         if (children.isEmpty() || children.size() < 2){
-            return null;
+            throw new ParseError("Right child can not be returned because there are less than two children.");;
         }
         else{
             return children.get(children.size() - 1);
@@ -48,13 +50,32 @@ public class AndConstraint extends Constraint {
         return children;
     }
 
+    public void setLeft(Constraint left) {
+        if (children.isEmpty()) {
+            children.add(left);
+        }
+        else {
+            children.set(0, left);
+        }
+    }
+
+    public void setRight(Constraint right){
+        if (children.size() < 2) {
+            if (children.size() < 1) {
+                children.add(null);
+            }
+            children.add(right);
+        }
+        else {
+            children.set(children.size() - 1, right);
+        }
+    }
+
     @Override
     public String toString(boolean withSubmodels, String currentAlias) {
-        return  
-                // Constraint-Stream - jeder constraint in einen String umgewandelt und mit einem & verknüpft
-                children.stream()
-                .map(c -> c.toString(withSubmodels, currentAlias))
-                .collect(Collectors.joining(" & "));
+        return  children.stream()
+        .map(c -> AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, c, withSubmodels, currentAlias))
+        .collect(Collectors.joining(" & "));
     }
 
     @Override
