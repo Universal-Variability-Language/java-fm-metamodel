@@ -76,7 +76,7 @@ public class AndConstraint extends Constraint {
 
     @Override
     public List<Constraint> getConstraintSubParts() {
-        return new ArrayList<>(children);
+        return children;
     }
 
     @Override

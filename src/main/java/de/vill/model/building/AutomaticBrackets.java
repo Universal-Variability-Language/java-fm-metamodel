@@ -40,7 +40,6 @@ public class AutomaticBrackets {
         constraintprecedenceLookup.put(EquivalenceConstraint.class, IFF_PRECEDENCE);
         constraintprecedenceLookup.put(ImplicationConstraint.class, IMPLY_PRECEDENCE);
         constraintprecedenceLookup.put(OrConstraint.class, OR_PRECEDENCE);
-        constraintprecedenceLookup.put(MultiOrConstraint.class, OR_PRECEDENCE);
         constraintprecedenceLookup.put(AndConstraint.class, AND_PRECEDENCE);
         constraintprecedenceLookup.put(GreaterEquationConstraint.class, GEQ_LEQ_PRECEDENCE);
         constraintprecedenceLookup.put(LowerEquationConstraint.class, GEQ_LEQ_PRECEDENCE);
