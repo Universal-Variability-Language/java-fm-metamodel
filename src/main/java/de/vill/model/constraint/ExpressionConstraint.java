@@ -3,6 +3,7 @@ package de.vill.model.constraint;
 import de.vill.model.Feature;
 import de.vill.model.building.VariableReference;
 import de.vill.model.expression.Expression;
+import de.vill.util.ConstantSymbols;
 
 import java.util.*;
 
@@ -75,17 +76,17 @@ public abstract class ExpressionConstraint extends Constraint {
             return false;
         }
 
-        if ("==".equals(expressionSymbol)) {
+        if (ConstantSymbols.EQUALS.equals(expressionSymbol)) {
             return leftResult == rightResult;
-        } else if ("<".equals(expressionSymbol)) {
+        } else if (ConstantSymbols.LOWER.equals(expressionSymbol)) {
             return leftResult < rightResult;
-        } else if (">".equals(expressionSymbol)) {
+        } else if (ConstantSymbols.GREATER.equals(expressionSymbol)) {
             return leftResult > rightResult;
-        } else if (">=".equals(expressionSymbol)) {
+        } else if (ConstantSymbols.GREATER_OR_EQUAL.equals(expressionSymbol)) {
             return leftResult >= rightResult;
-        } else if ("<=".equals(expressionSymbol)) {
+        } else if (ConstantSymbols.LOWER_OR_EQUAL.equals(expressionSymbol)) {
             return leftResult <= rightResult;
-        } else if ("!=".equals(expressionSymbol)) {
+        } else if (ConstantSymbols.NOT_EQUALS.equals(expressionSymbol)) {
             return leftResult != rightResult;
         }
         return false;

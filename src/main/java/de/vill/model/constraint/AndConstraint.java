@@ -2,6 +2,7 @@ package de.vill.model.constraint;
 
 import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
+import de.vill.util.ConstantSymbols;
 
 import de.vill.exception.ParseError;
 
@@ -71,7 +72,7 @@ public class AndConstraint extends Constraint {
     public String toString(boolean withSubmodels, String currentAlias) {
         return children.stream()
                 .map(c -> AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, c, withSubmodels, currentAlias))
-                .collect(Collectors.joining(" & "));
+                .collect(Collectors.joining(" " + ConstantSymbols.AND + " "));
     }
 
     @Override

@@ -3,6 +3,7 @@ package de.vill.model.constraint;
 import de.vill.exception.ParseError;
 import de.vill.model.building.AutomaticBrackets;
 import de.vill.model.building.VariableReference;
+import de.vill.util.ConstantSymbols;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,7 +71,7 @@ public class OrConstraint extends Constraint {
     public String toString(boolean withSubmodels, String currentAlias) {
         return children.stream()
                 .map(c -> AutomaticBrackets.enforceConstraintBracketsIfNecessary(this, c, withSubmodels, currentAlias))
-                .collect(Collectors.joining(" | "));
+                .collect(Collectors.joining(" " + ConstantSymbols.OR + " "));
     }
 
     @Override
