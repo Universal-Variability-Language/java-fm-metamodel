@@ -81,9 +81,9 @@ public class ConvertGroupCardinality implements IConversionStrategy {
     }
 
     private Constraint createDisjunction(Set<Constraint> constraints) {
-        MultiOrConstraint orConstraint = new MultiOrConstraint();
+        OrConstraint orConstraint = new OrConstraint();
         for (Constraint constraint : constraints) {
-            orConstraint.add_sub_part(constraint);
+            orConstraint.addChild(constraint);
         }
         return orConstraint;
     }
