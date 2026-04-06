@@ -21,6 +21,9 @@ import de.vill.conversion.DropStringConstraints;
 import de.vill.conversion.DropSMTLevel;
 import de.vill.conversion.DropTypeLevel;
 import de.vill.conversion.IConversionStrategy;
+import de.vill.exception.ErrorCategory;
+import de.vill.exception.ErrorField;
+import de.vill.exception.ErrorReport;
 import de.vill.exception.ParseError;
 import de.vill.exception.ParseErrorList;
 import de.vill.util.Constants;
@@ -111,18 +114,9 @@ public class UVLModelFactory {
         UVLJavaParser.removeErrorListener(ConsoleErrorListener.INSTANCE);
         UVLJavaLexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 
-        UVLJavaLexer.addErrorListener(new BaseErrorListener() {
-            @Override
-            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-                errorList.add(new ParseError(line, charPositionInLine, "failed to parse at line " + line + ":" + charPositionInLine + " due to: " + msg, e));
-            }
-        });
-        UVLJavaParser.addErrorListener(new BaseErrorListener() {
-            @Override
-            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-                errorList.add(new ParseError(line, charPositionInLine, "failed to parse at line " + line + ":" + charPositionInLine + " due to " + msg, e));
-            }
-        });
+        UVLErrorListener listener = new UVLErrorListener(errorList);
+        UVLJavaLexer.addErrorListener(listener);
+        UVLJavaParser.addErrorListener(listener);
 
         UVLListener uvlListener = new UVLListener();
         ParseTreeWalker walker = new ParseTreeWalker();
@@ -285,20 +279,9 @@ public class UVLModelFactory {
         UVLJavaParser.removeErrorListener(ConsoleErrorListener.INSTANCE);
         UVLJavaLexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 
-        UVLJavaLexer.addErrorListener(new BaseErrorListener() {
-            @Override
-            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-                errorList.add(new ParseError(line, charPositionInLine, "failed to parse at line " + line + ":" + charPositionInLine + " due to: " + msg, e));
-                //throw new ParseError(line, charPositionInLine,"failed to parse at line " + line + ":" + charPositionInLine + " due to: " + msg, e);
-            }
-        });
-        UVLJavaParser.addErrorListener(new BaseErrorListener() {
-            @Override
-            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-                errorList.add(new ParseError(line, charPositionInLine, "failed to parse at line " + line + ":" + charPositionInLine + " due to " + msg, e));
-                //throw new ParseError(line, charPositionInLine,"failed to parse at line " + line + ":" + charPositionInLine + " due to " + msg, e);
-            }
-        });
+        UVLErrorListener listener = new UVLErrorListener(errorList);
+        UVLJavaLexer.addErrorListener(listener);
+        UVLJavaParser.addErrorListener(listener);
 
 
         UVLListener uvlListener = new UVLListener();
@@ -447,6 +430,17 @@ public class UVLModelFactory {
 
         if (currentIndex == placeholder.unidentifiedImportParts.size() - 1) { // Feature
             Feature feat = lastImport.getFeatureModel().getFeatureMap().get(placeholder.unidentifiedImportParts.get(currentIndex));
+            if (feat == null) {
+                String fullRef = String.join(".", placeholder.unidentifiedImportParts);
+                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
+                        "Imported feature '" + fullRef + "' could not be resolved")
+                        .field(ErrorField.IMPORT)
+                        .reference(fullRef)
+                        .cause("The feature '" + placeholder.unidentifiedImportParts.get(currentIndex) + "' does not exist in the imported submodel.")
+                        .hint("Check that the feature exists in the imported model or correct the reference.")
+                        .build()));
+                return null;
+            }
             if (!relativeNamespaces.isEmpty()) {
                 lastImport.setRelativeImportPath(String.join(".", relativeNamespaces));
             }
@@ -454,12 +448,44 @@ public class UVLModelFactory {
             return feat;
         } else if (currentIndex == placeholder.unidentifiedImportParts.size() - 2) { // Attribute
             Feature feat = lastImport.getFeatureModel().getFeatureMap().get(placeholder.unidentifiedImportParts.get(currentIndex));
+            if (feat == null) {
+                String fullRef = String.join(".", placeholder.unidentifiedImportParts);
+                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
+                        "Imported feature for attribute reference '" + fullRef + "' could not be resolved")
+                        .field(ErrorField.IMPORT)
+                        .reference(fullRef)
+                        .cause("The feature '" + placeholder.unidentifiedImportParts.get(currentIndex) + "' does not exist in the imported submodel.")
+                        .hint("Check that the feature exists in the imported model or correct the reference.")
+                        .build()));
+                return null;
+            }
             if (!relativeNamespaces.isEmpty()) {
                 lastImport.setRelativeImportPath(String.join(".", relativeNamespaces));
             }
             feat.setRelatedImport(lastImport);
-            return feat.getAttributes().get(placeholder.unidentifiedImportParts.get(currentIndex + 1));
+            String attrName = placeholder.unidentifiedImportParts.get(currentIndex + 1);
+            Attribute<?> attr = feat.getAttributes().get(attrName);
+            if (attr == null) {
+                String fullRef = String.join(".", placeholder.unidentifiedImportParts);
+                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
+                        "Attribute '" + attrName + "' not found on imported feature '" + feat.getFeatureName() + "'")
+                        .field(ErrorField.ATTRIBUTE)
+                        .reference(fullRef)
+                        .cause("The attribute '" + attrName + "' does not exist on the feature '" + feat.getFeatureName() + "'.")
+                        .hint("Check the attribute name or define it on the feature in the imported model.")
+                        .build()));
+                return null;
+            }
+            return attr;
         } else { // Should never happen for a valid reference
+            String fullRef = String.join(".", placeholder.unidentifiedImportParts);
+            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
+                    "Could not resolve imported reference '" + fullRef + "'")
+                    .field(ErrorField.IMPORT)
+                    .reference(fullRef)
+                    .cause("The reference could not be resolved to a feature or attribute in the imported submodel.")
+                    .hint("Check the import path and ensure the referenced element exists.")
+                    .build()));
             return null;
         }
     }
@@ -502,7 +528,13 @@ public class UVLModelFactory {
         final List<Constraint> constraints = featureModel.getOwnConstraints();
         for (final Constraint constraint: constraints) {
             if (!validateTypeLevelConstraint(constraint)) {
-                throw new ParseError("Invalid Constraint in line - " + constraint.getLineNumber());
+                throw new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
+                        "Type mismatch in constraint at line " + constraint.getLineNumber())
+                        .line(constraint.getLineNumber())
+                        .field(ErrorField.CONSTRAINT)
+                        .cause("The left and right side of the expression have incompatible types.")
+                        .hint("Ensure both sides of the comparison use the same type (e.g. both Integer or both String).")
+                        .build());
             }
         }
     }
