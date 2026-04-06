@@ -58,6 +58,7 @@ public class UVLListener extends UVLJavaParserBaseListener {
     private Stack<Group> groupStack = new Stack<>();
 
     private final Map<String, Feature> importedFeatures = new HashMap<>();
+    private final Map<String, Integer> featureLineNumbers = new HashMap<>();
 
     private Stack<Constraint> constraintStack = new Stack<>();
 
@@ -222,11 +223,31 @@ public class UVLListener extends UVLJavaParserBaseListener {
         groupStack.pop();
     }
 
+    private static final Set<String> GROUP_KEYWORDS = new HashSet<>(Arrays.asList(
+            "mandatory", "optional", "alternative", "or"
+    ));
+
     @Override
     public void enterFeature(UVLJavaParser.FeatureContext ctx) {
         String featureReference = ctx.reference().getText().replace("\"", "");
         int line = ctx.getStart().getLine();
         int charPos = ctx.getStart().getCharPositionInLine();
+
+        // Group keywords cannot be used as feature names — this typically
+        // indicates a wrong indentation rather than an intentional feature name.
+        if (GROUP_KEYWORDS.contains(featureReference.toLowerCase())) {
+            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.SYNTAX,
+                    "'" + featureReference + "' is a reserved group keyword and cannot be used as a feature name")
+                    .line(line).charPosition(charPos)
+                    .field(ErrorField.FEATURE)
+                    .reference(featureReference)
+                    .cause("The name '" + featureReference + "' is a reserved group type keyword.")
+                    .hint("Check if the indentation is correct. Group types must be indented under a parent feature.")
+                    .build()));
+            skippedFeatureDepth = 1;
+            return;
+        }
+
         Feature feature = ParsingUtilities.parseFeatureInitialization(featureReference, fmBuilder.getFeatureModel().getImports());
         if (feature == null) {
             errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
@@ -240,18 +261,20 @@ public class UVLListener extends UVLJavaParserBaseListener {
             skippedFeatureDepth = 1;
             return;
         } else if (importedFeatures.containsKey(featureReference)) {
+            int originalLine = featureLineNumbers.getOrDefault(featureReference, 0);
             errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
                     "Duplicate feature name: '" + featureReference + "'")
                     .line(line).charPosition(charPos)
                     .field(ErrorField.FEATURE)
                     .reference(featureReference)
-                    .cause("A feature with the name '" + featureReference + "' already exists in the feature tree.")
+                    .cause("A feature with the name '" + featureReference + "' already exists in the feature tree (first defined at line " + originalLine + ").")
                     .hint("Rename one of the duplicate features to make names unique.")
                     .build()));
             skippedFeatureDepth = 1;
             return;
         }
         importedFeatures.put(featureReference, feature);
+        featureLineNumbers.put(featureReference, line);
         featureStack.push(feature);
         Group parentGroup = groupStack.peek();
         fmBuilder.addFeature(feature, parentGroup);

@@ -307,7 +307,14 @@ public class UVLModelFactory {
 
             for (Import importLine : featureModel.getImports()) {
                 if (visitedImports.containsKey(importLine.getNamespace()) && visitedImports.get(importLine.getNamespace()) == null) {
-                    throw new ParseError("Cyclic import detected! " + "The import of " + importLine.getNamespace() + " in " + featureModel.getNamespace() + " creates a cycle", importLine.getLineNumber());
+                    throw new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
+                            "Cyclic import detected: '" + importLine.getNamespace() + "' in '" + featureModel.getNamespace() + "'")
+                            .line(importLine.getLineNumber())
+                            .field(ErrorField.IMPORT)
+                            .reference(importLine.getNamespace())
+                            .cause("The import of '" + importLine.getNamespace() + "' in '" + featureModel.getNamespace() + "' creates a cycle.")
+                            .hint("Remove the circular dependency between the two models.")
+                            .build());
                 } else {
                     try {
                         String path = getPath(rootPath, importLine);
@@ -346,7 +353,14 @@ public class UVLModelFactory {
 
 
                     } catch (IOException e) {
-                        throw new ParseError("Could not resolve import: " + e.getMessage(), importLine.getLineNumber());
+                        throw new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
+                                "Could not resolve import: '" + importLine.getNamespace() + "'")
+                                .line(importLine.getLineNumber())
+                                .field(ErrorField.IMPORT)
+                                .reference(importLine.getNamespace())
+                                .cause("The file for the imported model could not be found or read: " + e.getMessage())
+                                .hint("Check that the import path is correct and the .uvl file exists in the expected directory.")
+                                .build());
                     }
                 }
             }

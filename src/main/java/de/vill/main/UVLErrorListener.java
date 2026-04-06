@@ -6,10 +6,15 @@ import de.vill.exception.ErrorReport;
 import de.vill.exception.ParseError;
 import org.antlr.v4.runtime.*;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.*;
 
 public class UVLErrorListener extends BaseErrorListener {
+
+    private static final Set<String> GROUP_KEYWORDS = new HashSet<>(Arrays.asList( "mandatory", "optional", "alternative", "or"));
 
     private final List<ParseError> errorList;
 
@@ -24,7 +29,8 @@ public class UVLErrorListener extends BaseErrorListener {
     }
 
     private ErrorReport translateToReport(String message, Object offendingSymbol, Recognizer<?, ?> recognizer, int line, int charPosition) {
-        // Token recognition error -> LEXICAL
+        
+        // Token recognition error
         Matcher m = Pattern.compile("token recognition error at: '(.*)'").matcher(message);
         if (m.find()) {
             String character = m.group(1);
@@ -37,7 +43,7 @@ public class UVLErrorListener extends BaseErrorListener {
                     .build();
         }
 
-        // Missing token -> SYNTAX
+        // Missing token
         m = Pattern.compile("missing '?([<>\\w]+)'? at '?(.*?)'?$").matcher(message);
         if (m.find()) {
             String missing = tokenToReadable(m.group(1));
@@ -50,10 +56,20 @@ public class UVLErrorListener extends BaseErrorListener {
                     .build();
         }
 
-        // Extraneous input -> SYNTAX
+        // Extraneous input
         m = Pattern.compile("extraneous input '?(.*?)'? expecting (.*)").matcher(message);
         if (m.find()) {
-            String extra = tokenToReadable(m.group(1));
+            String extraString = m.group(1);
+            String extra = tokenToReadable(extraString);
+            if (Character.isDigit(extraString.charAt(0))){
+                return new ErrorReport.Builder(ErrorCategory.SYNTAX,
+                    "Wrong feature name: " + extra)
+                    .line(line).charPosition(charPosition)
+                    .reference(m.group(1))
+                    .cause("Feature names can not start with a number.")
+                    .hint("Rename the feature.")
+                    .build();
+            }
             return new ErrorReport.Builder(ErrorCategory.SYNTAX,
                     "Unexpected input " + extra)
                     .line(line).charPosition(charPosition)
@@ -63,18 +79,14 @@ public class UVLErrorListener extends BaseErrorListener {
                     .build();
         }
 
-        // Mismatched input -> SYNTAX
+        // Mismatched input
         m = Pattern.compile("mismatched input '?(.*?)'? expecting (.*)").matcher(message);
         if (m.find()) {
             String found = tokenToReadable(m.group(1));
             String expected = simplifySet(m.group(2));
 
             // Sonderfall: nach Gruppierung ohne Features
-            // ANTLR meldet entweder "a new line" oder ein Gruppen-Keyword als found,
-            // wenn eine Gruppe leer ist und expected "an indentation" ist
-            if (expected.equals("an indentation") && (found.equals("a new line")
-                    || found.contains("'mandatory'") || found.contains("'optional'")
-                    || found.contains("'alternative'") || found.contains("'or'"))) {
+            if (expected.equals("an indentation") && (found.equals("a new line") || found.contains("'mandatory'") || found.contains("'optional'")|| found.contains("'alternative'") || found.contains("'or'"))) {
                 return new ErrorReport.Builder(ErrorCategory.SYNTAX,
                         "Missing features after group type")
                         .line(line).charPosition(charPosition)
@@ -84,8 +96,24 @@ public class UVLErrorListener extends BaseErrorListener {
                         .build();
             }
 
-            // Sonderfall: mehr als ein root Feature
+            // Case: More than one root feature
             if (expected.equals("an indentation or a dedentation")) {
+                // Check if the offending token is actually a group keyword
+                String offendingText = null;
+                if (offendingSymbol instanceof Token) {
+                    offendingText = ((Token) offendingSymbol).getText();
+                }
+                if (offendingText != null && GROUP_KEYWORDS.contains(offendingText.toLowerCase())) {
+                    return new ErrorReport.Builder(ErrorCategory.SYNTAX,
+                            "Group keyword '" + offendingText + "' at wrong indentation level")
+                            .line(line).charPosition(charPosition)
+                            .field(ErrorField.GROUP)
+                            .reference(offendingText)
+                            .cause("'" + offendingText + "' is a group type keyword but appears at the wrong indentation level.")
+                            .hint("Indent '" + offendingText + "' further so it is nested under a parent feature.")
+                            .build();
+                }
+
                 return new ErrorReport.Builder(ErrorCategory.SYNTAX,
                         "More than one root feature detected")
                         .line(line).charPosition(charPosition)
