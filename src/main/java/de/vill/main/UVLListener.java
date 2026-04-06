@@ -49,7 +49,15 @@ import java.util.Stack;
 import org.antlr.v4.runtime.Token;
 
 public class UVLListener extends UVLJavaParserBaseListener {
-    public FeatureModelBuilder fmBuilder = new FeatureModelBuilder();
+    public FeatureModelBuilder fmBuilder;
+
+    public UVLListener() {
+        this(new FeatureModelBuilder());
+    }
+
+    public UVLListener(FeatureModelBuilder fmBuilder) {
+        this.fmBuilder = fmBuilder;
+    }
     private Set<LanguageLevel> importedLanguageLevels = new HashSet<>(Arrays.asList(LanguageLevel.BOOLEAN_LEVEL));
     private Stack<Feature> featureStack = new Stack<>();
     private Stack<Group> groupStack = new Stack<>();
