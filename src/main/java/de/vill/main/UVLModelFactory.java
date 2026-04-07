@@ -2,6 +2,7 @@ package de.vill.main;
 
 import de.vill.model.*;
 import de.vill.model.building.AbstractUVLElementFactory;
+import de.vill.model.building.DefaultUVLElementFactory;
 import de.vill.model.building.FeatureModelBuilder;
 import de.vill.model.building.VariableReference;
 import de.vill.model.constraint.*;
@@ -50,7 +51,7 @@ public class UVLModelFactory {
     private final List<ParseError> errorList = new LinkedList<>();
 
     public UVLModelFactory() {
-        this(null);
+        this(new DefaultUVLElementFactory());
     }
 
     public UVLModelFactory(AbstractUVLElementFactory elementFactory) {
