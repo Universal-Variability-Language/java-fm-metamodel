@@ -30,7 +30,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -125,7 +124,7 @@ public class UVLModelFactory {
         });
 
         UVLListener uvlListener = new UVLListener();
-        ParseTreeWalker walker = new ParseTreeWalker();
+        IterativeParseTreeWalker walker = new IterativeParseTreeWalker();
         walker.walk(uvlListener, UVLJavaParser.constraintLine());
 
         return uvlListener.getConstraint();
@@ -302,7 +301,7 @@ public class UVLModelFactory {
 
 
         UVLListener uvlListener = new UVLListener();
-        ParseTreeWalker walker = new ParseTreeWalker();
+        IterativeParseTreeWalker walker = new IterativeParseTreeWalker();
         walker.walk(uvlListener, UVLJavaParser.featureModel());
         FeatureModel featureModel = null;
 
@@ -508,28 +507,38 @@ public class UVLModelFactory {
     }
 
     private boolean validateTypeLevelConstraint(final Constraint constraint) {
-        boolean result = true;
-        if (constraint instanceof ExpressionConstraint) {
-            String leftReturnType = ((ExpressionConstraint) constraint).getLeft().getReturnType();
-            String rightReturnType = ((ExpressionConstraint) constraint).getRight().getReturnType();
+        final Deque<Constraint> stack = new ArrayDeque<>();
+        stack.push(constraint);
 
-            if (!(leftReturnType.equalsIgnoreCase(Constants.TRUE) || rightReturnType.equalsIgnoreCase(Constants.TRUE))) {
-                // if not attribute constraint
-                result = result && ((ExpressionConstraint) constraint).getLeft().getReturnType().equalsIgnoreCase(((ExpressionConstraint) constraint).getRight().getReturnType());
+        while (!stack.isEmpty()) {
+            final Constraint current = stack.pop();
+
+            if (current instanceof ExpressionConstraint) {
+                final ExpressionConstraint expressionConstraint = (ExpressionConstraint) current;
+
+                final String leftReturnType = expressionConstraint.getLeft().getReturnType();
+                final String rightReturnType = expressionConstraint.getRight().getReturnType();
+
+                if (!(leftReturnType.equalsIgnoreCase(Constants.TRUE) || rightReturnType.equalsIgnoreCase(Constants.TRUE))) {
+                    if (!leftReturnType.equalsIgnoreCase(rightReturnType)) {
+                        return false;
+                    }
+                }
+
+                for (final Expression expr : expressionConstraint.getExpressionSubParts()) {
+                    if (!validateTypeLevelExpression(expr)) {
+                        return false;
+                    }
+                }
             }
-            if (!result) {
-                return false;
-            }
-            for (final Expression expr: ((ExpressionConstraint) constraint).getExpressionSubParts()) {
-                result = result && validateTypeLevelExpression(expr);
+
+            final List<Constraint> subConstraints = current.getConstraintSubParts();
+            for (int i = subConstraints.size() - 1; i >= 0; i--) {
+                stack.push(subConstraints.get(i));
             }
         }
 
-        for (final Constraint subCons: constraint.getConstraintSubParts()) {
-            result = result && validateTypeLevelConstraint(subCons);
-        }
-
-        return result;
+        return true;
     }
 
     private boolean validateTypeLevelExpression(final Expression expression) {
