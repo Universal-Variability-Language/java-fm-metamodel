@@ -67,7 +67,7 @@ public class ErrorReport {
             sb.append("\n  Field: ").append(field);
         }
         if (cause != null) {
-            sb.append("\n  Cause: ").append(cause);
+            sb.append("\n  Possible cause: ").append(cause);
         }
         if (hint != null) {
             sb.append("\n  Hint: ").append(hint);

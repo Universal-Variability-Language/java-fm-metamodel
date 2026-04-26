@@ -66,7 +66,7 @@ public class UVLErrorListener extends BaseErrorListener {
                     "Wrong feature name: " + extra)
                     .line(line).charPosition(charPosition)
                     .reference(m.group(1))
-                    .cause("Feature names can not start with a number.")
+                    .cause("Invalid feature name. Feature names can not start with a number.")
                     .hint("Rename the feature.")
                     .build();
             }
@@ -85,7 +85,7 @@ public class UVLErrorListener extends BaseErrorListener {
             String found = tokenToReadable(m.group(1));
             String expected = simplifySet(m.group(2));
 
-            // Sonderfall: nach Gruppierung ohne Features
+            // Case: group keywords without features/children
             if (expected.equals("an indentation") && (found.equals("a new line") || found.contains("'mandatory'") || found.contains("'optional'")|| found.contains("'alternative'") || found.contains("'or'"))) {
                 return new ErrorReport.Builder(ErrorCategory.SYNTAX,
                         "Missing features after group type")

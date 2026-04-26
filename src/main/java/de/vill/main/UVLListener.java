@@ -110,8 +110,8 @@ public class UVLListener extends UVLJavaParserBaseListener {
                     .line(line).charPosition(charPos)
                     .field(ErrorField.LANGUAGE_LEVEL)
                     .reference(ctx.languageLevel().getText())
-                    .cause("Language level imports must have the format 'MajorLevel' or 'MajorLevel.MinorLevel'.")
-                    .hint("Use a valid language level format, e.g. 'Arithmetic-Level' or 'Arithmetic-Level.Aggregate-Function'.")
+                    .cause("Invalid language level import.")
+                    .hint("Use a valid language level format.")
                     .build()));
         }
     }
@@ -233,8 +233,6 @@ public class UVLListener extends UVLJavaParserBaseListener {
         int line = ctx.getStart().getLine();
         int charPos = ctx.getStart().getCharPositionInLine();
 
-        // Group keywords cannot be used as feature names — this typically
-        // indicates a wrong indentation rather than an intentional feature name.
         if (GROUP_KEYWORDS.contains(featureReference.toLowerCase())) {
             errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.SYNTAX,
                     "'" + featureReference + "' is a reserved group keyword and cannot be used as a feature name")
