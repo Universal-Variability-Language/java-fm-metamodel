@@ -282,10 +282,7 @@ public class UVLModelFactory {
     }
 
     private UVLListener createUVLListener() {
-        if (elementFactory != null) {
-            return new UVLListener(new FeatureModelBuilder(elementFactory));
-        }
-        return new UVLListener();
+        return new UVLListener(new FeatureModelBuilder(elementFactory));
     }
 
     private String getPath(String rootPath, Import referencedImport) {
