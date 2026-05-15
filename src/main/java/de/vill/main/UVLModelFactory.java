@@ -1,6 +1,9 @@
 package de.vill.main;
 
 import de.vill.model.*;
+import de.vill.model.building.AbstractUVLElementFactory;
+import de.vill.model.building.DefaultUVLElementFactory;
+import de.vill.model.building.FeatureModelBuilder;
 import de.vill.model.building.VariableReference;
 import de.vill.model.constraint.*;
 import de.vill.model.expression.*;
@@ -42,10 +45,16 @@ public class UVLModelFactory {
 
     private final Map<LanguageLevel, Class<? extends IConversionStrategy>> conversionStrategiesDrop;
     private final Map<LanguageLevel, Class<? extends IConversionStrategy>> conversionStrategiesConvert;
+    private final AbstractUVLElementFactory elementFactory;
 
     private final List<ParseError> errorList = new LinkedList<>();
 
     public UVLModelFactory() {
+        this(new DefaultUVLElementFactory());
+    }
+
+    public UVLModelFactory(AbstractUVLElementFactory elementFactory) {
+        this.elementFactory = elementFactory;
         this.conversionStrategiesDrop = new HashMap<>();
         this.conversionStrategiesDrop.put(LanguageLevel.GROUP_CARDINALITY, DropGroupCardinality.class);
         this.conversionStrategiesDrop.put(LanguageLevel.FEATURE_CARDINALITY, DropFeatureCardinality.class);
@@ -123,8 +132,9 @@ public class UVLModelFactory {
             }
         });
 
-        UVLListener uvlListener = new UVLListener();
+        UVLListener uvlListener = createUVLListener();
         IterativeParseTreeWalker walker = new IterativeParseTreeWalker();
+       
         walker.walk(uvlListener, UVLJavaParser.constraintLine());
 
         return uvlListener.getConstraint();
@@ -271,6 +281,10 @@ public class UVLModelFactory {
         return completeOrderedLevelsToRemove;
     }
 
+    private UVLListener createUVLListener() {
+        return new UVLListener(new FeatureModelBuilder(elementFactory));
+    }
+
     private String getPath(String rootPath, Import referencedImport) {
         return rootPath + FileSystems.getDefault().getSeparator() + referencedImport.getNamespace().replace(".", FileSystems.getDefault().getSeparator()) + ".uvl";
     }
@@ -300,8 +314,10 @@ public class UVLModelFactory {
         });
 
 
-        UVLListener uvlListener = new UVLListener();
+    
+        UVLListener uvlListener = createUVLListener();
         IterativeParseTreeWalker walker = new IterativeParseTreeWalker();
+        
         walker.walk(uvlListener, UVLJavaParser.featureModel());
         FeatureModel featureModel = null;
 
