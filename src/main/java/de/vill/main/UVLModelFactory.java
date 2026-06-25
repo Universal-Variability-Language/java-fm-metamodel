@@ -23,6 +23,7 @@ import de.vill.conversion.DropTypeLevel;
 import de.vill.conversion.IConversionStrategy;
 import de.vill.exception.ErrorCategory;
 import de.vill.exception.ErrorField;
+import de.vill.exception.ErrorMessages;
 import de.vill.exception.ErrorReport;
 import de.vill.exception.ParseError;
 import de.vill.exception.ParseErrorList;
@@ -368,6 +369,11 @@ public class UVLModelFactory {
         for (Constraint constraint : featureModel.getOwnConstraints()) {
             resolveImportPlaceholders(constraint, featureModel);
         }
+        if (!errorList.isEmpty()) {
+            ParseErrorList parseErrorList = new ParseErrorList("Multiple Errors occurred during parsing!");
+            parseErrorList.getErrorList().addAll(errorList);
+            throw parseErrorList;
+        }
         return featureModel;
     }
 
@@ -446,13 +452,7 @@ public class UVLModelFactory {
             Feature feat = lastImport.getFeatureModel().getFeatureMap().get(placeholder.unidentifiedImportParts.get(currentIndex));
             if (feat == null) {
                 String fullRef = String.join(".", placeholder.unidentifiedImportParts);
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "Imported feature '" + fullRef + "' could not be resolved")
-                        .field(ErrorField.IMPORT)
-                        .reference(fullRef)
-                        .cause("The feature '" + placeholder.unidentifiedImportParts.get(currentIndex) + "' does not exist in the imported submodel.")
-                        .hint("Check that the feature exists in the imported model or correct the reference.")
-                        .build()));
+                errorList.add(ErrorMessages.importedFeatureNotFound(fullRef));
                 return null;
             }
             if (!relativeNamespaces.isEmpty()) {
@@ -464,13 +464,7 @@ public class UVLModelFactory {
             Feature feat = lastImport.getFeatureModel().getFeatureMap().get(placeholder.unidentifiedImportParts.get(currentIndex));
             if (feat == null) {
                 String fullRef = String.join(".", placeholder.unidentifiedImportParts);
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "Imported feature for attribute reference '" + fullRef + "' could not be resolved")
-                        .field(ErrorField.IMPORT)
-                        .reference(fullRef)
-                        .cause("The feature '" + placeholder.unidentifiedImportParts.get(currentIndex) + "' does not exist in the imported submodel.")
-                        .hint("Check that the feature exists in the imported model or correct the reference.")
-                        .build()));
+                errorList.add(ErrorMessages.importFeatureAttributeReferenceMissing(fullRef));
                 return null;
             }
             if (!relativeNamespaces.isEmpty()) {
@@ -481,25 +475,14 @@ public class UVLModelFactory {
             Attribute<?> attr = feat.getAttributes().get(attrName);
             if (attr == null) {
                 String fullRef = String.join(".", placeholder.unidentifiedImportParts);
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "Attribute '" + attrName + "' not found on imported feature '" + feat.getFeatureName() + "'")
-                        .field(ErrorField.ATTRIBUTE)
-                        .reference(fullRef)
-                        .cause("The attribute '" + attrName + "' does not exist on the feature '" + feat.getFeatureName() + "'.")
-                        .hint("Check the attribute name or define it on the feature in the imported model.")
-                        .build()));
+                errorList.add(ErrorMessages.missingAttributewithImportedFeature(fullRef,attrName));
                 return null;
             }
             return attr;
         } else { // Should never happen for a valid reference
             String fullRef = String.join(".", placeholder.unidentifiedImportParts);
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Could not resolve imported reference '" + fullRef + "'")
-                    .field(ErrorField.IMPORT)
-                    .reference(fullRef)
-                    .cause("The reference could not be resolved to a feature or attribute in the imported submodel.")
-                    .hint("Check the import path and ensure the referenced element exists.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.unresolvedImportedReference(fullRef));
             return null;
         }
     }

@@ -9,6 +9,7 @@ import uvl.UVLJavaParserBaseListener;
 
 import de.vill.exception.ErrorCategory;
 import de.vill.exception.ErrorField;
+import de.vill.exception.ErrorMessages;
 import de.vill.exception.ErrorReport;
 import de.vill.exception.ParseError;
 import de.vill.exception.ParseErrorList;
@@ -105,14 +106,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
         } else {
             int line = ctx.getStart().getLine();
             int charPos = ctx.getStart().getCharPositionInLine();
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Invalid language level import: '" + ctx.languageLevel().getText() + "'")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.LANGUAGE_LEVEL)
-                    .reference(ctx.languageLevel().getText())
-                    .cause("Invalid language level import.")
-                    .hint("Use a valid language level format.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.invalidLanguageLevel(
+                    ctx.languageLevel().getText(),
+                    line,
+                    charPos
+                )
+            );
         }
     }
 
@@ -232,42 +232,28 @@ public class UVLListener extends UVLJavaParserBaseListener {
         String featureReference = ctx.reference().getText().replace("\"", "");
         int line = ctx.getStart().getLine();
         int charPos = ctx.getStart().getCharPositionInLine();
-
-        if (GROUP_KEYWORDS.contains(featureReference.toLowerCase())) {
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.SYNTAX,
-                    "'" + featureReference + "' is a reserved group keyword and cannot be used as a feature name")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.FEATURE)
-                    .reference(featureReference)
-                    .cause("The name '" + featureReference + "' is a reserved group type keyword.")
-                    .hint("Check if the indentation is correct. Group types must be indented under a parent feature.")
-                    .build()));
-            skippedFeatureDepth = 1;
-            return;
-        }
-
         Feature feature = ParsingUtilities.parseFeatureInitialization(featureReference, fmBuilder.getFeatureModel().getImports());
+
         if (feature == null) {
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Feature '" + featureReference + "' is referenced as imported, but no matching import exists")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.IMPORT)
-                    .reference(featureReference)
-                    .cause("The feature name suggests it comes from an imported submodel, but the import was not declared.")
-                    .hint("Add the corresponding import in the 'imports' section or correct the feature name.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.noImport(
+                    featureReference,
+                    line,
+                    charPos
+                )
+            );
             skippedFeatureDepth = 1;
             return;
         } else if (importedFeatures.containsKey(featureReference)) {
             int originalLine = featureLineNumbers.getOrDefault(featureReference, 0);
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Duplicate feature name: '" + featureReference + "'")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.FEATURE)
-                    .reference(featureReference)
-                    .cause("A feature with the name '" + featureReference + "' already exists in the feature tree (first defined at line " + originalLine + ").")
-                    .hint("Rename one of the duplicate features to make names unique.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.duplicateFeature(
+                    featureReference,
+                    originalLine,
+                    line,
+                    charPos
+                )
+            );
             skippedFeatureDepth = 1;
             return;
         }
@@ -348,14 +334,14 @@ public class UVLListener extends UVLJavaParserBaseListener {
         } else {
             int line = ctx.getStart().getLine();
             int charPos = ctx.getStart().getCharPositionInLine();
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Unsupported attribute value type: '" + ctx.value().getText() + "'")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.ATTRIBUTE)
-                    .reference(attributeName)
-                    .cause("The value '" + ctx.value().getText() + "' does not match any supported attribute type (Boolean, Integer, Float, String, Vector, Attributes).")
-                    .hint("Use a supported value type for the attribute.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.unsupportedAttributeValueType(
+                    attributeName,
+                    ctx.value().getText(),
+                    line,
+                    charPos
+                )
+            );
         }
     }
 
@@ -383,14 +369,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
         int charPos = ctx.getStart().getCharPositionInLine();
         VariableReference reference = ParsingUtilities.resolveReference(referenceName, fmBuilder.getFeatureModel());
         if (reference == null) {
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Reference '" + referenceName + "' in constraint could not be resolved")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.CONSTRAINT)
-                    .reference(referenceName)
-                    .cause("The feature or attribute '" + referenceName + "' is used in a constraint but does not exist in the feature tree.")
-                    .hint("Check if the feature name is spelled correctly or add it to the feature tree.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.featureNotInTreeButConstraint(
+                    referenceName,
+                    line,
+                    charPos
+                )
+            );
             reference = new Feature(referenceName);
         }
         LiteralConstraint constraint = new LiteralConstraint(reference);
@@ -581,14 +566,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
         int charPos = ctx.getStart().getCharPositionInLine();
         VariableReference variable = ParsingUtilities.resolveReference(referenceName, fmBuilder.getFeatureModel());
         if (variable == null) {
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Variable '" + referenceName + "' in expression could not be resolved")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.EXPRESSION)
-                    .reference(referenceName)
-                    .cause("The feature or attribute '" + referenceName + "' is used in an expression but does not exist in the feature tree.")
-                    .hint("Check if the variable name is spelled correctly or add it to the feature tree.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.featureNotInTreeButExpression(
+                    referenceName,
+                    line,
+                    charPos
+                )
+            );
             variable = new Feature(referenceName);
         }
         LiteralExpression expression = new LiteralExpression(variable);
@@ -656,26 +640,24 @@ public class UVLListener extends UVLJavaParserBaseListener {
             GlobalAttribute attribute = ParsingUtilities.getGlobalAttribute(ctx.reference().get(0).getText(), fmBuilder.getFeatureModel());
             boolean smellyInput = false;
             if (attribute.getType() == null) {
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "Attribute '" + attribute.getIdentifier() + "' does not exist in the feature model")
-                        .line(line).charPosition(charPos)
-                        .field(ErrorField.ATTRIBUTE)
-                        .reference(attribute.getIdentifier())
-                        .cause("The attribute '" + attribute.getIdentifier() + "' is used in a sum() aggregate function but is not defined on any feature.")
-                        .hint("Define the attribute on the relevant features or correct the attribute name.")
-                        .build()));
+                errorList.add(
+                    ErrorMessages.sumAttributeNotDefined(
+                        attribute.getIdentifier(),
+                        line,
+                        charPos
+                    )
+                );
                 smellyInput = true;
             }
             if (rootFeature == null || !(rootFeature instanceof Feature)) {
-                String refName = ctx.reference().get(1).getText();
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "'" + refName + "' is not a valid feature for sum() aggregate function")
-                        .line(line).charPosition(charPos)
-                        .field(ErrorField.FEATURE)
-                        .reference(refName)
-                        .cause("The parameter '" + refName + "' must be a feature but could not be found in the feature tree.")
-                        .hint("Check if the feature name is spelled correctly or add it to the feature tree.")
-                        .build()));
+                String referenceName = ctx.reference().get(1).getText();
+                errorList.add(
+                    ErrorMessages.sumFeatureNotDefined(
+                        referenceName,
+                        line,
+                        charPos
+                    )
+                );  
                 smellyInput = true;
             }
             if (smellyInput) {
@@ -687,14 +669,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
         } else {
             GlobalAttribute attribute = ParsingUtilities.getGlobalAttribute(ctx.reference().get(0).getText(), fmBuilder.getFeatureModel());
             if (attribute.getType() == null) {
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "Attribute '" + attribute.getIdentifier() + "' does not exist in the feature model")
-                        .line(line).charPosition(charPos)
-                        .field(ErrorField.ATTRIBUTE)
-                        .reference(attribute.getIdentifier())
-                        .cause("The attribute '" + attribute.getIdentifier() + "' is used in a sum() aggregate function but is not defined on any feature.")
-                        .hint("Define the attribute on the relevant features or correct the attribute name.")
-                        .build()));
+                errorList.add(
+                    ErrorMessages.sumAttributeNotDefined(
+                        attribute.getIdentifier(),
+                        line,
+                        charPos
+                    )
+                );
                 expressionStack.push(new NumberExpression(0));
                 return;
             }
@@ -716,26 +697,24 @@ public class UVLListener extends UVLJavaParserBaseListener {
             GlobalAttribute attribute = ParsingUtilities.getGlobalAttribute(ctx.reference().get(0).getText(), fmBuilder.getFeatureModel());
             boolean smellyInput = false;
             if (attribute.getType() == null) {
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "Attribute '" + attribute.getIdentifier() + "' does not exist in the feature model")
-                        .line(line).charPosition(charPos)
-                        .field(ErrorField.ATTRIBUTE)
-                        .reference(attribute.getIdentifier())
-                        .cause("The attribute '" + attribute.getIdentifier() + "' is used in an avg() aggregate function but is not defined on any feature.")
-                        .hint("Define the attribute on the relevant features or correct the attribute name.")
-                        .build()));
+                errorList.add(
+                    ErrorMessages.avgAttributeNotDefined(
+                        attribute.getIdentifier(),
+                        line,
+                        charPos
+                    )
+                );
                 smellyInput = true;
             }
             if (rootFeature == null || !(rootFeature instanceof Feature)) {
-                String refName = ctx.reference().get(1).getText();
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "'" + refName + "' is not a valid feature for avg() aggregate function")
-                        .line(line).charPosition(charPos)
-                        .field(ErrorField.FEATURE)
-                        .reference(refName)
-                        .cause("The parameter '" + refName + "' must be a feature but could not be found in the feature tree.")
-                        .hint("Check if the feature name is spelled correctly or add it to the feature tree.")
-                        .build()));
+                String referenceName = ctx.reference().get(1).getText();
+                errorList.add(
+                    ErrorMessages.avgFeatureNotDefined(
+                        referenceName,
+                        line,
+                        charPos
+                    )
+                );  
                 smellyInput = true;
             }
             if (smellyInput) {
@@ -747,14 +726,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
         } else {
             GlobalAttribute attribute = ParsingUtilities.getGlobalAttribute(ctx.reference().get(0).getText(), fmBuilder.getFeatureModel());
             if (attribute.getType() == null) {
-                errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                        "Attribute '" + attribute.getIdentifier() + "' does not exist in the feature model")
-                        .line(line).charPosition(charPos)
-                        .field(ErrorField.ATTRIBUTE)
-                        .reference(attribute.getIdentifier())
-                        .cause("The attribute '" + attribute.getIdentifier() + "' is used in an avg() aggregate function but is not defined on any feature.")
-                        .hint("Define the attribute on the relevant features or correct the attribute name.")
-                        .build()));
+                errorList.add(
+                    ErrorMessages.avgAttributeNotDefined(
+                        attribute.getIdentifier(),
+                        line,
+                        charPos
+                    )
+                );
                 expressionStack.push(new NumberExpression(0));
                 return;
             }
@@ -774,25 +752,25 @@ public class UVLListener extends UVLJavaParserBaseListener {
 
         VariableReference reference = ParsingUtilities.resolveReference(referenceName, fmBuilder.getFeatureModel());
         if (reference == null) {
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Reference '" + referenceName + "' in length() could not be resolved")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.EXPRESSION)
-                    .reference(referenceName)
-                    .cause("The feature '" + referenceName + "' does not exist in the feature tree.")
-                    .hint("Check if the feature name is spelled correctly or add it to the feature tree.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.lenFeatureNotDefined(
+                    referenceName,
+                    line,
+                    charPos
+                )
+            );
+            expressionStack.push(new NumberExpression(0));
             return;
         }
         if (!(reference instanceof Feature) || !((Feature) reference).getFeatureType().equals(FeatureType.STRING)) {
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "length() can only be used with String features, but '" + referenceName + "' is not a String feature")
-                    .line(line).charPosition(charPos)
-                    .field(ErrorField.EXPRESSION)
-                    .reference(referenceName)
-                    .cause("The feature '" + referenceName + "' is not of type String.")
-                    .hint("Change the feature type to 'String' or use a different aggregate function.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.lenFeatureNotString(
+                    referenceName,
+                    line,
+                    charPos
+                )
+            );
+            expressionStack.push(new NumberExpression(0));
             return;
         }
 
@@ -830,13 +808,17 @@ public class UVLListener extends UVLJavaParserBaseListener {
 
     @Override
     public void exitFeatureModel(UVLJavaParser.FeatureModelContext ctx) {
+        int line = ctx.getStart().getLine();
+        int charPos = ctx.getStart().getCharPositionInLine();
         if (fmBuilder.doesFeatureModelSatisfyLanguageLevels(importedLanguageLevels)) {
-            errorList.add(new ParseError(new ErrorReport.Builder(ErrorCategory.CONTEXT,
-                    "Imported and actually used language levels do not match")
-                    .field(ErrorField.LANGUAGE_LEVEL)
-                    .cause("Imported levels: " + importedLanguageLevels + ". Actually used levels: " + fmBuilder.getLanguageLevels() + ".")
-                    .hint("Update the 'include' section to match the language features used in the model, or remove unsupported constructs.")
-                    .build()));
+            errorList.add(
+                ErrorMessages.languageLevelsDoNotMatch(
+                    importedLanguageLevels,
+                    fmBuilder.getLanguageLevels(),
+                    line,
+                    charPos
+                )
+            );
         }
     }
 }
