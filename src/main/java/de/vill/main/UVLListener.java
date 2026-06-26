@@ -352,7 +352,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
     public void exitAndConstraint(UVLJavaParser.AndConstraintContext ctx) {
         Constraint rightConstraint = constraintStack.pop();
         Constraint leftConstraint = constraintStack.pop();
-        Constraint constraint = new AndConstraint(leftConstraint, rightConstraint);
+        Constraint constraint;
+        if (leftConstraint instanceof AndConstraint) {
+            ((AndConstraint) leftConstraint).addChild(rightConstraint);
+            constraint = leftConstraint;
+        } else {
+            constraint = new AndConstraint(leftConstraint, rightConstraint);
+        }
         constraintStack.push(constraint);
         Token t = ctx.getStart();
         int line = t.getLine();
@@ -363,7 +369,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
     public void exitOrConstraint(UVLJavaParser.OrConstraintContext ctx) {
         Constraint rightConstraint = constraintStack.pop();
         Constraint leftConstraint = constraintStack.pop();
-        Constraint constraint = new OrConstraint(leftConstraint, rightConstraint);
+        Constraint constraint;
+        if (leftConstraint instanceof OrConstraint) {
+            ((OrConstraint) leftConstraint).addChild(rightConstraint);
+            constraint = leftConstraint;
+        } else {
+            constraint = new OrConstraint(leftConstraint, rightConstraint);
+        }
         constraintStack.push(constraint);
         Token t = ctx.getStart();
         int line = t.getLine();
