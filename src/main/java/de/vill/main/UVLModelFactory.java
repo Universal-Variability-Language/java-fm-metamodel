@@ -390,42 +390,55 @@ public class UVLModelFactory {
     }
 
     private void resolveImportPlaceholders(Constraint constraint, FeatureModel featureModel) {
-        if (constraint instanceof AndConstraint || constraint instanceof OrConstraint || constraint instanceof NotConstraint || constraint instanceof ImplicationConstraint || constraint instanceof ParenthesisConstraint || constraint instanceof EquivalenceConstraint) {
-            for (Constraint subPart : constraint.getConstraintSubParts()) {
-                resolveImportPlaceholders(subPart, featureModel);
+        final Deque<Constraint> stack = new ArrayDeque<>();
+        stack.push(constraint);
+
+        while (!stack.isEmpty()) {
+            final Constraint current = stack.pop();
+
+            if (current instanceof ExpressionConstraint) {
+                ExpressionConstraint expressionConstraint = (ExpressionConstraint) current;
+                resolveImportPlaceholders(expressionConstraint.getLeft(), featureModel);
+                resolveImportPlaceholders(expressionConstraint.getRight(), featureModel);
+            } else if (current instanceof LiteralConstraint) {
+                LiteralConstraint literalConstraint = (LiteralConstraint) current;
+                if (literalConstraint.getReference() instanceof ImportedVariablePlaceholder) {
+                    ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalConstraint.getReference();
+                    literalConstraint.setReference(resolvePlaceholder(placeholder, featureModel));
+                }
             }
-        }  else if (constraint instanceof ExpressionConstraint) {
-            ExpressionConstraint expressionConstraint = (ExpressionConstraint) constraint;
-            resolveImportPlaceholders(expressionConstraint.getLeft(), featureModel);
-            resolveImportPlaceholders(expressionConstraint.getRight(), featureModel);
-        } else if (constraint instanceof LiteralConstraint) {
-            LiteralConstraint literalConstraint = (LiteralConstraint) constraint;
-            if (literalConstraint.getReference() instanceof ImportedVariablePlaceholder) {
-                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalConstraint.getReference();
-                literalConstraint.setReference(resolvePlaceholder(placeholder, featureModel));
+
+            final List<Constraint> subConstraints = current.getConstraintSubParts();
+            for (int i = subConstraints.size() - 1; i >= 0; i--) {
+                stack.push(subConstraints.get(i));
             }
         }
     }
 
     private void resolveImportPlaceholders(Expression expression, FeatureModel featureModel) {
-        if (expression instanceof BinaryExpression) {
-            BinaryExpression binaryExpression = (BinaryExpression) expression;
-            resolveImportPlaceholders(binaryExpression.getLeft(), featureModel);
-            resolveImportPlaceholders(binaryExpression.getRight(), featureModel);
-        } else if (expression instanceof ParenthesisExpression) {
-            ParenthesisExpression parenthesisExpression = (ParenthesisExpression) expression;
-            resolveImportPlaceholders(parenthesisExpression.getContent(), featureModel);
-        } else if (expression instanceof LengthAggregateFunctionExpression) {
-            LengthAggregateFunctionExpression lengthAggregateFunctionExpression = (LengthAggregateFunctionExpression) expression;
-            if (lengthAggregateFunctionExpression.getReference() instanceof ImportedVariablePlaceholder) {
-                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) lengthAggregateFunctionExpression.getReference();
-                lengthAggregateFunctionExpression.setReference(resolvePlaceholder(placeholder, featureModel));
+        final Deque<Expression> stack = new ArrayDeque<>();
+        stack.push(expression);
+
+        while (!stack.isEmpty()) {
+            final Expression current = stack.pop();
+
+            if (current instanceof LengthAggregateFunctionExpression) {
+                LengthAggregateFunctionExpression lengthAggregateFunctionExpression = (LengthAggregateFunctionExpression) current;
+                if (lengthAggregateFunctionExpression.getReference() instanceof ImportedVariablePlaceholder) {
+                    ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) lengthAggregateFunctionExpression.getReference();
+                    lengthAggregateFunctionExpression.setReference(resolvePlaceholder(placeholder, featureModel));
+                }
+            } else if (current instanceof LiteralExpression) {
+                LiteralExpression literalExpression = (LiteralExpression) current;
+                if (literalExpression.getContent() instanceof ImportedVariablePlaceholder) {
+                    ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalExpression.getContent();
+                    literalExpression.setContent(resolvePlaceholder(placeholder, featureModel));
+                }
             }
-        } else if (expression instanceof LiteralExpression) {
-            LiteralExpression literalExpression = (LiteralExpression) expression;
-            if (literalExpression.getContent() instanceof ImportedVariablePlaceholder) {
-                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalExpression.getContent();
-                literalExpression.setContent(resolvePlaceholder(placeholder, featureModel));
+
+            final List<Expression> subExpressions = current.getExpressionSubParts();
+            for (int i = subExpressions.size() - 1; i >= 0; i--) {
+                stack.push(subExpressions.get(i));
             }
         }
     }
