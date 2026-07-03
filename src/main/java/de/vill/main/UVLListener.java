@@ -53,7 +53,15 @@ import java.util.Stack;
 import org.antlr.v4.runtime.Token;
 
 public class UVLListener extends UVLJavaParserBaseListener {
-    public FeatureModelBuilder fmBuilder = new FeatureModelBuilder();
+    public FeatureModelBuilder fmBuilder;
+
+    public UVLListener() {
+        this(new FeatureModelBuilder());
+    }
+
+    public UVLListener(FeatureModelBuilder fmBuilder) {
+        this.fmBuilder = fmBuilder;
+    }
     private Set<LanguageLevel> importedLanguageLevels = new HashSet<>(Arrays.asList(LanguageLevel.BOOLEAN_LEVEL));
     private Stack<Feature> featureStack = new Stack<>();
     private Stack<Group> groupStack = new Stack<>();
@@ -407,7 +415,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
     public void exitAndConstraint(UVLJavaParser.AndConstraintContext ctx) {
         Constraint rightConstraint = constraintStack.pop();
         Constraint leftConstraint = constraintStack.pop();
-        Constraint constraint = new AndConstraint(leftConstraint, rightConstraint);
+        Constraint constraint;
+        if (leftConstraint instanceof AndConstraint) {
+            ((AndConstraint) leftConstraint).addChild(rightConstraint);
+            constraint = leftConstraint;
+        } else {
+            constraint = new AndConstraint(leftConstraint, rightConstraint);
+        }
         constraintStack.push(constraint);
         Token t = ctx.getStart();
         int line = t.getLine();
@@ -418,7 +432,13 @@ public class UVLListener extends UVLJavaParserBaseListener {
     public void exitOrConstraint(UVLJavaParser.OrConstraintContext ctx) {
         Constraint rightConstraint = constraintStack.pop();
         Constraint leftConstraint = constraintStack.pop();
-        Constraint constraint = new OrConstraint(leftConstraint, rightConstraint);
+        Constraint constraint;
+        if (leftConstraint instanceof OrConstraint) {
+            ((OrConstraint) leftConstraint).addChild(rightConstraint);
+            constraint = leftConstraint;
+        } else {
+            constraint = new OrConstraint(leftConstraint, rightConstraint);
+        }
         constraintStack.push(constraint);
         Token t = ctx.getStart();
         int line = t.getLine();

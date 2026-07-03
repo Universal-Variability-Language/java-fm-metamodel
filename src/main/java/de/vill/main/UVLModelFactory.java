@@ -1,6 +1,9 @@
 package de.vill.main;
 
 import de.vill.model.*;
+import de.vill.model.building.AbstractUVLElementFactory;
+import de.vill.model.building.DefaultUVLElementFactory;
+import de.vill.model.building.FeatureModelBuilder;
 import de.vill.model.building.VariableReference;
 import de.vill.model.constraint.*;
 import de.vill.model.expression.*;
@@ -34,7 +37,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -47,10 +49,16 @@ public class UVLModelFactory {
 
     private final Map<LanguageLevel, Class<? extends IConversionStrategy>> conversionStrategiesDrop;
     private final Map<LanguageLevel, Class<? extends IConversionStrategy>> conversionStrategiesConvert;
+    private final AbstractUVLElementFactory elementFactory;
 
     private final List<ParseError> errorList = new LinkedList<>();
 
     public UVLModelFactory() {
+        this(new DefaultUVLElementFactory());
+    }
+
+    public UVLModelFactory(AbstractUVLElementFactory elementFactory) {
+        this.elementFactory = elementFactory;
         this.conversionStrategiesDrop = new HashMap<>();
         this.conversionStrategiesDrop.put(LanguageLevel.GROUP_CARDINALITY, DropGroupCardinality.class);
         this.conversionStrategiesDrop.put(LanguageLevel.FEATURE_CARDINALITY, DropFeatureCardinality.class);
@@ -119,8 +127,9 @@ public class UVLModelFactory {
         UVLJavaLexer.addErrorListener(listener);
         UVLJavaParser.addErrorListener(listener);
 
-        UVLListener uvlListener = new UVLListener();
-        ParseTreeWalker walker = new ParseTreeWalker();
+        UVLListener uvlListener = createUVLListener();
+        IterativeParseTreeWalker walker = new IterativeParseTreeWalker();
+       
         walker.walk(uvlListener, UVLJavaParser.constraintLine());
 
         return uvlListener.getConstraint();
@@ -267,6 +276,10 @@ public class UVLModelFactory {
         return completeOrderedLevelsToRemove;
     }
 
+    private UVLListener createUVLListener() {
+        return new UVLListener(new FeatureModelBuilder(elementFactory));
+    }
+
     private String getPath(String rootPath, Import referencedImport) {
         return rootPath + FileSystems.getDefault().getSeparator() + referencedImport.getNamespace().replace(".", FileSystems.getDefault().getSeparator()) + ".uvl";
     }
@@ -285,8 +298,10 @@ public class UVLModelFactory {
         UVLJavaParser.addErrorListener(listener);
 
 
-        UVLListener uvlListener = new UVLListener();
-        ParseTreeWalker walker = new ParseTreeWalker();
+    
+        UVLListener uvlListener = createUVLListener();
+        IterativeParseTreeWalker walker = new IterativeParseTreeWalker();
+        
         walker.walk(uvlListener, UVLJavaParser.featureModel());
         FeatureModel featureModel = null;
 
@@ -378,42 +393,55 @@ public class UVLModelFactory {
     }
 
     private void resolveImportPlaceholders(Constraint constraint, FeatureModel featureModel) {
-        if (constraint instanceof AndConstraint || constraint instanceof OrConstraint || constraint instanceof NotConstraint || constraint instanceof ImplicationConstraint || constraint instanceof ParenthesisConstraint || constraint instanceof EquivalenceConstraint) {
-            for (Constraint subPart : constraint.getConstraintSubParts()) {
-                resolveImportPlaceholders(subPart, featureModel);
+        final Deque<Constraint> stack = new ArrayDeque<>();
+        stack.push(constraint);
+
+        while (!stack.isEmpty()) {
+            final Constraint current = stack.pop();
+
+            if (current instanceof ExpressionConstraint) {
+                ExpressionConstraint expressionConstraint = (ExpressionConstraint) current;
+                resolveImportPlaceholders(expressionConstraint.getLeft(), featureModel);
+                resolveImportPlaceholders(expressionConstraint.getRight(), featureModel);
+            } else if (current instanceof LiteralConstraint) {
+                LiteralConstraint literalConstraint = (LiteralConstraint) current;
+                if (literalConstraint.getReference() instanceof ImportedVariablePlaceholder) {
+                    ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalConstraint.getReference();
+                    literalConstraint.setReference(resolvePlaceholder(placeholder, featureModel));
+                }
             }
-        }  else if (constraint instanceof ExpressionConstraint) {
-            ExpressionConstraint expressionConstraint = (ExpressionConstraint) constraint;
-            resolveImportPlaceholders(expressionConstraint.getLeft(), featureModel);
-            resolveImportPlaceholders(expressionConstraint.getRight(), featureModel);
-        } else if (constraint instanceof LiteralConstraint) {
-            LiteralConstraint literalConstraint = (LiteralConstraint) constraint;
-            if (literalConstraint.getReference() instanceof ImportedVariablePlaceholder) {
-                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalConstraint.getReference();
-                literalConstraint.setReference(resolvePlaceholder(placeholder, featureModel));
+
+            final List<Constraint> subConstraints = current.getConstraintSubParts();
+            for (int i = subConstraints.size() - 1; i >= 0; i--) {
+                stack.push(subConstraints.get(i));
             }
         }
     }
 
     private void resolveImportPlaceholders(Expression expression, FeatureModel featureModel) {
-        if (expression instanceof BinaryExpression) {
-            BinaryExpression binaryExpression = (BinaryExpression) expression;
-            resolveImportPlaceholders(binaryExpression.getLeft(), featureModel);
-            resolveImportPlaceholders(binaryExpression.getRight(), featureModel);
-        } else if (expression instanceof ParenthesisExpression) {
-            ParenthesisExpression parenthesisExpression = (ParenthesisExpression) expression;
-            resolveImportPlaceholders(parenthesisExpression.getContent(), featureModel);
-        } else if (expression instanceof LengthAggregateFunctionExpression) {
-            LengthAggregateFunctionExpression lengthAggregateFunctionExpression = (LengthAggregateFunctionExpression) expression;
-            if (lengthAggregateFunctionExpression.getReference() instanceof ImportedVariablePlaceholder) {
-                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) lengthAggregateFunctionExpression.getReference();
-                lengthAggregateFunctionExpression.setReference(resolvePlaceholder(placeholder, featureModel));
+        final Deque<Expression> stack = new ArrayDeque<>();
+        stack.push(expression);
+
+        while (!stack.isEmpty()) {
+            final Expression current = stack.pop();
+
+            if (current instanceof LengthAggregateFunctionExpression) {
+                LengthAggregateFunctionExpression lengthAggregateFunctionExpression = (LengthAggregateFunctionExpression) current;
+                if (lengthAggregateFunctionExpression.getReference() instanceof ImportedVariablePlaceholder) {
+                    ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) lengthAggregateFunctionExpression.getReference();
+                    lengthAggregateFunctionExpression.setReference(resolvePlaceholder(placeholder, featureModel));
+                }
+            } else if (current instanceof LiteralExpression) {
+                LiteralExpression literalExpression = (LiteralExpression) current;
+                if (literalExpression.getContent() instanceof ImportedVariablePlaceholder) {
+                    ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalExpression.getContent();
+                    literalExpression.setContent(resolvePlaceholder(placeholder, featureModel));
+                }
             }
-        } else if (expression instanceof LiteralExpression) {
-            LiteralExpression literalExpression = (LiteralExpression) expression;
-            if (literalExpression.getContent() instanceof ImportedVariablePlaceholder) {
-                ImportedVariablePlaceholder placeholder = (ImportedVariablePlaceholder) literalExpression.getContent();
-                literalExpression.setContent(resolvePlaceholder(placeholder, featureModel));
+
+            final List<Expression> subExpressions = current.getExpressionSubParts();
+            for (int i = subExpressions.size() - 1; i >= 0; i--) {
+                stack.push(subExpressions.get(i));
             }
         }
     }
@@ -537,28 +565,38 @@ public class UVLModelFactory {
     }
 
     private boolean validateTypeLevelConstraint(final Constraint constraint) {
-        boolean result = true;
-        if (constraint instanceof ExpressionConstraint) {
-            String leftReturnType = ((ExpressionConstraint) constraint).getLeft().getReturnType();
-            String rightReturnType = ((ExpressionConstraint) constraint).getRight().getReturnType();
+        final Deque<Constraint> stack = new ArrayDeque<>();
+        stack.push(constraint);
 
-            if (!(leftReturnType.equalsIgnoreCase(Constants.TRUE) || rightReturnType.equalsIgnoreCase(Constants.TRUE))) {
-                // if not attribute constraint
-                result = result && ((ExpressionConstraint) constraint).getLeft().getReturnType().equalsIgnoreCase(((ExpressionConstraint) constraint).getRight().getReturnType());
+        while (!stack.isEmpty()) {
+            final Constraint current = stack.pop();
+
+            if (current instanceof ExpressionConstraint) {
+                final ExpressionConstraint expressionConstraint = (ExpressionConstraint) current;
+
+                final String leftReturnType = expressionConstraint.getLeft().getReturnType();
+                final String rightReturnType = expressionConstraint.getRight().getReturnType();
+
+                if (!(leftReturnType.equalsIgnoreCase(Constants.TRUE) || rightReturnType.equalsIgnoreCase(Constants.TRUE))) {
+                    if (!leftReturnType.equalsIgnoreCase(rightReturnType)) {
+                        return false;
+                    }
+                }
+
+                for (final Expression expr : expressionConstraint.getExpressionSubParts()) {
+                    if (!validateTypeLevelExpression(expr)) {
+                        return false;
+                    }
+                }
             }
-            if (!result) {
-                return false;
-            }
-            for (final Expression expr: ((ExpressionConstraint) constraint).getExpressionSubParts()) {
-                result = result && validateTypeLevelExpression(expr);
+
+            final List<Constraint> subConstraints = current.getConstraintSubParts();
+            for (int i = subConstraints.size() - 1; i >= 0; i--) {
+                stack.push(subConstraints.get(i));
             }
         }
 
-        for (final Constraint subCons: constraint.getConstraintSubParts()) {
-            result = result && validateTypeLevelConstraint(subCons);
-        }
-
-        return result;
+        return true;
     }
 
     private boolean validateTypeLevelExpression(final Expression expression) {
